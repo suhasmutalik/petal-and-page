@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Petal &amp; Page</title>
+<meta name="theme-color" content="#FDF5F6">
+<meta name="description" content="A reading journal for a home library, stored on your phone.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Petal & Page">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500;600&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+/* Layout: one-column reading journal (max 640px), tab bar along the bottom, sheets slide up from below.
+   Palette shifts with the time of day: dawn blush, afternoon rose, golden-hour peach-rose, night plum. */
+:root{
+  --bg:#FDF5F6; --surface:#FFFFFF; --ink:#36202B; --muted:#86677A; --accent:#B8436E; --accent-ink:#FFFFFF;
+  --soft:#F8DCE5; --line:#EFDCE2; --glow:rgba(244,182,204,.5); --scrim:rgba(54,32,43,.38);
+  --covS:45%; --covL:83%; --covInk:#5A2E42;
+  --display:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
+  --body:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+:root[data-phase="dawn"]{--bg:#FBF0F2;--surface:#FFFDFD;--ink:#3A2330;--muted:#8A6B79;--accent:#C0507A;--soft:#F6D4DF;--line:#EED7DF;--glow:rgba(255,206,192,.6)}
+:root[data-phase="golden"]{--bg:#F7E7E2;--surface:#FFF8F5;--ink:#3D2228;--muted:#88676B;--accent:#AE445C;--soft:#F1CEC8;--line:#E7CDC7;--glow:rgba(248,172,140,.5);--covInk:#5C2C33}
+:root[data-phase="night"]{--bg:#1C1218;--surface:#281A22;--ink:#F4E3EA;--muted:#B897A6;--accent:#EC8DB1;--accent-ink:#2A1420;--soft:#42283A;--line:#3A2531;--glow:rgba(176,72,124,.32);--scrim:rgba(8,3,6,.6);--covS:28%;--covL:30%;--covInk:#F4DDE7;color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;transition:background-color .9s ease,color .9s ease;-webkit-tap-highlight-color:transparent}
+.glow{position:fixed;inset:0 0 auto;height:340px;background:radial-gradient(120% 100% at 50% 0%,var(--glow),transparent 70%);pointer-events:none;z-index:0;transition:background .9s}
+#app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px calc(116px + env(safe-area-inset-bottom,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:.005em}
+h1{font-size:2.35rem;line-height:1.05}
+h1 em{font-style:italic;font-weight:500;color:var(--accent)}
+h2{font-size:1.6rem;line-height:1.15}
+h3{font-size:1.25rem}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px}
+.eyebrow svg{width:14px;height:14px}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.section{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+.section-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.hdr{display:flex;flex-direction:column;gap:6px}
+.tnum{font-variant-numeric:tabular-nums}
+
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:0;border-radius:999px;padding:11px 18px;background:var(--accent);color:var(--accent-ink);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn.ghost{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.btn.soft{background:var(--soft);color:var(--ink)}
+.btn.danger{background:transparent;color:var(--accent);text-decoration:underline;text-underline-offset:3px;min-height:40px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.45;cursor:default}
+.link{background:none;border:0;color:var(--accent);padding:4px 0;font-weight:500}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.88rem;min-height:36px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label,.lbl{font-size:.78rem;color:var(--muted);letter-spacing:.04em}
+input[type=text],input[type=search],input[type=number],input[type=date],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px;min-height:44px;font-size:16px}
+textarea{min-height:88px;resize:vertical;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* covers */
+.cover{flex:none;border-radius:4px 8px 8px 4px;object-fit:cover;background:hsl(var(--h,340) var(--covS) var(--covL));color:var(--covInk);display:grid;place-items:center;font-family:var(--display);font-style:italic;box-shadow:inset 3px 0 0 rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.08)}
+.cover.s{width:44px;height:64px;font-size:1.5rem}
+.cover.m{width:72px;height:106px;font-size:2.2rem}
+.cover.l{width:96px;height:140px;font-size:3rem}
+
+/* reading now */
+.now{display:flex;gap:16px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;width:100%}
+.now .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.now h3{font-size:1.4rem;line-height:1.1}
+.bar{height:6px;border-radius:999px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width .5s}
+
+/* list */
+.list{display:flex;flex-direction:column}
+.item{display:flex;gap:14px;align-items:center;padding:12px 2px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;width:100%}
+.item:last-child{border-bottom:0}
+.item .meta{flex:1;min-width:0}
+.item .t{font-family:var(--display);font-size:1.18rem;font-weight:600;line-height:1.15;overflow-wrap:anywhere}
+.item .a{font-size:.85rem;color:var(--muted)}
+.pill{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:500}
+.pill.reading{background:var(--accent);color:var(--accent-ink)}
+.pill.want{background:var(--soft);color:var(--ink)}
+.pill.done{box-shadow:inset 0 0 0 1px var(--muted);color:var(--muted)}
+.pill.ex{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+.banner{background:var(--soft);border-radius:14px;padding:12px 14px;font-size:.9rem;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.empty{text-align:center;padding:36px 12px;color:var(--muted)}
+.empty h3{color:var(--ink);margin-bottom:6px}
+
+.fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:20;box-shadow:0 8px 24px -8px var(--accent);padding:13px 20px}
+@media (min-width:700px){.fab{right:calc(50% - 320px + 18px)}}
+
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.72rem;letter-spacing:.04em;color:var(--muted);min-height:52px}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--accent)}
+
+/* calendar */
+.cal-h{display:flex;align-items:center;justify-content:space-between}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:999px;width:40px;height:40px;display:grid;place-items:center;color:var(--ink)}
+.iconbtn svg{width:18px;height:18px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px}
+.cal .dow{font-size:.7rem;text-align:center;color:var(--muted);letter-spacing:.08em;padding:4px 0}
+.day{border:0;background:none;border-radius:12px;aspect-ratio:1;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-variant-numeric:tabular-nums;font-size:.95rem;position:relative}
+.day.blank{pointer-events:none}
+.day.today{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent);font-weight:600}
+.day.sel{background:var(--ink);color:var(--bg)}
+.day.span{background:var(--soft)}
+.day.sel.span{background:var(--ink)}
+.dots{display:flex;gap:3px;height:6px}
+.dots i{width:6px;height:6px;border-radius:50%;background:hsl(var(--h) 55% 55%)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-family:var(--display);font-size:1.8rem;line-height:1;font-weight:600}
+.stat span{font-size:.75rem;color:var(--muted)}
+.ev{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.ev:last-child{border-bottom:0}
+.ev .sw{width:10px;height:10px;border-radius:50%;background:hsl(var(--h) 55% 55%);flex:none}
+
+/* quotes */
+.quote{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px}
+.quote blockquote{margin:0;font-family:var(--display);font-size:1.32rem;line-height:1.35;font-style:italic;overflow-wrap:anywhere}
+.quote blockquote::before{content:"\201C";color:var(--accent);font-size:2.2rem;line-height:0;vertical-align:-.45em;margin-right:2px}
+.quote .src{font-size:.82rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.quote img{border-radius:10px;max-height:180px;object-fit:cover;width:100%}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:50;opacity:0;transition:opacity .25s}
+.scrim.on{opacity:1}
+.panel{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:640px;max-height:92dvh;overflow:auto;overscroll-behavior:contain;background:var(--surface);border-radius:22px 22px 0 0;z-index:51;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.panel.on{transform:none}
+.sheet-h{position:sticky;top:0;background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 0 10px;z-index:2}
+.sheet-h::before{content:"";position:absolute;top:7px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:var(--line)}
+.scan{display:flex;gap:14px;align-items:center;border:1.5px dashed var(--accent);border-radius:16px;padding:16px;cursor:pointer;background:var(--bg)}
+.scan svg{width:30px;height:30px;color:var(--accent);flex:none}
+.scan b{display:block;font-weight:600}
+.hint{font-size:.85rem;color:var(--muted);margin:0}
+.hint.ok{color:var(--accent)}
+.d-top{display:flex;gap:16px;align-items:flex-end}
+.d-top .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.d-top h2{overflow-wrap:anywhere}
+.bm{background:var(--bg);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bm .big{font-family:var(--display);font-size:2.6rem;line-height:1;font-weight:600}
+.bm .big small{font-size:1rem;color:var(--muted);font-family:var(--body);font-weight:400;margin-left:4px}
+.lg{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.lg:last-child{border-bottom:0}
+.x{background:none;border:0;color:var(--muted);font-size:1.1rem;width:36px;height:36px;border-radius:50%}
+.note{background:var(--bg);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.words{display:flex;flex-wrap:wrap;gap:4px 3px;background:var(--bg);border-radius:12px;padding:12px;max-height:260px;overflow:auto;font-family:var(--display);font-size:1.15rem;line-height:1.5}
+.words button{border:0;background:none;padding:0 2px;border-radius:4px;font:inherit}
+.words button.hl{background:var(--soft);box-shadow:0 2px 0 var(--accent)}
+.qimg{border-radius:12px;max-height:240px;object-fit:contain;width:100%;background:var(--bg)}
+.toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(10px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.9rem;z-index:80;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160px;overflow:auto;background:var(--bg);border-radius:10px;padding:10px;margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="glow" aria-hidden="true"></div>
+<main id="app"></main>
+<nav class="tabs" aria-label="Sections"><div class="in" id="tabs"></div></nav>
+<div class="scrim" id="scrim" hidden></div>
+<section class="panel" id="panel" hidden role="dialog" aria-modal="true"></section>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,'0');
+const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ds(new Date());
+const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return ds(d)};
+const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const fmt=s=>{if(!s)return'';const d=pd(s);return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:d.getFullYear()!==new Date().getFullYear()?'numeric':undefined})};
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const HUES=[340,352,322,8,300,20,332];
+const STATUS={reading:'Reading',want:'To read',done:'Finished'};
+const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+let toastT;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+
+const I={
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  quote:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 7C6.5 7.5 5 9.5 5 13v4h5v-5H7.2c.2-1.8 1-2.7 2.3-3zM18.5 7c-3 .5-4.5 2.5-4.5 6v4h5v-5h-2.8c.2-1.8 1-2.7 2.3-3z"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 15v3.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V15"/></svg>',
+  scan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><path d="M8 8v8M11 8v8M13.5 8v8M16 8v8"/></svg>',
+  cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg>',
+  prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m14.5 6-6 6 6 6"/></svg>',
+  next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m9.5 6 6 6-6 6"/></svg>',
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>',
+  rise:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 4v4M5 10l1.4 1.4M19 10l-1.4 1.4"/></svg>',
+  set:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 9V5M9.5 7.5 12 5l2.5 2.5"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M19.5 14.5A7.5 7.5 0 0 1 9.5 4.5a7.5 7.5 0 1 0 10 10z"/></svg>'
+};
+
+/* ---------- storage (IndexedDB on this phone) ---------- */
+const DB={db:null,
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open('petal-page',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{this.db=r.result;res()};r.onerror=()=>rej(r.error)})},
+  get(k){return new Promise((res,rej)=>{const t=this.db.transaction('kv').objectStore('kv').get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error)})},
+  set(k,v){return new Promise((res,rej)=>{const tx=this.db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+};
+let S={books:[],settings:{phase:'auto'}};
+let persistOK=true;
+async function save(){try{if(!DB.db)throw 0;await DB.set('state',S)}catch(e){if(persistOK){persistOK=false;toast('This browser isn’t keeping data. Make a backup.')}}}
+async function load(){
+  try{await DB.open();const v=await DB.get('state');if(v&&Array.isArray(v.books)){S=v}else{S=seed();await save()}}
+  catch(e){persistOK=false;S=seed()}
+  S.settings=S.settings||{phase:'auto'};
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+}
+function seed(){return{settings:{phase:'auto'},books:[
+  {id:uid(),example:true,title:'The Secret Garden',author:'Frances Hodgson Burnett',isbn:'',pages:331,status:'reading',start:daysAgo(13),finish:'',page:142,hue:340,cover:null,
+   sessions:[{id:uid(),date:daysAgo(13),page:21},{id:uid(),date:daysAgo(10),page:52},{id:uid(),date:daysAgo(7),page:88},{id:uid(),date:daysAgo(4),page:117},{id:uid(),date:daysAgo(1),page:142}],
+   notes:[{id:uid(),date:daysAgo(7),text:'Mary is softening. The robin chapters are lovely.'}],
+   quotes:[{id:uid(),date:daysAgo(4),page:112,text:'If you look the right way, you can see that the whole world is a garden.',img:null}]},
+  {id:uid(),example:true,title:'Pride and Prejudice',author:'Jane Austen',isbn:'',pages:432,status:'done',start:daysAgo(52),finish:daysAgo(19),page:432,hue:8,cover:null,
+   sessions:[{id:uid(),date:daysAgo(52),page:40},{id:uid(),date:daysAgo(44),page:130},{id:uid(),date:daysAgo(33),page:255},{id:uid(),date:daysAgo(25),page:360},{id:uid(),date:daysAgo(19),page:432}],
+   notes:[{id:uid(),date:daysAgo(19),text:'Reread of a favourite. Elizabeth’s letter scene still lands.'}],
+   quotes:[{id:uid(),date:daysAgo(52),page:1,text:'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.',img:null}]},
+  {id:uid(),example:true,title:'Middlemarch',author:'George Eliot',isbn:'',pages:880,status:'want',start:'',finish:'',page:0,hue:322,cover:null,sessions:[],notes:[],quotes:[]}
+]}}
+const find=id=>S.books.find(b=>b.id===id);
+const pct=b=>b.pages?Math.min(100,Math.round((b.page||0)/b.pages*100)):0;
+
+/* ---------- time-of-day theme ---------- */
+const PH={dawn:{name:'Morning',greet:'Good morning',icon:I.rise},day:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},golden:{name:'Golden hour',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
+function autoPhase(){const h=new Date().getHours();return h>=5&&h<11?'dawn':h>=11&&h<17?'day':h>=17&&h<20?'golden':'night'}
+function phase(){const p=S.settings&&S.settings.phase;return p&&p!=='auto'?p:autoPhase()}
+function applyPhase(){const p=phase();if(document.documentElement.dataset.phase!==p){document.documentElement.dataset.phase=p;const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();if(view==='library')render()}}
+
+/* ---------- images ---------- */
+function compress(src,max,q){return new Promise((res,rej)=>{const img=new Image();const url=typeof src==='string'?src:URL.createObjectURL(src);img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);if(typeof src!=='string')URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',q))};img.onerror=()=>rej(new Error('image'));img.src=url})}
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+
+/* ---------- barcode, lookup, OCR ---------- */
+async function decodeCode(dataUrl){
+  if('BarcodeDetector' in window){try{let fm=['ean_13','ean_8','upc_a','upc_e','qr_code','code_128'];try{const sup=await BarcodeDetector.getSupportedFormats();fm=fm.filter(x=>sup.includes(x))}catch(e){}const det=new BarcodeDetector({formats:fm});const r=await det.detect(await loadImg(dataUrl));if(r&&r.length)return r[0].rawValue}catch(e){}}
+  if(!window.ZXing){try{await loadScript('vendor/zxing.min.js')}catch(e){}}
+  if(window.ZXing){try{const rd=new ZXing.BrowserMultiFormatReader();const r=await rd.decodeFromImageUrl(dataUrl);return r.getText()}catch(e){}}
+  return null;
+}
+async function lookupIsbn(isbn){
+  const ac=new AbortController();const t=setTimeout(()=>ac.abort(),8000);
+  try{const r=await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:'+isbn+'&format=json&jscmd=data',{signal:ac.signal});const j=await r.json();const d=j['ISBN:'+isbn];if(!d)return null;
+    return{title:d.title+(d.subtitle?': '+d.subtitle:''),author:(d.authors||[]).map(a=>a.name).join(', '),pages:d.number_of_pages||''}}
+  finally{clearTimeout(t)}
+}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load'));document.head.appendChild(s)})}
+let ocrWorker=null;
+async function getWorker(){
+  if(ocrWorker)return ocrWorker;
+  if(!window.Tesseract)await loadScript('vendor/tesseract/tesseract.min.js');
+  ocrWorker=await Tesseract.createWorker('eng',1,{workerPath:'vendor/tesseract/worker.min.js',corePath:'vendor/core',langPath:'vendor/lang',workerBlobURL:false});
+  return ocrWorker;
+}
+async function prepareReader(){const w=await getWorker();try{localStorage.setItem('pp-ocr-ready','1')}catch(e){}return w}
+function readerReady(){try{return localStorage.getItem('pp-ocr-ready')==='1'}catch(e){return false}}
+async function recognize(dataUrl){
+  const job=prepareReader().then(w=>w.recognize(dataUrl));
+  const r=await Promise.race([job,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),90000))]);
+  return r.data.text||'';
+}
+
+let live=null;
+const canLive=()=>!framed&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+async function handleCode(code){
+  const m=$('#scanMsg');if(!m)return;
+  const digits=code.replace(/[^0-9Xx]/g,'');
+  if(/^(97[89]\d{10}|\d{9}[\dXx])$/.test(digits)){$('#fIsbn').value=digits;m.className='hint ok';m.textContent='Scanned ISBN '+digits+'. Looking up the title…';
+    try{const r=await lookupIsbn(digits);if(r){$('#fTitle').value=r.title||'';if(r.author)$('#fAuthor').value=r.author;if(r.pages)$('#fPages').value=r.pages;m.textContent='Found it. Check the details and save.'}else{m.className='hint';m.textContent='Scanned ISBN '+digits+'. No title found, so type it below.'}}
+    catch(err){m.className='hint';m.textContent='Scanned ISBN '+digits+'. No internet right now, so type the title below.'}}
+  else{if(!$('#fTitle').value)$('#fTitle').value=code.slice(0,200);m.className='hint ok';m.textContent='Scanned a code. Its text was added as the title; edit as needed.'}
+}
+async function startLive(){
+  const v=$('#liveV'),box=$('#liveBox'),m=$('#scanMsg');box.hidden=false;m.className='hint';m.textContent='Point the camera at the barcode and hold steady…';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+    live={stream,stop:false};v.srcObject=stream;await v.play();
+    let det=null;
+    if('BarcodeDetector' in window){try{let fm=['ean_13','ean_8','upc_a','upc_e','qr_code','code_128'];try{const sup=await BarcodeDetector.getSupportedFormats();fm=fm.filter(x=>sup.includes(x))}catch(e){}if(fm.length)det=new BarcodeDetector({formats:fm})}catch(e){det=null}}
+    if(det){const loop=async()=>{if(!live||live.stop)return;try{const r=await det.detect(v);if(r&&r.length){const c=r[0].rawValue;stopLive();if(navigator.vibrate)navigator.vibrate(60);return handleCode(c)}}catch(e){}setTimeout(loop,180)};loop()}
+    else{if(!window.ZXing)await loadScript('vendor/zxing.min.js');const rd=new ZXing.BrowserMultiFormatReader();live.reader=rd;
+      rd.decodeFromVideoElementContinuously(v,(res)=>{if(res&&live&&!live.stop){const c=res.getText();stopLive();if(navigator.vibrate)navigator.vibrate(60);handleCode(c)}})}
+  }catch(err){stopLive();m.className='hint';m.textContent='The camera couldn’t start. Allow camera access for this site, or use the photo option.'}
+}
+function stopLive(){if(!live)return;live.stop=true;try{live.reader&&live.reader.reset()}catch(e){}try{live.stream.getTracks().forEach(t=>t.stop())}catch(e){}live=null;const b=$('#liveBox');if(b)b.hidden=true}
+
+/* ---------- views ---------- */
+let view='library',filter='all',query='',qquery='',calMonth=new Date(),selDay=today();
+calMonth.setDate(1);
+const TABS=[['library','Library',I.book],['calendar','Calendar',I.cal],['quotes','Quotes',I.quote],['backup','Backup',I.gear]];
+
+function render(){
+  $('#tabs').innerHTML=TABS.map(([k,l,i])=>`<button data-act="tab" data-v="${k}" ${view===k?'aria-current="page"':''}>${i}<span>${l}</span></button>`).join('');
+  const app=$('#app');
+  app.innerHTML=view==='library'?libraryHTML():view==='calendar'?calendarHTML():view==='quotes'?quotesHTML():backupHTML();
+  if(view==='library')renderList();
+  if(view==='quotes')renderQuoteList();
+}
+function header(title){const p=PH[phase()];return`<header class="hdr"><div class="eyebrow">${p.icon}<span>${p.name} · ${new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span></div>${title}</header>`}
+function cover(b,size){return b.cover?`<img class="cover ${size}" src="${b.cover}" alt="">`:`<div class="cover ${size}" style="--h:${b.hue}" aria-hidden="true">${esc((b.title||'?').trim()[0]||'?')}</div>`}
+
+function libraryHTML(){
+  const B=S.books,yr=new Date().getFullYear();
+  const reading=B.filter(b=>b.status==='reading');
+  const doneYr=B.filter(b=>b.status==='done'&&b.finish&&pd(b.finish).getFullYear()===yr).length;
+  const hasEx=B.some(b=>b.example);
+  return`${header(`<h1>${PH[phase()].greet},<br><em>what are we reading?</em></h1>`)}
+  <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${reading.length} reading · ${doneYr} finished in ${yr}</p>
+  ${hasEx?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
+  ${reading.length?`<div class="section"><div class="eyebrow">On the nightstand</div>${reading.map(b=>`
+    <button class="now" data-act="open" data-id="${b.id}">${cover(b,'m')}<div class="meta">
+      <h3>${esc(b.title)}</h3><span class="muted small">${esc(b.author||'')}</span>
+      <div class="bar" style="margin-top:6px"><i style="width:${pct(b)}%"></i></div>
+      <span class="small tnum">Page ${b.page||0}${b.pages?` of ${b.pages} · ${pct(b)}%`:''}</span>
+      <span class="small" style="color:var(--accent);font-weight:500">Update bookmark →</span></div></button>`).join('')}</div>`:''}
+  <div class="section"><div class="section-h"><h2>The shelf</h2></div>
+    <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}</div>
+    <input type="search" id="search" placeholder="Search title, author or ISBN" value="${esc(query)}" aria-label="Search books">
+    <div class="list" id="booklist"></div>
+  </div>
+  <button class="btn fab" data-act="add">+ Add book</button>`;
+}
+function renderList(){
+  const el=$('#booklist');if(!el)return;
+  const ord={reading:0,want:1,done:2};
+  let L=S.books.filter(b=>filter==='all'||b.status===filter);
+  if(query){const t=query.toLowerCase();L=L.filter(b=>((b.title||'')+' '+(b.author||'')+' '+(b.isbn||'')).toLowerCase().includes(t))}
+  L.sort((a,b)=>ord[a.status]-ord[b.status]||a.title.localeCompare(b.title));
+  if(!L.length){el.innerHTML=S.books.length?`<div class="empty">No books match.</div>`:`<div class="empty"><h3>Your shelf is empty</h3>Tap <b>Add book</b> to scan a barcode or type a title.</div>`;return}
+  el.innerHTML=L.map(b=>`<button class="item" data-act="open" data-id="${b.id}">${cover(b,'s')}<div class="meta"><div class="t">${esc(b.title)}</div><div class="a">${esc(b.author||'Unknown author')}${b.status==='done'&&b.finish?' · finished '+fmt(b.finish):''}</div>${b.status==='reading'?`<div class="bar" style="margin-top:6px;max-width:180px"><i style="width:${pct(b)}%"></i></div>`:''}</div><span class="pill ${b.status}">${STATUS[b.status]}</span></button>`).join('');
+}
+
+function eventsMap(){
+  const m={};const add=(d,e)=>{(m[d]=m[d]||[]).push(e)};
+  S.books.forEach(b=>{
+    let prev=0;[...b.sessions].sort((a,c)=>a.date.localeCompare(c.date)).forEach(s=>{add(s.date,{t:'read',b,page:s.page,delta:Math.max(0,s.page-prev)});prev=Math.max(prev,s.page)});
+    if(b.start)add(b.start,{t:'start',b});if(b.finish)add(b.finish,{t:'finish',b});
+  });return m;
+}
+function calendarHTML(){
+  const y=calMonth.getFullYear(),mo=calMonth.getMonth(),startDow=new Date(y,mo,1).getDay(),n=new Date(y,mo+1,0).getDate();
+  const ev=eventsMap(),td=today();
+  const spans=S.books.filter(b=>b.start).map(b=>[b.start,b.finish||(b.status==='reading'?td:b.start)]);
+  let cells='';['S','M','T','W','T','F','S'].forEach(d=>cells+=`<div class="dow">${d}</div>`);
+  for(let i=0;i<startDow;i++)cells+='<div class="day blank"></div>';
+  let readDays=0,pages=0;
+  for(let d=1;d<=n;d++){
+    const k=y+'-'+pad(mo+1)+'-'+pad(d),E=ev[k]||[];
+    const hues=[...new Set(E.filter(e=>e.t==='read').map(e=>e.b.hue))].slice(0,3);
+    if(E.some(e=>e.t==='read')){readDays++;pages+=E.reduce((s,e)=>s+(e.delta||0),0)}
+    const inSpan=spans.some(([a,b])=>k>=a&&k<=b);
+    cells+=`<button class="day${k===td?' today':''}${k===selDay?' sel':''}${inSpan?' span':''}" data-act="day" data-v="${k}" aria-label="${fmt(k)}${E.length?', '+E.length+' entries':''}"><span>${d}</span><span class="dots">${hues.map(h=>`<i style="--h:${h}"></i>`).join('')}</span></button>`;
+  }
+  const finished=S.books.filter(b=>b.finish&&pd(b.finish).getMonth()===mo&&pd(b.finish).getFullYear()===y).length;
+  const E=(ev[selDay]||[]);
+  const evHTML=E.length?E.map(e=>`<div class="ev"><span class="sw" style="--h:${e.b.hue}"></span><div style="flex:1;min-width:0"><b style="font-family:var(--display);font-size:1.1rem">${esc(e.b.title)}</b><div class="small muted tnum">${e.t==='read'?`Read to page ${e.page}${e.delta?` (+${e.delta} pages)`:''}`:e.t==='start'?'Started reading':'Finished the book'}</div></div><button class="link" data-act="open" data-id="${e.b.id}">Open</button></div>`).join(''):`<p class="muted small" style="margin:0">Nothing logged on this day. Save a page number from a book to mark the day.</p>`;
+  return`${header(`<h1>Reading <em>calendar</em></h1>`)}
+  <div class="section">
+    <div class="cal-h"><button class="iconbtn" data-act="calprev" aria-label="Previous month">${I.prev}</button><h2>${calMonth.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><button class="iconbtn" data-act="calnext" aria-label="Next month">${I.next}</button></div>
+    <div class="cal">${cells}</div>
+    <p class="hint">Dots mark days you read. Shaded days fall between a book’s start and finish.</p>
+    <div class="stats tnum"><div class="stat"><b>${readDays}</b><span>days read</span></div><div class="stat"><b>${pages}</b><span>pages read</span></div><div class="stat"><b>${finished}</b><span>finished</span></div></div>
+  </div>
+  <div class="section"><h3>${fmt(selDay)}</h3><div>${evHTML}</div></div>`;
+}
+
+function quotesHTML(){
+  const n=S.books.reduce((s,b)=>s+b.quotes.length,0);
+  return`${header(`<h1>Saved <em>passages</em></h1>`)}
+  <p class="muted small" style="margin:8px 0 0">${n} quote${n===1?'':'s'} across your books. Add new ones from a book’s page.</p>
+  <div class="section"><input type="search" id="qsearch" placeholder="Search quotes" value="${esc(qquery)}" aria-label="Search quotes"><div class="stack" id="qlist"></div></div>`;
+}
+function renderQuoteList(){
+  const el=$('#qlist');if(!el)return;
+  let L=[];S.books.forEach(b=>b.quotes.forEach(q=>L.push({q,b})));
+  if(qquery){const t=qquery.toLowerCase();L=L.filter(x=>(x.q.text+' '+x.b.title).toLowerCase().includes(t))}
+  L.sort((a,c)=>c.q.date.localeCompare(a.q.date));
+  el.innerHTML=L.length?L.map(({q,b})=>quoteCard(q,b,true)).join(''):`<div class="empty"><h3>No quotes yet</h3>Open a book and tap <b>Capture a quote</b>.</div>`;
+}
+function quoteCard(q,b,showBook){return`<article class="quote">${q.img?`<img src="${q.img}" alt="Photo of the page">`:''}<blockquote>${esc(q.text)}</blockquote><div class="src"><span>${showBook?`<b>${esc(b.title)}</b> · `:''}${q.page?'p. '+q.page+' · ':''}${fmt(q.date)}</span><span class="row" style="gap:4px"><button class="link" data-act="copyq" data-id="${b.id}" data-q="${q.id}">Copy</button>${showBook?'':`<button class="link" data-act="delquote" data-id="${b.id}" data-q="${q.id}" style="color:var(--muted);margin-left:10px">Delete</button>`}</span></div></article>`}
+
+function backupHTML(){
+  const ph=S.settings.phase||'auto';
+  return`${header(`<h1>Backup &amp; <em>settings</em></h1>`)}
+  <div class="section"><div class="card">
+    <h3>Theme</h3><p class="hint">The colours follow the time of day: blush in the morning, rose in the afternoon, peach at golden hour, deep plum at night.</p>
+    <div class="chips">${[['auto','Follow the time'],['dawn','Morning'],['day','Afternoon'],['golden','Golden hour'],['night','Night']].map(([k,l])=>`<button class="chip" data-act="phase" data-v="${k}" aria-pressed="${ph===k}">${l}</button>`).join('')}</div>
+  </div></div>
+  <div class="section"><div class="card">
+    <h3>Where your library lives</h3>
+    <p class="hint">${persistOK?'Everything is saved only on this phone, inside this browser. Nothing is uploaded.':'This browser is not keeping data right now (private mode or blocked storage). Make a backup before closing.'} Clearing the browser’s website data would erase it, so keep a backup every few weeks.</p>
+    ${framed?'':`<button class="btn" data-act="export">Save backup file</button>`}
+    <button class="btn ${framed?'':'ghost'}" data-act="copybackup">Copy backup text</button>
+    <pre class="bk" id="bkout" hidden></pre>
+  </div></div>
+  <div class="section"><div class="card">
+    <h3>Offline</h3>
+    <p class="hint">${'serviceWorker' in navigator&&navigator.serviceWorker.controller?'The app is saved for offline use.':'The app finishes saving itself for offline use after its first open with internet.'} ${readerReady()?'The text reader is ready offline too.':'The text reader still needs a one-time download (about 5 MB).'}</p>
+    ${readerReady()?'':`<button class="btn soft" data-act="prepocr">Prepare text reader for offline</button>`}
+  </div></div>
+  <div class="section"><div class="card">
+    <h3>Restore</h3><p class="hint">Choose a backup file, or paste backup text. This replaces the library on this phone.</p>
+    <label class="btn soft" style="cursor:pointer"><input type="file" id="restoreFile" accept=".json,application/json,text/plain" class="vh">Choose backup file</label>
+    <textarea id="restoreText" placeholder="…or paste backup text here"></textarea>
+    <button class="btn ghost" data-act="restore" id="restoreBtn">Restore from pasted text</button>
+  </div></div>
+  ${S.books.some(b=>b.example)?`<div class="section"><button class="btn danger" data-act="clearex">Remove the example books</button></div>`:''}`;
+}
+
+/* ---------- sheets ---------- */
+let sheetFor=null,onSheetClose=null;
+function openSheet(html,key){
+  const p=$('#panel'),sc=$('#scrim');const keep=sheetFor===key?p.scrollTop:0;sheetFor=key;
+  p.innerHTML=html;p.hidden=false;sc.hidden=false;
+  requestAnimationFrame(()=>{p.classList.add('on');sc.classList.add('on')});p.scrollTop=keep;
+}
+function closeSheet(){stopLive();const p=$('#panel'),sc=$('#scrim');p.classList.remove('on');sc.classList.remove('on');sheetFor=null;setTimeout(()=>{if(!sheetFor){p.hidden=true;sc.hidden=true;p.innerHTML=''}},300);render()}
+
+function openAdd(id){
+  const b=id?find(id):null;
+  openSheet(`<div class="sheet-h"><h2>${b?'Edit book':'Add a book'}</h2><button class="x" data-act="close" aria-label="Close">✕</button></div>
+  <div class="stack">
+    <label class="scan"><input type="file" accept="image/*" capture="environment" id="scanIn" class="vh">${I.scan}<span><b>Scan barcode or QR code</b><span class="hint">Take a clear, close photo of the back cover barcode</span></span></label>
+    ${canLive()?`<button class="btn ghost" data-act="live">${I.scan.replace('<svg','<svg width="18" height="18"')} Scan with live camera</button>
+    <div id="liveBox" hidden class="stack"><video id="liveV" playsinline muted style="width:100%;border-radius:14px;background:#000;max-height:280px;object-fit:cover"></video><button class="btn soft" data-act="stoplive">Stop camera</button></div>`:''}
+    <p class="hint" id="scanMsg" aria-live="polite"></p>
+    <div class="field"><label for="fIsbn">ISBN</label><div class="row" style="flex-wrap:nowrap"><input type="text" inputmode="numeric" id="fIsbn" value="${esc(b?b.isbn:'')}" placeholder="978…"><button class="btn soft" data-act="lookup" style="flex:none">Look up</button></div></div>
+    <div class="field"><label for="fTitle">Title</label><input type="text" id="fTitle" value="${esc(b?b.title:'')}" placeholder="Book title"></div>
+    <div class="field"><label for="fAuthor">Author</label><input type="text" id="fAuthor" value="${esc(b?b.author:'')}"></div>
+    <div class="grid2"><div class="field"><label for="fPages">Total pages</label><input type="number" inputmode="numeric" id="fPages" min="0" value="${b&&b.pages?b.pages:''}"></div>
+    <div class="field"><label for="fStatus">Status</label><select id="fStatus">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}" ${(b?b.status:'want')===k?'selected':''}>${l}</option>`).join('')}</select></div></div>
+    <div class="field"><span class="lbl">Cover photo (optional)</span><div class="row"><span id="covPrev">${b?cover(b,'s'):''}</span><label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" capture="environment" id="covIn" class="vh">${I.cam} ${b&&b.cover?'Replace':'Add'} cover</label></div></div>
+    <button class="btn wide" data-act="savebook" data-id="${b?b.id:''}">${b?'Save changes':'Add to shelf'}</button>
+  </div>`,'add'+(id||''));
+  window._cover=b?b.cover:null;
+}
+function detailHTML(b){
+  const S2=[...b.sessions].sort((a,c)=>c.date.localeCompare(a.date));
+  return`<div class="sheet-h"><span class="pill ${b.example?'ex':b.status}">${b.example?'Example':STATUS[b.status]}</span><div class="row" style="gap:4px"><button class="link" data-act="edit" data-id="${b.id}">Edit</button><button class="x" data-act="close" aria-label="Close">✕</button></div></div>
+  <div class="stack">
+    <div class="d-top">${cover(b,'l')}<div class="meta"><h2>${esc(b.title)}</h2><span class="muted">${esc(b.author||'Unknown author')}</span>${b.isbn?`<span class="small muted tnum">ISBN ${esc(b.isbn)}</span>`:''}</div></div>
+    <div class="chips" role="group" aria-label="Status">${Object.entries(STATUS).map(([k,l])=>`<button class="chip" data-act="status" data-id="${b.id}" data-v="${k}" aria-pressed="${b.status===k}">${l}</button>`).join('')}</div>
+    <div class="grid2"><div class="field"><label for="dStart">Started</label><input type="date" id="dStart" data-field="start" data-id="${b.id}" value="${b.start||''}"></div><div class="field"><label for="dFinish">Finished</label><input type="date" id="dFinish" data-field="finish" data-id="${b.id}" value="${b.finish||''}"></div></div>
+
+    <div class="bm"><div class="eyebrow">Bookmark</div>
+      <div class="big tnum">p. ${b.page||0}${b.pages?`<small>of ${b.pages} · ${pct(b)}%</small>`:''}</div>
+      ${b.pages?`<div class="bar"><i style="width:${pct(b)}%"></i></div>`:''}
+      <div class="grid2"><div class="field"><label for="pgIn">Stopped at page</label><input type="number" inputmode="numeric" id="pgIn" min="0" placeholder="${(b.page||0)+1}"></div><div class="field"><label for="pgDate">On</label><input type="date" id="pgDate" value="${today()}"></div></div>
+      <button class="btn" data-act="savepage" data-id="${b.id}">Save bookmark</button>
+      ${S2.length?`<div><div class="lbl" style="margin:4px 0">Reading log</div>${S2.slice(0,8).map(s=>`<div class="lg tnum"><span>${fmt(s.date)}</span><span>page ${s.page}</span><button class="x" data-act="delsess" data-id="${b.id}" data-s="${s.id}" aria-label="Remove entry">✕</button></div>`).join('')}${S2.length>8?`<p class="hint">+ ${S2.length-8} earlier entries (see Calendar)</p>`:''}</div>`:''}
+    </div>
+
+    <div class="section" style="margin-top:12px"><div class="section-h"><h3>Quotes</h3><span class="small muted">${b.quotes.length}</span></div>
+      <button class="btn ghost" data-act="addquote" data-id="${b.id}">${I.cam.replace('<svg','<svg width="18" height="18"')} Capture a quote</button>
+      ${[...b.quotes].sort((a,c)=>c.date.localeCompare(a.date)).map(q=>quoteCard(q,b,false)).join('')}
+    </div>
+
+    <div class="section" style="margin-top:12px"><div class="section-h"><h3>Notes</h3><span class="small muted">${b.notes.length}</span></div>
+      <textarea id="noteIn" placeholder="Thoughts, comments, who recommended it…"></textarea>
+      <button class="btn soft" data-act="addnote" data-id="${b.id}">Add note</button>
+      ${[...b.notes].sort((a,c)=>c.date.localeCompare(a.date)).map(n=>`<div class="note"><div class="row" style="justify-content:space-between"><span class="small muted">${fmt(n.date)}</span><button class="x" data-act="delnote" data-id="${b.id}" data-n="${n.id}" aria-label="Delete note">✕</button></div><p>${esc(n.text)}</p></div>`).join('')}
+    </div>
+    <button class="btn danger" data-act="delbook" data-id="${b.id}" style="margin-top:20px">Delete this book</button>
+  </div>`;
+}
+function openDetail(id,focus){const b=find(id);if(!b)return closeSheet();openSheet(detailHTML(b),'d'+id);if(focus)setTimeout(()=>{const el=$('#pgIn');el&&el.focus()},320)}
+
+let Q=null;
+function openQuote(id){
+  const b=find(id);Q={id,img:null,words:[],a:null,b:null};
+  openSheet(`<div class="sheet-h"><h2>Capture a quote</h2><button class="link" data-act="back" data-id="${id}">Back</button></div>
+  <div class="stack">
+    <p class="hint">From <b>${esc(b.title)}</b>. Photograph the page, let the reader pick out the words, then tap the first and last word of the passage.</p>
+    <label class="scan"><input type="file" accept="image/*" capture="environment" id="qPhoto" class="vh">${I.cam}<span><b>Photograph the page</b><span class="hint">Or choose a photo you already took</span></span></label>
+    <img id="qImg" class="qimg" alt="Photo of the page" hidden>
+    <button class="btn soft" data-act="ocr" id="ocrBtn" disabled>Recognise text</button>
+    <p class="hint" id="ocrMsg" aria-live="polite"></p>
+    <div class="words" id="words" hidden></div>
+    <div class="field"><label for="qText">Quote</label><textarea id="qText" placeholder="Highlighted words appear here. You can also type or paste."></textarea></div>
+    <div class="grid2"><div class="field"><label for="qPage">Page</label><input type="number" inputmode="numeric" id="qPage" value="${b.page||''}"></div>
+    <label class="row small" style="align-self:end;min-height:44px"><input type="checkbox" id="qKeep" checked style="width:20px;height:20px;accent-color:var(--accent)"> Keep the photo</label></div>
+    <button class="btn wide" data-act="saveq" data-id="${id}">Save quote</button>
+  </div>`,'q'+id);
+}
+function renderWords(){
+  const el=$('#words');if(!el)return;const lo=Q.a==null?-1:Math.min(Q.a,Q.b??Q.a),hi=Q.a==null?-1:Math.max(Q.a,Q.b??Q.a);
+  el.innerHTML=Q.words.map((w,i)=>`<button data-act="w" data-i="${i}" class="${i>=lo&&i<=hi?'hl':''}">${esc(w)}</button>`).join('');
+  if(lo>=0)$('#qText').value=Q.words.slice(lo,hi+1).join(' ').replace(/(\w)- (\w)/g,'$1$2');
+}
+
+/* ---------- actions ---------- */
+function setStatus(b,v){
+  b.status=v;
+  if(v==='reading'&&!b.start)b.start=today();
+  if(v==='done'){if(!b.finish)b.finish=today();if(b.pages&&(b.page||0)<b.pages){b.page=b.pages;b.sessions.push({id:uid(),date:b.finish,page:b.pages})}if(!b.start)b.start=b.finish}
+  if(v!=='done')b.finish='';
+}
+function backupText(){return JSON.stringify({app:'petal-page',version:1,saved:new Date().toISOString(),...S})}
+async function doRestore(text){
+  let d;try{d=JSON.parse(text)}catch(e){toast('That isn’t a valid backup. Check you copied all of it.');return false}
+  if(!d||!Array.isArray(d.books)){toast('No books found in that backup.');return false}
+  S={books:d.books,settings:d.settings||{phase:'auto'}};await save();applyPhase();render();toast('Restored '+S.books.length+' books');return true;
+}
+
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const a=t.dataset.act,id=t.dataset.id,b=id?find(id):null;
+  switch(a){
+    case'tab':view=t.dataset.v;render();window.scrollTo(0,0);break;
+    case'filter':filter=t.dataset.v;document.querySelectorAll('[data-act=filter]').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===filter));renderList();break;
+    case'add':openAdd();break;
+    case'live':startLive();break;
+    case'stoplive':stopLive();break;
+    case'prepocr':{t.disabled=true;t.textContent='Preparing…';try{await prepareReader();toast('Text reader is ready for offline use')}catch(err){toast('Couldn’t prepare it. Connect to the internet and try again.')}render();break}
+    case'open':openDetail(id,!!t.closest('.now'));break;
+    case'close':closeSheet();break;
+    case'back':openDetail(id);break;
+    case'edit':openAdd(id);break;
+    case'clearex':S.books=S.books.filter(x=>!x.example);await save();render();toast('Examples removed');break;
+    case'calprev':calMonth.setMonth(calMonth.getMonth()-1);render();break;
+    case'calnext':calMonth.setMonth(calMonth.getMonth()+1);render();break;
+    case'day':selDay=t.dataset.v;render();break;
+    case'phase':S.settings.phase=t.dataset.v;await save();applyPhase();render();break;
+    case'status':setStatus(b,t.dataset.v);await save();openDetail(id);break;
+    case'savepage':{
+      const v=parseInt($('#pgIn').value,10);if(isNaN(v)||v<0){toast('Enter the page number you stopped at');break}
+      const d=$('#pgDate').value||today();b.page=v;b.sessions.push({id:uid(),date:d,page:v});
+      if(b.status==='want'){b.status='reading';b.start=b.start||d}
+      if(b.pages&&v>=b.pages&&b.status!=='done'){b.status='done';b.finish=d;toast('Finished! Lovely.')}else toast('Bookmark saved at page '+v);
+      await save();openDetail(id);break}
+    case'delsess':b.sessions=b.sessions.filter(s=>s.id!==t.dataset.s);const last=[...b.sessions].sort((x,y)=>y.date.localeCompare(x.date))[0];b.page=last?last.page:0;await save();openDetail(id);break;
+    case'addnote':{const v=$('#noteIn').value.trim();if(!v){toast('Write a note first');break}b.notes.push({id:uid(),date:today(),text:v});await save();openDetail(id);toast('Note added');break}
+    case'delnote':b.notes=b.notes.filter(n=>n.id!==t.dataset.n);await save();openDetail(id);break;
+    case'delquote':b.quotes=b.quotes.filter(q=>q.id!==t.dataset.q);await save();openDetail(id);break;
+    case'copyq':{const q=b.quotes.find(x=>x.id===t.dataset.q);const s=`“${q.text}” — ${b.title}${b.author?', '+b.author:''}${q.page?' (p. '+q.page+')':''}`;try{await navigator.clipboard.writeText(s);toast('Quote copied')}catch(err){toast('Copy isn’t available here. Press and hold the quote to select it.')}break}
+    case'delbook':if(t.dataset.armed){S.books=S.books.filter(x=>x.id!==id);await save();closeSheet();toast('Book deleted')}else{t.dataset.armed=1;t.textContent='Tap again to delete for good'}break;
+    case'addquote':openQuote(id);break;
+    case'w':{const i=+t.dataset.i;if(Q.a==null||Q.b!=null){Q.a=i;Q.b=null}else Q.b=i;renderWords();break}
+    case'ocr':{
+      const m=$('#ocrMsg');t.disabled=true;m.className='hint';m.textContent='Reading the page… this can take up to a minute.';
+      try{const txt=await recognize(Q.img);Q.words=txt.split(/\s+/).filter(Boolean);Q.a=Q.b=null;
+        if(!Q.words.length){m.textContent='No words found. Try a sharper, well-lit photo taken straight on.'}
+        else{$('#words').hidden=false;renderWords();m.className='hint ok';m.textContent='Tap the first word of the passage, then the last.'}}
+      catch(err){m.textContent='The text reader isn’t set up on this phone yet. Open the app once with internet (or tap Prepare in the Backup tab). Meanwhile you can type the quote or paste it from Live Text / Google Lens.'}
+      t.disabled=false;break}
+    case'saveq':{
+      const txt=$('#qText').value.trim();if(!txt){toast('Add the quote text first');break}
+      const img=Q.img&&$('#qKeep').checked?await compress(Q.img,900,.7):null;
+      b.quotes.push({id:uid(),date:today(),page:parseInt($('#qPage').value,10)||'',text:txt,img});await save();openDetail(id);toast('Quote saved');break}
+    case'lookup':{
+      const isbn=$('#fIsbn').value.replace(/[^0-9Xx]/g,'');const m=$('#scanMsg');
+      if(isbn.length!==10&&isbn.length!==13){m.className='hint';m.textContent='Enter a 10 or 13 digit ISBN first.';break}
+      m.className='hint';m.textContent='Looking up '+isbn+'…';
+      try{const r=await lookupIsbn(isbn);if(r){if(r.title)$('#fTitle').value=r.title;if(r.author)$('#fAuthor').value=r.author;if(r.pages)$('#fPages').value=r.pages;m.className='hint ok';m.textContent='Found it. Check the details and save.'}else m.textContent='No match for that ISBN. Type the title below.'}
+      catch(err){m.textContent='No internet right now. The ISBN is kept; type the title below.'}
+      break}
+    case'savebook':{
+      const title=$('#fTitle').value.trim();if(!title){toast('Add a title');$('#fTitle').focus();break}
+      const data={title,author:$('#fAuthor').value.trim(),isbn:$('#fIsbn').value.trim(),pages:parseInt($('#fPages').value,10)||0,cover:window._cover||null};
+      const st=$('#fStatus').value;let bk;
+      if(id){bk=find(id);Object.assign(bk,data);delete bk.example;if(bk.status!==st)setStatus(bk,st)}
+      else{bk={id:uid(),...data,status:'want',start:'',finish:'',page:0,hue:HUES[Math.floor(Math.random()*HUES.length)],sessions:[],notes:[],quotes:[]};setStatus(bk,st);S.books.push(bk)}
+      await save();openDetail(bk.id);toast(id?'Saved':'Added to your shelf');break}
+    case'export':{try{const blob=new Blob([backupText()],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='petal-and-page-backup-'+today()+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);toast('Backup saved')}catch(err){toast('Couldn’t save a file here. Use Copy backup text.')}break}
+    case'copybackup':{const s=backupText();try{await navigator.clipboard.writeText(s);toast('Backup copied. Paste it into a note or email to yourself.')}catch(err){const o=$('#bkout');o.hidden=false;o.textContent=s;const r=document.createRange();r.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast('Selected. Use your phone’s Copy.')}break}
+    case'restore':{const v=$('#restoreText').value.trim();if(!v){toast('Paste backup text first');break}
+      if(!t.dataset.armed){t.dataset.armed=1;t.textContent='Tap again to replace this library';break}
+      if(await doRestore(v))$('#restoreText').value='';break}
+  }
+});
+$('#scrim').addEventListener('click',closeSheet);
+document.addEventListener('input',e=>{
+  if(e.target.id==='search'){query=e.target.value;renderList()}
+  if(e.target.id==='qsearch'){qquery=e.target.value;renderQuoteList()}
+});
+document.addEventListener('change',async e=>{
+  const el=e.target;
+  if(el.dataset.field){const b=find(el.dataset.id);b[el.dataset.field]=el.value;await save();toast('Date saved');return}
+  const f=el.files&&el.files[0];if(!f)return;
+  if(el.id==='scanIn'){
+    const m=$('#scanMsg');m.className='hint';m.textContent='Reading the barcode…';
+    try{const img=await compress(f,1600,.9);const code=await decodeCode(img);
+      if(!code){m.textContent='Couldn’t read a code in that photo. Try closer, in good light, or type the ISBN.';}
+      else await handleCode(code);
+    }catch(err){m.textContent='That photo couldn’t be opened. Try another.'}
+  }
+  if(el.id==='covIn'){try{window._cover=await compress(f,360,.75);$('#covPrev').innerHTML=`<img class="cover s" src="${window._cover}" alt="">`}catch(err){toast('That photo couldn’t be opened')}}
+  if(el.id==='qPhoto'){try{Q.img=await compress(f,1800,.85);const im=$('#qImg');im.src=Q.img;im.hidden=false;$('#ocrBtn').disabled=false;$('#words').hidden=true;$('#ocrMsg').textContent=''}catch(err){toast('That photo couldn’t be opened')}}
+  if(el.id==='restoreFile'){const txt=await f.text();await doRestore(txt);el.value=''}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetFor)closeSheet()});
+
+/* ---------- boot ---------- */
+(async()=>{
+  document.documentElement.dataset.phase=autoPhase();
+  render();
+  await load();applyPhase();render();
+  setInterval(applyPhase,5*60*1000);
+  if('serviceWorker' in navigator&&!framed&&(location.protocol==='https:'||location.hostname==='localhost')){try{await navigator.serviceWorker.register('sw.js')}catch(e){}}
+  if(!framed&&navigator.onLine&&!readerReady()){setTimeout(()=>{prepareReader().then(w=>{w.terminate();ocrWorker=null;if(view==='backup')render()}).catch(()=>{})},4000)}
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyPhase()});
+})();
+})();
+</script>
+</body>
+</html>
