@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Petal &amp; Page</title>
-<meta name="theme-color" content="#FBF4F5">
+<meta name="theme-color" content="#FAF4F2">
 <meta name="description" content="A reading journal for a home library, stored on your phone.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
@@ -19,9 +19,9 @@
 /* Layout: one-column reading journal (max 640px), five-tab bar along the bottom, sheets slide up.
    Colours are computed in script from the chosen palette and the time of day; these are first-paint values. */
 :root{
-  --bg:#FBF4F5; --surface:#FFFFFF; --raised:#FBF6F7; --ink:#36202A; --muted:#7A6670; --accent:#B23A62; --accent-ink:#FFFFFF;
-  --soft:#F5DCE4; --line:#EEDDE2; --gold:#C9A15E; --glow:rgba(245,190,205,.5); --scrim:rgba(40,20,28,.4);
-  --covS:35%; --covL:84%; --covInk:#5B2C3E;
+  --bg:#FAF4F2; --surface:#FFFFFF; --raised:#F7EFEC; --ink:#3F2A33; --muted:#85707A; --accent:#B66E7B; --on-accent:#FFFFFF;
+  --primary:#4A2E3B; --on-primary:#FBEFF1; --soft:#F3E0E1; --line:#ECDFDD; --gold:#C2A07A; --glow:rgba(243,224,225,.9); --scrim:rgba(40,22,30,.42);
+  --covS:30%; --covL:85%; --covInk:#3F2A33;
   --display:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
   --body:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
@@ -29,6 +29,8 @@
 }
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+button,a,label,input,select,textarea{touch-action:manipulation}
 body{margin:0;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;transition:background-color .9s ease,color .9s ease;-webkit-tap-highlight-color:transparent}
 img{max-width:100%}
 [hidden]{display:none!important}
@@ -54,14 +56,14 @@ h3{font-size:1.28rem;line-height:1.2}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.btn{border:0;border-radius:999px;padding:11px 18px;background:var(--accent);color:var(--accent-ink);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;letter-spacing:.01em}
+.btn{border:0;border-radius:999px;padding:11px 18px;background:var(--primary);color:var(--on-primary);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;letter-spacing:.01em}
 .btn svg{width:18px;height:18px}
-.btn.ghost{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.btn.ghost{background:transparent;color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
 .btn.soft{background:var(--soft);color:var(--ink)}
-.btn.danger{background:transparent;color:var(--accent);text-decoration:underline;text-underline-offset:3px;min-height:40px}
+.btn.danger{background:transparent;color:var(--primary);text-decoration:underline;text-underline-offset:3px;min-height:40px}
 .btn.wide{width:100%}
 .btn:disabled{opacity:.45;cursor:default}
-.link{background:none;border:0;color:var(--accent);padding:4px 0;font-weight:500}
+.link{background:none;border:0;color:var(--primary);padding:4px 0;font-weight:500}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.88rem;min-height:38px}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -92,7 +94,7 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .item .t{font-family:var(--display);font-size:1.18rem;font-weight:600;line-height:1.15;overflow-wrap:anywhere}
 .item .a{font-size:.85rem;color:var(--muted)}
 .pill{font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:500}
-.pill.reading{background:var(--accent);color:var(--accent-ink)}
+.pill.reading{background:var(--primary);color:var(--on-primary)}
 .pill.want{background:var(--soft);color:var(--ink)}
 .pill.done{box-shadow:inset 0 0 0 1px var(--muted);color:var(--muted)}
 .pill.ex{box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
@@ -100,14 +102,15 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .empty{text-align:center;padding:36px 12px;color:var(--muted)}
 .empty h3{color:var(--ink);margin-bottom:6px}
 
-.fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:20;box-shadow:0 10px 24px -10px var(--accent);padding:13px 20px}
+.fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:20;box-shadow:0 12px 26px -12px var(--primary);padding:13px 20px}
 @media (min-width:700px){.fab{right:calc(50% - 320px + 18px)}}
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
 nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.68rem;letter-spacing:.04em;color:var(--muted);min-height:52px}
 nav.tabs button svg{width:22px;height:22px}
-nav.tabs button[aria-current="page"]{color:var(--accent)}
+nav.tabs button[aria-current="page"]{color:var(--primary)}
+nav.tabs button[aria-current="page"] svg{color:var(--accent)}
 
 /* habit */
 .habit{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
@@ -120,7 +123,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .week span{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center}
 .week span.l1{background:var(--soft);box-shadow:none}
 .week span.l2{background:color-mix(in srgb,var(--accent) 45%,var(--soft));box-shadow:none}
-.week span.l3{background:var(--accent);box-shadow:none;color:var(--accent-ink)}
+.week span.l3{background:var(--accent);box-shadow:none;color:var(--on-accent)}
 .week span svg{width:14px;height:14px}
 .week .td span{outline:1.5px solid var(--gold);outline-offset:2px}
 
@@ -134,13 +137,13 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .day.blank{pointer-events:none}
 .day.l1{background:var(--soft)}
 .day.l2{background:color-mix(in srgb,var(--accent) 40%,var(--soft))}
-.day.l3{background:var(--accent);color:var(--accent-ink)}
+.day.l3{background:var(--accent);color:var(--on-accent)}
 .day.today::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:1.5px solid var(--gold)}
 .day.sel{outline:2px solid var(--ink);outline-offset:1px}
 .day.future{opacity:.45}
 .dots{display:flex;gap:2px;height:5px}
 .dots i{width:5px;height:5px;border-radius:50%;background:hsl(var(--h) 55% 55%)}
-.day.l3 .dots i{background:var(--accent-ink)}
+.day.l3 .dots i{background:var(--on-accent)}
 .legend{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);flex-wrap:wrap}
 .legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
@@ -189,7 +192,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .scan-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .scan-opts .scan{flex-direction:column;align-items:flex-start;gap:8px;padding:14px}
 .hint{font-size:.85rem;color:var(--muted);margin:0}
-.hint.ok{color:var(--accent)}
+.hint.ok{color:var(--primary);font-weight:500}
 .live{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3;max-width:100%}
 .live video{width:100%;height:100%;object-fit:cover;display:block}
 .live .guide{position:absolute;left:10%;right:10%;top:32%;bottom:32%;border:2px solid rgba(255,255,255,.9);border-radius:12px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
@@ -220,6 +223,16 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .sw-btn .strip{display:flex;height:26px;border-radius:8px;overflow:hidden}
 .sw-btn .strip i{flex:1}
 pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160px;overflow:auto;background:var(--raised);border-radius:10px;padding:10px;margin:0}
+.update{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:90;display:flex;justify-content:center;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));pointer-events:none;transform:translateY(-140%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.update.on{transform:none}
+.update .in{pointer-events:auto;max-width:560px;width:100%;background:var(--primary);color:var(--on-primary);border-radius:18px;padding:12px 12px 12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 14px 32px -14px rgba(0,0,0,.45)}
+.update .in div{flex:1;min-width:0;font-size:.9rem;line-height:1.35}
+.update .in b{display:block;font-weight:600}
+.update button{border:0;border-radius:999px;padding:9px 14px;font-weight:500;min-height:40px}
+.update .go{background:var(--on-primary);color:var(--primary)}
+.update .later{background:transparent;color:var(--on-primary);opacity:.8}
+.whatsnew li{margin:4px 0}
+.ver{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.8rem;text-align:center;margin-top:28px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -230,9 +243,18 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <div class="scrim" id="scrim" hidden></div>
 <section class="panel" id="panel" hidden role="dialog" aria-modal="true"></section>
 <div class="toast" id="toast" role="status"></div>
+<div class="update" id="update" role="alert" aria-live="assertive"><div class="in"><div><b>A new version is ready</b>Update now to get the latest improvements. Your books stay safe.</div><button class="later" data-act="uplater">Later</button><button class="go" data-act="upnow">Update</button></div></div>
 
 <script>
 (function(){
+/* ---------- version ---------- */
+const APP_VERSION='1.3.0';
+const APP_BUILD='__BUILD__';
+const CHANGELOG=[
+  {v:'1.3.0',items:['New elegant colour palettes: Rose Gold, Ballet Slipper, Champagne Rose and Peony','New app icon','No more accidental zooming when tapping twice','You’ll now be told when an update is ready, and can see the version in Settings']},
+  {v:'1.2.0',items:['Sample library to try every feature','Reading stats, streaks and a habit tracker in the calendar','Better barcode scanning and ISBN lookup']},
+  {v:'1.1.0',items:['Works offline as an installable app']}
+];
 /* ---------- helpers ---------- */
 const $=s=>document.querySelector(s);
 const pad=n=>String(n).padStart(2,'0');
@@ -277,8 +299,9 @@ const DB={db:null,
 let S=null,persistOK=true;
 function normalize(s){
   s=s||{};s.books=Array.isArray(s.books)?s.books:[];
-  s.settings=Object.assign({phase:'auto',palette:'peony',goal:{type:'minutes',value:20},yearGoal:12},s.settings||{});
+  s.settings=Object.assign({phase:'auto',palette:'rosegold',goal:{type:'minutes',value:20},yearGoal:12},s.settings||{});
   if(!s.settings.goal||!s.settings.goal.type)s.settings.goal={type:'minutes',value:20};
+  if(s.settings.paletteV!==2){s.settings.palette='rosegold';s.settings.paletteV=2}
   s.checkins=s.checkins||{};s.exCheckins=s.exCheckins||{};
   s.books.forEach(b=>{b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
   return s;
@@ -350,30 +373,36 @@ const pct=b=>b.pages?Math.min(100,Math.round((b.page||0)/b.pages*100)):0;
 
 /* ---------- palettes × time of day ---------- */
 const PALETTES={
-  peony:{name:'Peony',h:340,s:56},
-  rosewood:{name:'Rosewood',h:352,s:38},
-  blush:{name:'Blush & Gold',h:346,s:44,gold:true},
-  mauve:{name:'Dusty Mauve',h:318,s:24}
+  rosegold:{name:'Rose Gold',
+    light:{bg:'#FAF4F2',surface:'#FFFFFF',raised:'#F7EFEC',ink:'#3F2A33',muted:'#85707A',accent:'#B66E7B','on-accent':'#FFFFFF',primary:'#4A2E3B','on-primary':'#FBEFF1',soft:'#F3E0E1',line:'#ECDFDD',gold:'#C2A07A'},
+    dark:{bg:'#1D1519',surface:'#271D22',raised:'#2F242A',ink:'#F3E8EA',muted:'#B5A0A8',accent:'#DDA3AC','on-accent':'#2A1A21',primary:'#E7B8BF','on-primary':'#2A1A21',soft:'#3A2A31',line:'#352830',gold:'#D4B590'}},
+  ballet:{name:'Ballet Slipper',
+    light:{bg:'#FBF7F7',surface:'#FFFFFF',raised:'#F6F0F1',ink:'#33292E',muted:'#7E7479',accent:'#C77D90','on-accent':'#FFFFFF',primary:'#33292E','on-primary':'#FFF5F7',soft:'#F6E3E8',line:'#EDE3E5',gold:'#BFA48A'},
+    dark:{bg:'#18151A',surface:'#221E24',raised:'#2A252C',ink:'#F1EAEE',muted:'#ABA0A8',accent:'#E3A6B6','on-accent':'#241A20',primary:'#EDC2CD','on-primary':'#241A20',soft:'#36292F',line:'#2F2830',gold:'#CDB59C'}},
+  champagne:{name:'Champagne Rose',
+    light:{bg:'#FBF5EF',surface:'#FFFDFA',raised:'#F6EEE6',ink:'#43302C',muted:'#8A766E',accent:'#B9797A','on-accent':'#FFFFFF',primary:'#7E4E53','on-primary':'#FFF6F0',soft:'#F2DDD6',line:'#ECDFD5',gold:'#C9A46E'},
+    dark:{bg:'#1E1716',surface:'#28201E',raised:'#302725',ink:'#F4E9E3',muted:'#B9A59C',accent:'#E0A9A4','on-accent':'#2B1C19',primary:'#E3B5A8','on-primary':'#2B1C19',soft:'#3B2C29',line:'#362A27',gold:'#D8B783'}},
+  peony:{name:'Peony',
+    light:{bg:'#FCF4F6',surface:'#FFFFFF',raised:'#F9EEF1',ink:'#3A1F2B',muted:'#85697A',accent:'#C2457A','on-accent':'#FFFFFF',primary:'#A8346A','on-primary':'#FFFFFF',soft:'#F8DDE7',line:'#F0DDE4',gold:'#C9A15E'},
+    dark:{bg:'#1C1218',surface:'#271A21',raised:'#2F2029',ink:'#F6E4EC',muted:'#BA98A8',accent:'#F08DB5','on-accent':'#2A1220',primary:'#F08DB5','on-primary':'#2A1220',soft:'#45283A',line:'#3A2531',gold:'#D8B47A'}}
 };
+const hx=h=>{h=h.replace('#','');return[0,2,4].map(i=>parseInt(h.slice(i,i+2),16))};
+const mix=(a,b,t)=>{const A=hx(a),B=hx(b);return'#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
+const rgba=(h,a)=>{const [r,g,b]=hx(h);return`rgba(${r},${g},${b},${a})`};
 const PH={dawn:{name:'Morning',greet:'Good morning',icon:I.rise},day:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},golden:{name:'Golden hour',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
 function autoPhase(){const h=new Date().getHours();return h>=5&&h<11?'dawn':h>=11&&h<17?'day':h>=17&&h<20?'golden':'night'}
 function phase(){const p=S&&S.settings.phase;return p&&p!=='auto'?p:autoPhase()}
 function tokens(pk,ph){
-  const p=PALETTES[pk]||PALETTES.peony,s=p.s;
-  if(ph==='night')return{bg:`hsl(${p.h} 20% 8.5%)`,surface:`hsl(${p.h} 17% 12.5%)`,raised:`hsl(${p.h} 16% 15.5%)`,ink:`hsl(${p.h} 28% 93%)`,muted:`hsl(${p.h} 12% 67%)`,
-    accent:`hsl(${p.h} ${Math.min(68,s+14)}% 76%)`,'accent-ink':`hsl(${p.h} 40% 12%)`,soft:`hsl(${p.h} 22% 22%)`,line:`hsl(${p.h} 15% 20%)`,
-    gold:`hsl(38 ${p.gold?55:42}% 70%)`,glow:`hsla(${p.h} 55% 40% / .3)`,scrim:'rgba(6,2,4,.62)',covS:'24%',covL:'30%',covInk:`hsl(${p.h} 35% 90%)`,scheme:'dark'};
-  const sh={dawn:4,day:0,golden:6}[ph],h=p.h+sh,L={dawn:[97.4,100],day:[96.8,100],golden:[94.8,98.8]}[ph];
-  return{bg:`hsl(${h} ${(s*.42).toFixed(1)}% ${L[0]}%)`,surface:`hsl(${h} ${(s*.5).toFixed(1)}% ${L[1]}%)`,raised:`hsl(${h} ${(s*.45).toFixed(1)}% ${L[1]-2}%)`,
-    ink:`hsl(${p.h} 26% 16%)`,muted:`hsl(${p.h} 10% 43%)`,accent:`hsl(${h} ${s}% ${ph==='golden'?42:44}%)`,'accent-ink':'#fff',
-    soft:`hsl(${h} ${(s*.72).toFixed(1)}% 90.5%)`,line:`hsl(${h} ${(s*.32).toFixed(1)}% 87.5%)`,
-    gold:`hsl(${ph==='golden'?33:38} ${p.gold?60:46}% ${p.gold?50:56}%)`,
-    glow:ph==='dawn'?'hsla(18 90% 86% / .55)':ph==='golden'?'hsla(22 85% 76% / .5)':`hsla(${h} 70% 86% / .5)`,
-    scrim:`hsla(${p.h} 30% 12% / .42)`,covS:`${(s*.55).toFixed(1)}%`,covL:'84%',covInk:`hsl(${p.h} 35% 27%)`,scheme:'light'};
+  const P=PALETTES[pk]||PALETTES.rosegold;
+  if(ph==='night'){const d=P.dark;return Object.assign({},d,{glow:rgba(d.accent,.13),scrim:'rgba(6,2,4,.62)',covS:'20%',covL:'29%',covInk:d.ink,scheme:'dark'})}
+  const l=Object.assign({},P.light);
+  const tint={dawn:['#FFE3D3',.2,.1],golden:['#F7CFB6',.3,.16]}[ph];
+  if(tint){for(const k of ['bg','raised'])l[k]=mix(l[k],tint[0],tint[1]);for(const k of ['surface','soft','line'])l[k]=mix(l[k],tint[0],tint[2])}
+  return Object.assign(l,{glow:ph==='dawn'?'rgba(255,216,198,.55)':ph==='golden'?'rgba(240,176,138,.4)':rgba(l.soft,.95),scrim:rgba(l.ink,.42),covS:'28%',covL:'85%',covInk:l.ink,scheme:'light'});
 }
 let curTheme='';
 function applyTheme(force){
-  const ph=phase(),pk=(S&&S.settings.palette)||'peony',key=pk+ph;
+  const ph=phase(),pk=(S&&S.settings.palette)||'rosegold',key=pk+ph;
   if(key===curTheme&&!force)return;curTheme=key;
   const t=tokens(pk,ph),r=document.documentElement;
   for(const [k,v] of Object.entries(t)){if(k==='scheme')r.style.colorScheme=v;else r.style.setProperty('--'+k,v)}
@@ -568,7 +597,7 @@ function libraryHTML(){
       <h3>${esc(b.title)}</h3><span class="muted small">${esc(b.author||'')}</span>
       <div class="bar" style="margin-top:6px"><i style="width:${pct(b)}%"></i></div>
       <span class="small tnum">Page ${b.page||0}${b.pages?` of ${b.pages} · ${pct(b)}%`:''}</span>
-      <span class="small" style="color:var(--accent);font-weight:500">Update bookmark →</span></div></button>`).join('')}</div>`:''}
+      <span class="small" style="color:var(--primary);font-weight:500">Update bookmark →</span></div></button>`).join('')}</div>`:''}
   <div class="section"><div class="section-h"><h2>The shelf</h2></div>
     <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}</div>
     <input type="search" id="search" placeholder="Search title, author or ISBN" value="${esc(query)}" aria-label="Search books">
@@ -684,7 +713,7 @@ function quoteCard(q,b,showBook){return`<article class="quote">${q.img?`<img src
 function settingsHTML(){
   const st=S.settings,ph=st.phase||'auto',G=st.goal;
   const sw=Object.entries(PALETTES).map(([k,p])=>{const a=tokens(k,'day'),b=tokens(k,'golden'),c=tokens(k,'night');
-    return`<button class="sw-btn" data-act="palette" data-v="${k}" aria-pressed="${st.palette===k}"><span class="strip"><i style="background:${a.soft}"></i><i style="background:${a.accent}"></i><i style="background:${b.gold}"></i><i style="background:${c.bg}"></i><i style="background:${c.accent}"></i></span><span class="small" style="font-weight:500">${p.name}</span></button>`}).join('');
+    return`<button class="sw-btn" data-act="palette" data-v="${k}" aria-pressed="${st.palette===k}"><span class="strip"><i style="background:${a.bg}"></i><i style="background:${a.soft}"></i><i style="background:${a.accent}"></i><i style="background:${a.primary}"></i><i style="background:${a.gold}"></i><i style="background:${c.bg}"></i><i style="background:${c.accent}"></i></span><span class="small" style="font-weight:500">${p.name}</span></button>`}).join('');
   return`${header(`<h1>Settings &amp; <em>backup</em></h1>`)}
   <div class="section"><div class="card">
     <h3>Colours</h3><div class="swatches">${sw}</div>
@@ -714,10 +743,15 @@ function settingsHTML(){
     <p class="hint">${'serviceWorker' in navigator&&navigator.serviceWorker.controller?'The app is saved for offline use.':'The app saves itself for offline use after its first open with internet.'} ${readerReady()?'The text reader is ready offline too.':'The text reader still needs a one-time download (about 5 MB).'}</p>
     ${readerReady()?'':`<button class="btn soft" data-act="prepocr">Prepare text reader for offline</button>`}
   </div></div>
+  <div class="section"><div class="card"><h3>About</h3>
+    <p class="hint">Petal &amp; Page <b class="tnum" style="color:var(--ink)">version ${APP_VERSION}</b>${APP_BUILD.startsWith('__')?'':` · build ${APP_BUILD}`}</p>
+    <div class="row"><button class="btn soft" data-act="checkupd">Check for updates</button><button class="link" data-act="whatsnew">What’s new</button></div>
+  </div></div>
   <div class="section"><div class="card"><h3>Sample library</h3>
     <p class="hint">Classic books with a year of reading sessions, notes, quotes and check-ins, so every screen has something to show. Her own books and check-ins are never changed.</p>
     ${S.books.some(b=>b.example)?`<button class="btn ghost" data-act="clearex">Remove the sample books</button>`:`<button class="btn soft" data-act="loadex">Load sample library</button>`}
-  </div></div>`;
+  </div></div>
+  <p class="ver">Petal &amp; Page ${APP_VERSION}</p>`;
 }
 
 /* ---------- sheets ---------- */
@@ -821,6 +855,10 @@ document.addEventListener('click',async e=>{
     case'tab':view=t.dataset.v;render();window.scrollTo(0,0);break;
     case'filter':filter=t.dataset.v;document.querySelectorAll('[data-act=filter]').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===filter));renderList();break;
     case'add':openAdd();break;
+    case'upnow':applyUpdate();break;
+    case'uplater':$('#update').classList.remove('on');break;
+    case'whatsnew':showWhatsNew(false);break;
+    case'checkupd':{if(!swReg){toast('Updates are checked when the app is installed from its website');break}t.disabled=true;t.textContent='Checking…';try{await swReg.update()}catch(e){}setTimeout(()=>{if(swReg.waiting||(swReg.installing))showUpdate();else toast('You have the latest version ('+APP_VERSION+')');render()},1500);break}
     case'live':startLive();break;
     case'stoplive':stopLive();$('#scanMsg').textContent='';break;
     case'open':openDetail(id,!!t.dataset.focus);break;
@@ -908,13 +946,39 @@ document.addEventListener('change',async e=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetFor)closeSheet()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();else{applyTheme();}});
 
+/* ---------- updates ---------- */
+let swReg=null,updating=false;
+function showUpdate(){$('#update').classList.add('on')}
+function applyUpdate(){
+  $('#update').classList.remove('on');
+  if(swReg&&swReg.waiting){updating=true;swReg.waiting.postMessage({type:'SKIP_WAITING'});setTimeout(()=>location.reload(),3000)}
+  else location.reload();
+}
+async function setupSW(){
+  if(!('serviceWorker' in navigator)||framed||!(location.protocol==='https:'||location.hostname==='localhost'))return;
+  try{swReg=await navigator.serviceWorker.register('sw.js')}catch(e){return}
+  const watch=w=>{if(!w)return;w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)showUpdate()})};
+  if(swReg.waiting&&navigator.serviceWorker.controller)showUpdate();
+  watch(swReg.installing);
+  swReg.addEventListener('updatefound',()=>watch(swReg.installing));
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(updating)location.reload()});
+  const check=()=>{if(navigator.onLine)swReg.update().catch(()=>{})};
+  setInterval(check,30*60*1000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
+  window.addEventListener('online',check);
+}
+function showWhatsNew(justUpdated){
+  openSheet(`<div class="sheet-h"><h2>${justUpdated?'Updated to '+APP_VERSION:'What’s new'}</h2><button class="x" data-act="close" aria-label="Close">✕</button></div>
+  <div class="stack">${CHANGELOG.map((c,i)=>`<div><div class="eyebrow">Version ${c.v}${i===0?' · current':''}</div><ul class="whatsnew" style="margin:6px 0 0;padding-left:20px">${c.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}
+  <button class="btn wide" data-act="close">Lovely</button></div>`,'whatsnew');
+}
+
 /* ---------- boot ---------- */
 (async()=>{
   await load();applyTheme(true);render();
   setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render()},60*1000);
-  if('serviceWorker' in navigator&&!framed&&(location.protocol==='https:'||location.hostname==='localhost')){
-    try{await navigator.serviceWorker.register('sw.js')}catch(e){}
-  }
+  setupSW();
+  try{const seen=localStorage.getItem('pp-version');if(seen&&seen!==APP_VERSION)setTimeout(()=>showWhatsNew(true),600);localStorage.setItem('pp-version',APP_VERSION)}catch(e){}
   if(!framed&&navigator.onLine&&!readerReady()){setTimeout(()=>{prepareReader().then(w=>{w.terminate();ocrWorker=null;if(view==='settings')render()}).catch(()=>{})},5000)}
 })();
 })();

@@ -25,7 +25,7 @@ jobs:
       - name: Download offline libraries
         run: bash scripts/fetch-vendor.sh
       - name: Stamp offline cache version
-        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/" site/sw.js
+        run: sed -i "s/__BUILD__/${GITHUB_SHA::8}/" site/sw.js site/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

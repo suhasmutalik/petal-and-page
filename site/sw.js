@@ -1,5 +1,6 @@
-// Petal & Page offline cache. The deploy workflow replaces __BUILD__ with the commit id,
-// so each update installs fresh files while old caches are cleared.
+// Petal & Page offline cache. The deploy workflow replaces __BUILD__ with the commit id.
+// A new version installs in the background and waits; the app shows an "Update" banner,
+// and switches over only when she taps it.
 const CACHE = 'petal-page-__BUILD__';
 const SHELL = [
   './',
@@ -19,10 +20,22 @@ const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
     const c = await caches.open(CACHE);
-    // Add files one by one so a single missing file doesn't block the rest.
-    await Promise.all(SHELL.map(u => c.add(u).catch(() => {})));
-    self.skipWaiting();
+    await Promise.all(SHELL.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
+    // Carry over the text reader's engine files from the previous version so it stays offline.
+    for (const k of await caches.keys()) {
+      if (k === CACHE) continue;
+      const old = await caches.open(k);
+      for (const req of await old.keys()) {
+        if (req.url.includes('/vendor/core/') && !(await c.match(req))) {
+          const r = await old.match(req); if (r) await c.put(req, r);
+        }
+      }
+    }
   })());
+});
+
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
@@ -37,20 +50,17 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Page loads: get the newest app when online (3 s limit), otherwise the saved copy.
+  // Page loads: the version this worker installed. New versions arrive through the update banner.
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
       const c = await caches.open(CACHE);
-      try {
-        const r = await Promise.race([fetch(req, { cache: 'no-store' }), new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 3000))]);
-        if (r && r.ok) { c.put('index.html', r.clone()); return r; }
-      } catch (err) {}
-      return (await c.match('index.html')) || (await c.match('./')) || new Response('Offline', { status: 503 });
+      const hit = (await c.match('index.html')) || (await c.match('./'));
+      if (hit) return hit;
+      try { return await fetch(req); } catch (err) { return new Response('Offline', { status: 503 }); }
     })());
     return;
   }
 
-  // App files and libraries: cache first, save anything new (e.g. the reader's engine files).
   if (url.origin === location.origin || FONT_HOSTS.includes(url.hostname)) {
     e.respondWith((async () => {
       const c = await caches.open(CACHE);
@@ -65,5 +75,4 @@ self.addEventListener('fetch', e => {
       }
     })());
   }
-  // Everything else (book title lookups) goes straight to the network.
 });
