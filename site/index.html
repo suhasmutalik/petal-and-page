@@ -496,9 +496,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.10.1';
+const APP_VERSION='1.10.2';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.10.2',items:['Updates now install by themselves when you open the app, so you always have the latest version']},
   {v:'1.10.1',items:['Ruhi and Dori redrawn as storybook illustrations, with soft shading and fur detail','Ruhi gallops with flowing ears and a happy tail; Dori follows her with her eyes']},
   {v:'1.10.0',items:['Settings is now tidy and nested like the iPhone Settings app: tap a row to open it','Each row shows its current choice at a glance','Settings remembers which page you were on']},
   {v:'1.9.2',items:['Refreshing or updating keeps you on the same tab, at the same spot, with the same book open','Fixed the screen jumping slightly when the app reloads','Tap the current tab again to scroll back to the top']},
@@ -1932,7 +1933,7 @@ async function timerAct(a,t){
 }
 
 /* ---------- updates ---------- */
-let swReg=null,updating=false;
+let swReg=null,updating=false,fgAt=Date.now();
 function showUpdate(){$('#update').classList.add('on')}
 function applyUpdate(){
   $('#update').classList.remove('on');
@@ -1942,15 +1943,20 @@ function applyUpdate(){
 async function setupSW(){
   if(!('serviceWorker' in navigator)||framed||!(location.protocol==='https:'||location.hostname==='localhost'))return;
   try{swReg=await navigator.serviceWorker.register('sw.js')}catch(e){return}
-  const watch=w=>{if(!w)return;w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)showUpdate()})};
-  if(swReg.waiting&&navigator.serviceWorker.controller)showUpdate();
+  // A new version that arrives as the app opens is applied straight away (nothing is lost:
+  // books, timer and the open page are all saved). Mid-use, a banner asks first.
+  const safe=()=>Date.now()-fgAt<12000&&!(document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
+  const ready=()=>{const last=+(ss.get('pp-autoupd')||0);if(safe()&&Date.now()-last>60000){ss.set('pp-autoupd',String(Date.now()));applyUpdate()}else showUpdate()};
+  const watch=w=>{if(!w)return;w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)ready()})};
+  if(swReg.waiting&&navigator.serviceWorker.controller)ready();
   watch(swReg.installing);
   swReg.addEventListener('updatefound',()=>watch(swReg.installing));
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(updating)location.reload()});
   const check=()=>{if(navigator.onLine)swReg.update().catch(()=>{})};
   setInterval(check,30*60*1000);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){fgAt=Date.now();check()}});
   window.addEventListener('online',check);
+  check();
 }
 function showWhatsNew(justUpdated){
   openSheet(`<div class="sheet-h"><h2>${justUpdated?'Updated to '+APP_VERSION:'What’s new'}</h2><button class="x" data-act="close" aria-label="Close">✕</button></div>
