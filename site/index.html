@@ -24,7 +24,7 @@
   --primary:#4A2E3B; --on-primary:#FBEFF1; --soft:#F3E0E1; --line:#ECDFDD; --gold:#C2A07A; --glow:rgba(243,224,225,.9); --scrim:rgba(40,22,30,.42);
   --covS:30%; --covL:85%; --covInk:#3F2A33;
   --display:"Cormorant Garamond","Iowan Old Style",Georgia,serif; --dw:600; --dwi:500; --ds:1;
-  --rc:18px; --ri:12px; --rp:999px; --cb:1px solid var(--line); --cs:none; --cardbg:var(--surface); --fs:16px; --glassline:rgba(255,255,255,.6);
+  --rc:18px; --ri:12px; --rp:999px; --cb:1px solid var(--line); --cs:none; --cardbg:var(--surface); --fs:16px; --glassline:rgba(255,255,255,.6); --ga:100%; --gb:0px; --veil:.5;
   --body:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
   padding-top:env(safe-area-inset-top,0px);
@@ -384,11 +384,55 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 .dhero .meta{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .dhero h2{color:#fff;overflow-wrap:anywhere}
 .dhero .muted{color:rgba(255,255,255,.82)!important}
+/* scenery */
+#scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#scene>svg,#scene>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#scene .veil{position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in srgb,var(--bg) calc(var(--veil)*10%),transparent) 0%,color-mix(in srgb,var(--bg) calc(var(--veil)*55%),transparent) 42%,color-mix(in srgb,var(--bg) calc(var(--veil)*80%),transparent) 100%)}
+.has-scene .glow{display:none}
+.has-scene .now,.has-scene .habit,.has-scene .cal,.has-scene .stat,.has-scene .goal,.has-scene .chart,.has-scene .quote,.has-scene .card,.has-scene .list,.has-scene .banner{background:color-mix(in srgb,var(--surface) var(--ga),transparent)!important;backdrop-filter:blur(var(--gb)) saturate(140%);-webkit-backdrop-filter:blur(var(--gb)) saturate(140%);border-color:var(--glassline)!important}
+.has-scene .list{border-radius:var(--rc);padding:2px 14px;border:1px solid var(--glassline)}
+.has-scene .chip{background:color-mix(in srgb,var(--surface) var(--ga),transparent);backdrop-filter:blur(var(--gb));-webkit-backdrop-filter:blur(var(--gb))}
+.has-scene .chip[aria-pressed="true"]{background:var(--ink)}
+.has-scene input[type=search]{background:color-mix(in srgb,var(--surface) var(--ga),transparent);backdrop-filter:blur(var(--gb));-webkit-backdrop-filter:blur(var(--gb))}
+.has-scene .hdr .eyebrow,.has-scene .hdr p,.has-scene .tvhead h1,.has-scene .hdr h1{text-shadow:0 1px 12px color-mix(in srgb,var(--bg) 70%,transparent)}
+#scene .cloud{animation:cloud 90s linear infinite}
+#scene .cloud.c2{animation-duration:130s;animation-delay:-40s}
+@keyframes cloud{from{transform:translateX(-160px)}to{transform:translateX(520px)}}
+#scene .star{animation:twinkle 3s ease-in-out infinite}
+.stage{position:relative;margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)));margin-top:6px;margin-bottom:-28px;pointer-events:none}
+.stage svg{display:block;width:100%;height:auto;max-width:100%}
+.stage .run{transform-box:fill-box;transform-origin:center;animation:runpath 14s ease-in-out infinite}
+@keyframes runpath{0%{transform:translateX(0) scaleX(1)}44%{transform:translateX(-118px) scaleX(1)}50%{transform:translateX(-118px) scaleX(-1)}94%{transform:translateX(0) scaleX(-1)}100%{transform:translateX(0) scaleX(1)}}
+.stage .bounce{animation:bound .52s ease-in-out infinite}
+@keyframes bound{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-3deg)}}
+.stage .legf,.stage .legb{transform-box:fill-box;transform-origin:50% 0}
+.stage .legf{animation:legA .52s ease-in-out infinite}
+.stage .legb{animation:legA .52s ease-in-out infinite reverse}
+@keyframes legA{0%,100%{transform:rotate(28deg)}50%{transform:rotate(-24deg)}}
+.stage .ear{transform-box:fill-box;transform-origin:30% 0;animation:earflap .52s ease-in-out infinite}
+@keyframes earflap{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(22deg)}}
+.stage .rtail{transform-box:fill-box;transform-origin:0 80%;animation:rwag .26s ease-in-out infinite alternate}
+@keyframes rwag{from{transform:rotate(-14deg)}to{transform:rotate(16deg)}}
+.stage .bfly{animation:bflypath 14s ease-in-out infinite}
+@keyframes bflypath{0%{transform:translate(0,0)}25%{transform:translate(-60px,-18px)}44%{transform:translate(-130px,4px)}50%{transform:translate(-138px,-10px)}75%{transform:translate(-70px,-26px)}94%{transform:translate(-6px,-6px)}100%{transform:translate(0,0)}}
+.stage .wing{transform-box:fill-box;transform-origin:100% 50%;animation:flap .18s ease-in-out infinite alternate}
+.stage .wing.r{transform-origin:0 50%}
+@keyframes flap{to{transform:scaleX(.25)}}
+.stage .dtail{transform-box:fill-box;transform-origin:0 100%;animation:dswish 3.6s ease-in-out infinite}
+@keyframes dswish{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+.stage .dblink{transform-box:fill-box;transform-origin:center;animation:blink 6s infinite}
+.stage .dhead{transform-box:fill-box;transform-origin:50% 90%;animation:dlook 14s ease-in-out infinite}
+@keyframes dlook{0%,100%{transform:rotate(6deg)}44%,50%{transform:rotate(-8deg)}94%{transform:rotate(6deg)}}
+.stage .fly{animation:firefly 4s ease-in-out infinite alternate}
+.stage .fly:nth-of-type(2){animation-delay:-1.5s}.stage .fly:nth-of-type(3){animation-delay:-2.7s}
+@keyframes firefly{0%{transform:translate(0,0);opacity:.2}50%{opacity:1}100%{transform:translate(14px,-12px);opacity:.3}}
+.bgthumb{width:64px;height:64px;border-radius:var(--ri);object-fit:cover;border:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <div class="glow" aria-hidden="true"></div>
+<div id="scene" aria-hidden="true"></div>
 <main id="app"></main>
 <nav class="tabs" aria-label="Sections"><div class="in" id="tabs"></div></nav>
 <div class="scrim" id="scrim" hidden></div>
@@ -401,9 +445,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.7.0';
+const APP_VERSION='1.8.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.8.0',items:['A mountain landscape behind everything, changing from sunrise to starry night','Ruhi plays in the meadow on your Library, chasing a butterfly, while Dori watches from her rock','Clear glass cards let the scenery show through (Settings → Background)','Use your own photo as the background if you like']},
   {v:'1.7.0',items:['A cinematic new Library: a hero carousel of what you’re reading, and scrolling shelves for Up Next, Want to Read, Finished, Saved Quotes and your favourite author','Beautiful poster artwork for books without a cover photo','Each book now opens with a cinematic header','Prefer the old look? Settings → Style → Library layout → Classic list','A new app icon: your baby piglet reading its first book']},
   {v:'1.6.0',items:['Eight new colour themes beyond pink: Evergreen, Matcha, Deep Sea, Lavender Fields, Honey, Mocha, Midnight & Gold and Slate','Book covers now take on your theme’s colour']},
   {v:'1.5.1',items:['Your piglet is now a true baby: bigger head, big sparkly eyes, and it stays little as it grows wiser']},
@@ -627,7 +672,7 @@ const FONTS_B=[
   {n:'Lora',spec:'wght@400;500',fb:'Georgia,serif',d:'Serif text'},
   {n:'System',spec:null,fb:'-apple-system,"Segoe UI",Roboto,system-ui,sans-serif',d:'Your phone’s font'}
 ];
-const DEFAULT_LOOK={layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
+const DEFAULT_LOOK={bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
 function fontUrl(list){const fam=list.filter(f=>f.spec!==null).map(f=>'family='+f.n.replace(/ /g,'+')+(f.spec?':'+f.spec:''));return fam.length?'https://fonts.googleapis.com/css2?'+fam.join('&')+'&display=swap':''}
 function applyStyle(){
   const st=S.settings,r=document.documentElement.style;
@@ -639,6 +684,8 @@ function applyStyle(){
   r.setProperty('--rc',C[0]);r.setProperty('--ri',C[1]);r.setProperty('--rp',C[2]);
   const K={outlined:['1px solid var(--line)','none','var(--surface)'],shadow:['1px solid transparent','0 1px 2px color-mix(in srgb,var(--ink) 6%,transparent),0 12px 28px -16px color-mix(in srgb,var(--ink) 35%,transparent)','var(--surface)'],flat:['1px solid transparent','none','var(--raised)']}[st.cards]||[];
   r.setProperty('--cb',K[0]);r.setProperty('--cs',K[1]);r.setProperty('--cardbg',K[2]);
+  const Gl={clear:['36%','12px',.35],frosted:['62%','20px',.5],solid:['100%','0px',.6]}[st.glass]||['36%','12px',.35];
+  r.setProperty('--ga',Gl[0]);r.setProperty('--gb',Gl[1]);r.setProperty('--veil',st.bg==='photo'?Gl[2]+.1:Gl[2]);renderScene();
   r.setProperty('--fs',{small:'15px',default:'16px',large:'17.5px',xl:'19px'}[st.size]||'16px');
 }
 const hx=h=>{h=h.replace('#','');return[0,2,4].map(i=>parseInt(h.slice(i,i+2),16))};
@@ -674,6 +721,7 @@ function applyTheme(force){
   const t=tokens(pk,ph),r=document.documentElement;
   for(const [k,v] of Object.entries(t)){if(k==='scheme')r.style.colorScheme=v;else r.style.setProperty('--'+k,v)}
   r.style.setProperty('--th',paletteHue(pk));
+  renderScene();
   r.dataset.phase=ph;
   const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t.bg;
 }
@@ -881,6 +929,7 @@ function tvLibraryHTML(){
   return`<header class="hdr"><div class="eyebrow">${GREET[greetKey()].icon}<span>${GREET[greetKey()].name} · ${new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span></div>
     <div class="tvhead"><h1>${GREET[greetKey()].greet}</h1><div class="acts"><button class="circ pig-c" data-act="opentimer" aria-label="Reading timer">${pigFace()}</button><button class="circ" data-act="add" aria-label="Add book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
     <p class="muted small tnum" style="margin:0">${B.length} book${B.length===1?'':'s'} · ${fin.length} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p></header>
+  ${stageHTML()}
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:14px"><span>These are sample books so you can see how it works.</span><button class="link" data-act="clearex">Remove samples</button></div>`:''}
   ${slides.length?`<section class="hero"><div class="hero-x" id="heroX">${slides.join('')}</div>${slides.length>1?`<div class="dots-h" id="heroDots">${slides.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>`:''}</section>`:`<div class="empty" style="margin-top:20px"><h3>Your shelf is empty</h3>Tap <b>+</b> to scan a barcode or type a title.</div>`}
   ${shelf('Up Next',reading.map(b=>pcard(b,`<div class="bar"><i style="width:${pct(b)}%"></i></div><span class="ps tnum">${b.page||0}${b.pages?' / '+b.pages:''} pages</span>`)))}
@@ -914,6 +963,7 @@ function libraryHTML(){
   return`${header(`<h1>${GREET[greetKey()].greet},<br><em>what are we reading?</em></h1>`)}
   <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${doneYr} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p>
   <button class="tbtn" data-act="opentimer" style="margin-top:14px"><span class="pf">${pigFace()}</span>Start reading timer</button>
+  ${stageHTML()}
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
   ${reading.length?`<div class="section"><div class="eyebrow">On the nightstand</div>${reading.map(b=>`
     <button class="now" data-act="open" data-id="${b.id}" data-focus="1">${cover(b,'m')}<div class="meta">
@@ -1048,6 +1098,13 @@ function settingsHTML(){
   const st=S.settings,G=st.goal;
   setTimeout(ensurePreviewFonts,0);
   return`${header(`<h1>Settings &amp; <em>style</em></h1>`)}
+  <div class="section"><div class="card">
+    <h3>Background</h3>
+    ${chipset('bg',st.bg,[['mountains','Mountains with Ruhi & Dori'],['photo','My photo'],['none','Plain']])}
+    ${st.bg==='photo'?`<div class="row">${st.bgImage?`<img class="bgthumb" src="${st.bgImage}" alt="Your background">`:''}<label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" id="bgIn" class="vh">${st.bgImage?'Change photo':'Choose a photo'}</label></div>`:''}
+    ${st.bg!=='none'?`<span class="lbl">Cards</span>${chipset('glass',st.glass,[['clear','Clear glass'],['frosted','Frosted'],['solid','Solid']])}`:''}
+    <p class="hint">${st.bg==='mountains'?'The mountains change with the time of day. Ruhi plays in the meadow on your Library while Dori keeps watch.':st.bg==='photo'?'Any photo works: a favourite trip, Ruhi, or Dori.':'A calm plain background.'}</p>
+  </div></div>
   <div class="section"><div class="card">
     <h3>Colour theme</h3>
     <span class="lbl">Pinks</span>
@@ -1239,6 +1296,7 @@ document.addEventListener('click',async e=>{
     case'fontD':S.settings.fontD=t.dataset.v;await save();applyStyle();render();break;
     case'fontB':S.settings.fontB=t.dataset.v;await save();applyStyle();render();break;
     case'layout':S.settings.layout=t.dataset.v;await save();render();break;
+    case'bg':case'glass':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
     case'corners':case'cards':case'size':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
     case'resetlook':Object.assign(S.settings,DEFAULT_LOOK);await save();applyStyle();applyTheme(true);render();toast('Look reset to default');break;
     case'goaltype':{const G=S.settings.goal;if(G.type!==t.dataset.v){G.type=t.dataset.v;G.value=G.type==='pages'?20:20}await save();render();break}
@@ -1299,6 +1357,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',async e=>{
   const el=e.target;
+  if(el.id==='bgIn'){const f2=el.files&&el.files[0];if(f2){try{S.settings.bgImage=await compress(f2,1600,.82);await save();applyStyle();render();toast('Background updated')}catch(e){toast('That photo couldn’t be opened')}}return}
   if(el.id==='tintToggle'){S.settings.tint=el.checked;await save();applyTheme();return}
   if(el.id==='customColor'){S.settings.customColor=el.value;await save();applyTheme();render();return}
   if(el.dataset.field){const b=find(el.dataset.id);b[el.dataset.field]=el.value;await save();toast('Date saved');return}
@@ -1317,6 +1376,108 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#timer
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();else{if(S&&T().state==='running'){lockScreen(true);updateTimerFace();updatePill()}const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()}});
 window.addEventListener('focus',()=>{applyTheme();refreshIfStale()});
 window.addEventListener('pageshow',()=>{applyTheme();refreshIfStale()});
+
+/* ---------- mountain scenery ---------- */
+const SKY={
+  day:{s:['#7FB8EA','#B5D9F3','#E4F2FB'],far:'#A7B9D8',peak:'#8193BC',shade:'#63739F',snow:'#FFFFFF',mid:'#6F8C82',forest:'#3D6A4D',m1:'#94C273',m2:'#5F9150',lake:'#A6D4EE',sun:'#FFF6D8',cloud:'#FFFFFF'},
+  dawn:{s:['#B9A6DD','#F2B5BE','#FCE3C9'],far:'#C8AACB',peak:'#A98CB2',shade:'#866B96',snow:'#FFF1EE',mid:'#8B8FA2',forest:'#4D5E59',m1:'#A4BB7E',m2:'#6F905C',lake:'#F1C6CC',sun:'#FFE2C4',cloud:'#FFE9EC'},
+  golden:{s:['#E27C6E','#F5A46E','#FCD79C'],far:'#D69C8F',peak:'#B67C79',shade:'#905D62',snow:'#FFE7D3',mid:'#8A7867',forest:'#4A4838',m1:'#B0A963',m2:'#7A7A4B',lake:'#F6BC8E',sun:'#FFE7B0',cloud:'#FFD9C2'},
+  night:{s:['#0B1230','#1C2350','#3A3366'],far:'#2C3359',peak:'#3A416C',shade:'#262B4B',snow:'#C7D0EE',mid:'#1E2A3B',forest:'#111B22',m1:'#22402F',m2:'#152A20',lake:'#2C3866',sun:'#F3EFD8',cloud:'#5C6290'}
+};
+function pines(x0,x1,y,h,col,step){let p='';for(let x=x0;x<x1;x+=step){const hh=h*(.7+((x*7919)%13)/26);p+=`M${x} ${y} L${x+step*.5} ${y-hh} L${x+step} ${y}Z`}return`<path d="${p}" fill="${col}"/>`}
+function sceneSVG(ph){
+  const c=SKY[ph]||SKY.day,night=ph==='night';
+  const sunPos={day:[300,84],dawn:[318,176],golden:[92,186],night:[132,172]}[ph];
+  let stars='';if(night){for(let i=0;i<60;i++){const x=(i*73)%400,y=(i*131)%330,r=((i*17)%10)/10+.4;stars+=`<circle class="star" cx="${x}" cy="${y*.6}" r="${r}" fill="#fff" style="animation-delay:-${(i%7)*.5}s"/>`}}
+  const snow=c.snow;
+  return`<svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMin slice" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.s[0]}"/><stop offset=".45" stop-color="${c.s[1]}"/><stop offset=".62" stop-color="${c.s[2]}"/></linearGradient>
+  <linearGradient id="meadowG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.m1}"/><stop offset="1" stop-color="${c.m2}"/></linearGradient>
+  <linearGradient id="lakeG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.lake}"/><stop offset="1" stop-color="${c.mid}"/></linearGradient>
+  <linearGradient id="mistG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.s[2]}" stop-opacity="0"/><stop offset=".5" stop-color="${c.s[2]}" stop-opacity="${night?.25:.55}"/><stop offset="1" stop-color="${c.s[2]}" stop-opacity="0"/></linearGradient>
+  <radialGradient id="sunG"><stop offset="0" stop-color="${c.sun}"/><stop offset=".35" stop-color="${c.sun}" stop-opacity=".9"/><stop offset="1" stop-color="${c.sun}" stop-opacity="0"/></radialGradient></defs>
+  <rect width="400" height="800" fill="url(#skyG)"/>
+  ${stars}
+  <circle cx="${sunPos[0]}" cy="${sunPos[1]}" r="${night?60:90}" fill="url(#sunG)" opacity="${night?.5:.9}"/>
+  <circle cx="${sunPos[0]}" cy="${sunPos[1]}" r="${night?16:22}" fill="${c.sun}"/>
+  ${night?`<circle cx="${sunPos[0]-5}" cy="${sunPos[1]-4}" r="3.2" fill="#D9D4BE" opacity=".7"/><circle cx="${sunPos[0]+6}" cy="${sunPos[1]+5}" r="2.2" fill="#D9D4BE" opacity=".6"/><circle cx="${sunPos[0]+4}" cy="${sunPos[1]-8}" r="1.6" fill="#D9D4BE" opacity=".6"/>`:''}
+  <g class="cloud" opacity="${night?.35:.85}"><ellipse cx="60" cy="56" rx="44" ry="11" fill="${c.cloud}"/><ellipse cx="82" cy="48" rx="26" ry="12" fill="${c.cloud}"/></g>
+  <g class="cloud c2" opacity="${night?.3:.7}"><ellipse cx="40" cy="136" rx="56" ry="9" fill="${c.cloud}"/><ellipse cx="66" cy="129" rx="28" ry="10" fill="${c.cloud}"/></g>
+  <g transform="translate(0 -160)">
+  <path d="M0 420 L0 352 L28 330 L52 352 L86 296 L112 326 L146 276 L168 302 L198 254 L222 292 L248 268 L278 312 L306 280 L340 322 L368 292 L400 318 L400 420Z" fill="${c.far}"/>
+  <path d="M86 296 L98 316 L92 314 L80 306Z M146 276 L158 296 L150 292 L138 290Z M198 254 L212 278 L204 274 L190 270Z M306 280 L318 298 L310 296 L298 292Z" fill="${snow}" opacity=".8"/>
+  <path d="M150 470 L236 214 L250 236 L262 222 L346 470Z" fill="${c.peak}"/>
+  <path d="M262 222 L346 470 L286 470 L270 330 Z" fill="${c.shade}"/>
+  <path d="M236 214 L250 236 L262 222 L274 262 L262 254 L250 284 L240 258 L226 278 L230 246Z" fill="${snow}"/>
+  <path d="M208 300 L216 290 L222 312 Z M276 300 L286 318 L280 322Z" fill="${snow}" opacity=".7"/>
+  <path d="M0 490 L0 430 L36 410 L64 432 L104 384 L134 420 L172 398 L206 440 L236 418 L268 446 L300 404 L330 430 L362 398 L400 424 L400 490Z" fill="${c.mid}"/>
+  <path d="M104 384 L116 398 L108 396 L98 392Z M300 404 L312 418 L304 416 L294 412Z M362 398 L372 410 L366 408 L356 406Z" fill="${snow}" opacity=".6"/>
+  <rect y="440" width="400" height="80" fill="url(#mistG)"/>
+  <rect y="500" width="400" height="62" fill="url(#lakeG)"/>
+  <path d="M150 500 L236 560 L346 500Z" fill="${c.peak}" opacity=".25"/>
+  <path d="M40 520 h60 M180 532 h80 M300 516 h50 M90 546 h40" stroke="${night?'#9AA6D8':'#FFFFFF'}" stroke-opacity=".45" stroke-width="1.4" stroke-linecap="round"/>
+  ${pines(-10,150,520,34,c.forest,13)}${pines(250,410,520,30,c.forest,12)}
+  <path d="M0 800 L0 556 Q80 534 170 548 Q260 562 400 540 L400 800Z" fill="url(#meadowG)"/>
+  ${pines(-6,60,566,48,c.forest,18)}${pines(352,420,562,44,c.forest,17)}
+  </g><rect y="630" width="400" height="170" fill="${c.m2}"/>
+  </svg>`;
+}
+function stageSVG(ph){
+  const c=SKY[ph]||SKY.day,night=ph==='night',dim=night?'filter:brightness(.78) saturate(.85)':'';
+  const fl=['#F7B6C8','#FFFFFF','#F4D27A','#C9B4F0'];let flowers='';for(let i=0;i<26;i++){const x=(i*61)%400,y=128+((i*37)%50);flowers+=`<circle cx="${x}" cy="${y}" r="${1.6+(i%3)*.6}" fill="${fl[i%4]}" opacity="${night?.5:.95}"/>`}
+  return`<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ruhi playing in the mountains while Dori watches">
+  <defs><linearGradient id="knollG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.m1}"/><stop offset=".55" stop-color="${c.m2}" stop-opacity=".9"/><stop offset="1" stop-color="${c.m2}" stop-opacity="0"/></linearGradient></defs>
+  <path d="M-10 136 Q90 104 200 114 Q300 124 410 104 L410 200 L-10 200Z" fill="url(#knollG)"/>
+  <path d="M-10 136 Q90 104 200 114 Q300 124 410 104" stroke="#FFFFFF" stroke-opacity="${night?.08:.35}" stroke-width="2" fill="none"/>
+  ${flowers}
+  <g style="${dim}">
+  <!-- Dori on her rock -->
+  <ellipse cx="80" cy="126" rx="30" ry="10" fill="${night?'#4B5160':'#9A9AA2'}"/><ellipse cx="74" cy="122" rx="22" ry="6" fill="${night?'#5A6070':'#B3B3BB'}"/>
+  <g transform="translate(50 46)">
+    <path class="dtail" d="M44 70 q18 -2 16 -20 q-1 -9 -7 -9" stroke="#1F1B1E" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="30" cy="56" rx="18" ry="21" fill="#1F1B1E"/>
+    <path d="M30 40 q-11 8 -9 30 q9 6 18 0 q2 -22 -9 -30z" fill="#FAFAF7"/>
+    <ellipse cx="24" cy="76" rx="5.5" ry="3.6" fill="#FAFAF7"/><ellipse cx="36" cy="76" rx="5.5" ry="3.6" fill="#FAFAF7"/>
+    <g class="dhead">
+      <path d="M16 24 L15 7 L27 16Z M44 24 L45 7 L33 16Z" fill="#1F1B1E"/><path d="M18 20 L17.5 11 L24 16Z M42 20 L42.5 11 L36 16Z" fill="#E8A9B4"/>
+      <ellipse cx="30" cy="28" rx="16.5" ry="14" fill="#1F1B1E"/>
+      <path d="M30 15 L24.5 29 Q22 38 30 41 Q38 38 35.5 29 Z" fill="#FAFAF7"/>
+      <g class="dblink"><ellipse cx="22.6" cy="27" rx="3.6" ry="3.1" fill="#CFCB7A"/><ellipse cx="37.4" cy="27" rx="3.6" ry="3.1" fill="#CFCB7A"/><ellipse cx="22.6" cy="27" rx=".9" ry="2.5" fill="#121012"/><ellipse cx="37.4" cy="27" rx=".9" ry="2.5" fill="#121012"/></g>
+      <path d="M28.4 33 h3.2 l-1.6 2.2z" fill="#F2A7B4"/>
+      <path d="M22 36 l-10 -1 M22 38 l-10 2 M38 36 l10 -1 M38 38 l10 2" stroke="#FFFFFF" stroke-width=".6" opacity=".8"/>
+    </g>
+  </g>
+  <!-- Ruhi playing -->
+  <g transform="translate(250 44) scale(.92)"><g class="run"><g class="bounce">
+    <path class="rtail" d="M98 30 q16 -12 22 -3 q-8 2 -16 10 q-3 -2 -6 -7z" fill="#E4B271"/>
+    <g class="legb"><path d="M84 44 q2 14 -2 24 l7 1 q4 -10 1 -25z" fill="#C98E4E"/></g>
+    <g class="legf"><path d="M44 44 q-2 14 -8 22 l6 3 q7 -9 8 -24z" fill="#C98E4E"/></g>
+    <ellipse cx="66" cy="38" rx="33" ry="15.5" fill="#DDA463"/>
+    <path d="M40 30 q-4 14 6 22 q6 -2 8 -10 q-4 -10 -14 -12z" fill="#FFF6EA"/>
+    <g class="legb" style="animation-direction:normal"><path d="M90 42 q4 14 0 25 l7 1 q4 -12 -1 -26z" fill="#DDA463"/><path d="M88 64 q4 6 10 4" stroke="#F3E3CC" stroke-width="3" fill="none"/></g>
+    <g class="legf" style="animation-direction:reverse"><path d="M50 44 q0 15 -5 24 l7 2 q6 -10 5 -26z" fill="#DDA463"/><path d="M43 66 q4 5 10 4" stroke="#F3E3CC" stroke-width="3" fill="none"/></g>
+    <path d="M37 33 q6 -2 8 6" stroke="#C8423A" stroke-width="4.5" fill="none" stroke-linecap="round"/><circle cx="44" cy="42" r="2.2" fill="#E2B23C"/>
+    <circle cx="30" cy="26" r="13.5" fill="#E0A865"/>
+    <ellipse cx="18" cy="31" rx="9.5" ry="6.8" fill="#F3E4D2"/>
+    <ellipse cx="10" cy="29" rx="3.3" ry="2.7" fill="#2A1C18"/>
+    <circle cx="27" cy="22.5" r="2.3" fill="#2A1C18"/><circle cx="27.8" cy="21.8" r=".8" fill="#fff"/>
+    <path d="M13 35 q5 6 10 1" stroke="#2A1C18" stroke-width="1.2" fill="none"/><ellipse cx="17.5" cy="38.5" rx="3" ry="4.2" fill="#F08AA0"/>
+    <path class="ear" d="M32 16 q11 2 11 14 q1 15 -6 21 q-5 3 -9 -2 q-3 -14 4 -33z" fill="#B87A40"/>
+  </g></g></g>
+  <!-- butterfly she chases -->
+  <g transform="translate(236 40)"><g class="bfly"><path class="wing" d="M0 0 q-8 -9 -11 -2 q2 6 11 2z" fill="#F7B6C8"/><path class="wing r" d="M0 0 q8 -9 11 -2 q-2 6 -11 2z" fill="#F4D27A"/><path d="M0 -3 v6" stroke="#4A2E3B" stroke-width="1.2"/></g></g>
+  ${night?'<circle class="fly" cx="150" cy="80" r="1.8" fill="#FFF3B0"/><circle class="fly" cx="210" cy="64" r="1.6" fill="#FFF3B0"/><circle class="fly" cx="330" cy="76" r="1.8" fill="#FFF3B0"/>':''}
+  </g></svg>`;
+}
+let sceneKey='';
+function renderScene(){
+  const el=$('#scene');if(!el||!S)return;const st=S.settings,ph=themePhase(),key=st.bg+ph+(st.bg==='photo'?(st.bgImage||'').length:'');
+  document.documentElement.classList.toggle('has-scene',st.bg!=='none');
+  if(key===sceneKey)return;sceneKey=key;
+  if(st.bg==='none'){el.innerHTML='';return}
+  el.innerHTML=(st.bg==='photo'&&st.bgImage?`<img src="${st.bgImage}" alt="">`:sceneSVG(ph))+'<div class="veil"></div>';
+}
+function stageHTML(){return S.settings.bg==='mountains'?`<div class="stage">${stageSVG(themePhase())}</div>`:''}
 
 /* ---------- pig companion ---------- */
 const PIG=[
