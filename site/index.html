@@ -244,6 +244,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 .preview{border:1px dashed var(--line);border-radius:var(--rc);padding:16px;display:flex;flex-direction:column;gap:6px;background:var(--bg)}
 .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:.92rem}
 .toggle input{width:44px;height:26px;accent-color:var(--primary)}
+.dots-pick{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.cdot{aspect-ratio:1;max-width:100%;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);padding:0}
+.cdot[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transition:none!important}
 .colorpick{display:flex;align-items:center;gap:12px}
 .colorpick input{width:52px;height:40px;border:1px solid var(--line);border-radius:var(--ri);background:none;padding:2px}
 .tbtn{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;border:1px solid var(--glassline);background:color-mix(in srgb,var(--surface) 55%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:var(--rp);padding:6px 16px 6px 6px;min-height:46px;color:var(--ink);font-weight:500;box-shadow:0 8px 20px -14px color-mix(in srgb,var(--ink) 40%,transparent)}
@@ -499,9 +503,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.11.2';
+const APP_VERSION='1.11.3';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.11.3',items:['Fixed the custom colour theme freezing the app while picking a colour','Quick colour dots for your own theme','Any colour now stays readable: very light or bright colours are softened automatically']},
   {v:'1.11.2',items:['Removed the shops from the meadow, back to just the mountains with Ruhi and Dori']},
   {v:'1.10.4',items:['Ruhi is back as the storybook runner, now in her true colours: dark brown with golden highlights']},
   {v:'1.10.3',items:['Ruhi is fuzzier, warmer and happier: big shiny eyes, a happy smile, curly ears and soft little legs','She trots and bounces after the butterfly instead of stiffly galloping']},
@@ -571,6 +576,7 @@ function normalize(s){
   if(s.settings.paletteV!==2){s.settings.palette='rosegold';s.settings.paletteV=2}
   if(!s.settings.mode){const p=s.settings.phase;s.settings.mode=!p||p==='auto'?'clock':p==='night'?'dark':'light'}
   for(const [k,v] of Object.entries(DEFAULT_LOOK))if(s.settings[k]===undefined)s.settings[k]=v;
+  s.settings.customColor=validHex(s.settings.customColor);
   s.timer=s.timer&&s.timer.state?s.timer:{state:'idle',bookId:null,startedAt:0,accMs:0};
   s.checkins=s.checkins||{};s.exCheckins=s.exCheckins||{};
   s.books.forEach(b=>{b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
@@ -703,14 +709,20 @@ PALETTES.seaglass.th=180;PALETTES.ivory.th=40;
 function hslHex(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return'#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('')}
 function hexHsl(hex){let [r,g,b]=hx(hex).map(v=>v/255);const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0,l=(mx+mn)/2;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return[h,s*100,l*100]}
 function lum(hex){const c=hx(hex).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+const validHex=h=>/^#[0-9a-f]{6}$/i.test(h||'')?h:'#B66E7B';
 function customPalette(hex){
-  const [H,Sat]=hexHsl(hex),S=Math.max(8,Sat);
+  hex=validHex(hex);
+  const [H,Sat,Lt]=hexHsl(hex),grey=Sat<6,S=grey?8:Math.max(22,Math.min(Sat,72));
+  const bgL=hslHex(H,Math.min(S,40)*.4,97.5),cr=(x,y)=>{const a=lum(x),b=lum(y);return(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+  let L0=grey?Math.max(28,Math.min(Lt,46)):Math.max(36,Math.min(Lt,50)),acc=hslHex(H,grey?6:S,L0);
+  while(cr(acc,bgL)<3.4&&L0>18){L0-=2;acc=hslHex(H,grey?6:S,L0)}
   return{name:'Custom',
-    light:{bg:hslHex(H,Math.min(S,40)*.4,97.5),surface:'#FFFFFF',raised:hslHex(H,Math.min(S,40)*.35,94.8),ink:hslHex(H,25,17),muted:hslHex(H,9,45),accent:hex,'on-accent':lum(hex)>.35?hslHex(H,40,14):'#FFFFFF',primary:hslHex(H,Math.min(S,45),26),'on-primary':hslHex(H,40,97),soft:hslHex(H,Math.min(S,60)*.7,91),line:hslHex(H,Math.min(S,40)*.3,88),gold:'#C2A07A'},
-    dark:{bg:hslHex(H,18,9),surface:hslHex(H,15,13),raised:hslHex(H,14,16),ink:hslHex(H,25,93),muted:hslHex(H,10,66),accent:hslHex(H,Math.min(80,S+10),76),'on-accent':hslHex(H,40,12),primary:hslHex(H,Math.min(80,S+10),80),'on-primary':hslHex(H,40,12),soft:hslHex(H,20,22),line:hslHex(H,14,20),gold:'#D4B590'}};
+    light:{bg:bgL,surface:'#FFFFFF',raised:hslHex(H,Math.min(S,40)*.35,94.8),ink:hslHex(H,Math.min(S,30),16),muted:hslHex(H,Math.min(S,14),44),accent:acc,'on-accent':'#FFFFFF',primary:hslHex(H,Math.min(S,45),25),'on-primary':hslHex(H,40,97),soft:hslHex(H,Math.min(S,60)*.7,91),line:hslHex(H,Math.min(S,40)*.3,88),gold:'#C2A07A'},
+    dark:{bg:hslHex(H,Math.min(S,18),9),surface:hslHex(H,Math.min(S,15),13),raised:hslHex(H,Math.min(S,14),16),ink:hslHex(H,Math.min(S,25),93),muted:hslHex(H,Math.min(S,10),66),accent:hslHex(H,Math.min(75,S+8),74),'on-accent':hslHex(H,40,12),primary:hslHex(H,Math.min(75,S+8),80),'on-primary':hslHex(H,40,12),soft:hslHex(H,Math.min(S,20),22),line:hslHex(H,Math.min(S,14),20),gold:'#D4B590'}};
 }
-function paletteHue(k){if(k==='custom')return Math.round(hexHsl((S&&S.settings.customColor)||'#B66E7B')[0]);return(PALETTES[k]&&PALETTES[k].th)??340}
-function getPalette(k){return k==='custom'?customPalette((S&&S.settings.customColor)||'#B66E7B'):(PALETTES[k]||PALETTES.rosegold)}
+const CUSTOM_DOTS=['#C2185B','#E07A5F','#D4A017','#6A994E','#2A9D8F','#3A86FF','#5E60CE','#8E44AD','#B5838D','#6D597A','#8D6E63','#455A64'];
+function paletteHue(k){if(k==='custom')return Math.round(hexHsl(validHex(S&&S.settings.customColor))[0]);return(PALETTES[k]&&PALETTES[k].th)??340}
+function getPalette(k){return k==='custom'?customPalette(S&&S.settings.customColor):(PALETTES[k]||PALETTES.rosegold)}
 const FONTS_D=[
   {n:'Cormorant Garamond',spec:'ital,wght@0,500;0,600;1,500;1,600',w:600,wi:500,ds:1,fb:'Georgia,serif',d:'Classic, airy'},
   {n:'Playfair Display',spec:'ital,wght@0,500;0,600;1,500;1,600',w:600,wi:500,ds:.86,fb:'Georgia,serif',d:'Fashion editorial'},
@@ -1267,7 +1279,8 @@ function settingsPageBody(k){
     <div class="swatches">${OTHER.map(k=>swatch(k,PALETTES[k],st.palette)).join('')}</div>
     <span class="lbl" style="margin-top:4px">Your own</span>
     <div class="swatches">${swatch('custom',customPalette(st.customColor),st.palette)}</div>
-    ${st.palette==='custom'?`<div class="colorpick"><input type="color" id="customColor" value="${esc(st.customColor)}" aria-label="Pick your colour"><span class="hint">Pick any colour. Backgrounds, buttons and the dark version are made to match.</span></div>`:''}`;
+    ${st.palette==='custom'?`<div class="dots-pick">${CUSTOM_DOTS.map(c=>`<button class="cdot" data-act="cdot" data-v="${c}" style="background:${c}" aria-label="Use this colour" aria-pressed="${validHex(st.customColor).toLowerCase()===c.toLowerCase()}"></button>`).join('')}</div>
+    <div class="colorpick"><input type="color" id="customColor" value="${esc(validHex(st.customColor))}" aria-label="Pick your own colour"><span class="hint">Tap a colour above, or pick any colour. Very light or very bright colours are softened so text stays easy to read.</span></div>`:''}`;
     case'mode':return`
     ${chipset('mode',st.mode,[['clock','Follow the clock'],['system','Match my phone'],['light','Always light'],['dark','Always dark']])}
     <p class="hint" id="modeStatus">${modeStatus()}</p>
@@ -1324,6 +1337,15 @@ function settingsHTML(){
   ${setGroup('Your data',['backup','offline','sample'])}
   ${setGroup('About',['about'])}
   <p class="ver">Petal &amp; Page ${APP_VERSION}<br>Made with love, for Ruhi and Dori’s favourite reader</p>`;
+}
+let tintRaf=0,tintPending=null,tintEnd=0;
+function refreshCustomSwatch(){const b=document.querySelector('[data-act=palette][data-v=custom] .strip');if(!b)return;const P=customPalette(S.settings.customColor),a=P.light,c=P.dark;b.innerHTML=[a.bg,a.soft,a.accent,a.primary,a.gold,c.bg,c.accent].map(x=>`<i style="background:${x}"></i>`).join('');document.querySelectorAll('.cdot').forEach(d=>d.setAttribute('aria-pressed',String(d.dataset.v.toLowerCase()===S.settings.customColor.toLowerCase())))}
+function liveTint(v,final){
+  if(!/^#[0-9a-f]{6}$/i.test(v||''))return;
+  S.settings.customColor=v;tintPending=v;
+  document.documentElement.classList.add('tinting');
+  if(!tintRaf)tintRaf=requestAnimationFrame(()=>{tintRaf=0;if(tintPending){applyTheme();refreshCustomSwatch();tintPending=null}});
+  clearTimeout(tintEnd);tintEnd=setTimeout(()=>{document.documentElement.classList.remove('tinting');save()},final?50:450);
 }
 /* ---------- sheets ---------- */
 let sheetFor=null;
@@ -1447,6 +1469,7 @@ document.addEventListener('click',async e=>{
     case'day':selDay=t.dataset.v;render();break;
     case'checkin':{const d=t.dataset.d;if(d>today())break;S.checkins[d]=+t.dataset.v;await save();render();toast(d===today()?'Marked today as read':'Marked '+fmt(d)+' as read');break}
     case'uncheck':delete S.checkins[t.dataset.v];delete S.exCheckins[t.dataset.v];await save();render();break;
+    case'cdot':liveTint(t.dataset.v,true);{const i=$('#customColor');if(i)i.value=t.dataset.v}break;
     case'palette':S.settings.palette=t.dataset.v;await save();applyTheme();render();break;
     case'mode':S.settings.mode=t.dataset.v;await save();applyTheme();render();toast({clock:'Following sunrise and sunset',system:'Matching your phone',light:'Always light',dark:'Always dark'}[t.dataset.v]);break;
     case'geo':{if(!navigator.geolocation){toast('Location isn’t available on this phone');break}t.textContent='Finding you…';
@@ -1511,7 +1534,7 @@ document.addEventListener('click',async e=>{
 });
 $('#scrim').addEventListener('click',closeSheet);
 document.addEventListener('input',e=>{
-  if(e.target.id==='customColor'){S.settings.customColor=e.target.value;applyTheme();return}
+  if(e.target.id==='customColor'){liveTint(e.target.value);return}
   if(e.target.id==='search'){query=e.target.value;renderList()}
   if(e.target.id==='qsearch'){qquery=e.target.value;renderQuoteList()}
 });
@@ -1519,7 +1542,7 @@ document.addEventListener('change',async e=>{
   const el=e.target;
   if(el.id==='bgIn'){const f2=el.files&&el.files[0];if(f2){try{S.settings.bgImage=await compress(f2,1600,.82);await save();applyStyle();render();toast('Background updated')}catch(e){toast('That photo couldn’t be opened')}}return}
   if(el.id==='tintToggle'){S.settings.tint=el.checked;await save();applyTheme();return}
-  if(el.id==='customColor'){S.settings.customColor=el.value;await save();applyTheme();render();return}
+  if(el.id==='customColor'){liveTint(el.value,true);return}
   if(el.dataset.field){const b=find(el.dataset.id);b[el.dataset.field]=el.value;await save();toast('Date saved');return}
   const f=el.files&&el.files[0];if(!f)return;
   if(el.id==='scanIn'){
