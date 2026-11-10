@@ -37,7 +37,7 @@ body{margin:0;color:var(--ink);font-family:var(--body);font-size:.9375rem;line-h
 img{max-width:100%}
 [hidden]{display:none!important}
 .glow{position:fixed;inset:0 0 auto;height:360px;background:radial-gradient(120% 100% at 50% 0%,var(--glow),transparent 70%);pointer-events:none;z-index:0}
-#app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px calc(120px + env(safe-area-inset-bottom,0px))}
+#app{position:relative;z-index:1;min-height:100vh;min-height:100dvh;max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px calc(120px + env(safe-area-inset-bottom,0px))}
 h1,h2,h3{font-family:var(--display);font-weight:var(--dw);margin:0;text-wrap:balance;letter-spacing:.005em}
 h1{font-size:calc(2.3rem*var(--ds));line-height:1.08}
 h1 em{font-style:italic;font-weight:var(--dwi);color:var(--accent)}
@@ -457,9 +457,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.9.1';
+const APP_VERSION='1.9.2';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.9.2',items:['Refreshing or updating keeps you on the same tab, at the same spot, with the same book open','Fixed the screen jumping slightly when the app reloads','Tap the current tab again to scroll back to the top']},
   {v:'1.9.1',items:['“Follow the clock” now uses real sunrise and sunset, so the app turns dark when it gets dark outside','Optionally use your location for exact sunrise and sunset times','Settings now shows what light/dark mode is doing right now, including whether your phone is in light or dark mode']},
   {v:'1.9.0',items:['Ruhi and Dori are now in 3D, with real lighting, soft shadows and fur sheen','Ruhi gallops with flapping ears and a wagging tail; Dori turns her head to watch her and blinks','Eight mountain ranges from around the world: Swiss Alps, Himalaya, Patagonia, Mount Fuji, Dolomites, Canadian Rockies, Iceland (with aurora at night) and Kilimanjaro','Or let the mountains change every day']},
   {v:'1.8.0',items:['A mountain landscape behind everything, changing from sunrise to starry night','Ruhi plays in the meadow on your Library, chasing a butterfly, while Dori watches from her rock','Clear glass cards let the scenery show through (Settings → Background)','Use your own photo as the background if you like']},
@@ -942,6 +943,25 @@ function streaks(M){
 }
 
 /* ---------- views ---------- */
+/* ---------- remember where she was ---------- */
+try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(e){}
+const VIEWS=['library','calendar','stats','quotes','settings'];
+const ss={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},del(k){try{sessionStorage.removeItem(k)}catch(e){}}};
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function startView(){const h=(location.hash||'').slice(1);if(VIEWS.includes(h))return h;const v=ls.get('pp-view');return VIEWS.includes(v)?v:'library'}
+function setView(v,keepScroll){
+  if(!VIEWS.includes(v))v='library';
+  saveScroll();view=v;ls.set('pp-view',v);
+  try{history.replaceState(null,'','#'+v)}catch(e){}
+  render();
+  const y=keepScroll?+(ss.get('pp-scroll-'+v)||0):0;
+  window.scrollTo(0,y);
+}
+let scrollT=0;
+function saveScroll(){if(typeof view==='string')ss.set('pp-scroll-'+view,String(Math.round(window.scrollY)))}
+window.addEventListener('scroll',()=>{clearTimeout(scrollT);scrollT=setTimeout(saveScroll,150)},{passive:true});
+window.addEventListener('pagehide',saveScroll);
+window.addEventListener('hashchange',()=>{const h=(location.hash||'').slice(1);if(VIEWS.includes(h)&&h!==view)setView(h,true)});
 let view='library',filter='all',query='',qquery='',calMonth=new Date(),selDay=today();
 calMonth.setDate(1);
 const TABS=[['library','Library',I.book],['calendar','Calendar',I.cal],['stats','Stats',I.stats],['quotes','Quotes',I.quote],['settings','Settings',I.gear]];
@@ -1235,7 +1255,7 @@ function openSheet(html,key){
   p.innerHTML=html;p.hidden=false;sc.hidden=false;
   requestAnimationFrame(()=>{p.classList.add('on');sc.classList.add('on')});p.scrollTop=keep;
 }
-function closeSheet(){stopLive();const p=$('#panel'),sc=$('#scrim');p.classList.remove('on');sc.classList.remove('on');sheetFor=null;setTimeout(()=>{if(!sheetFor){p.hidden=true;sc.hidden=true;p.innerHTML=''}},300);render()}
+function closeSheet(){stopLive();ss.del('pp-book');const p=$('#panel'),sc=$('#scrim');p.classList.remove('on');sc.classList.remove('on');sheetFor=null;setTimeout(()=>{if(!sheetFor){p.hidden=true;sc.hidden=true;p.innerHTML=''}},300);render()}
 
 function openAdd(id){
   const b=id?find(id):null;window._cover=b?b.cover:null;
@@ -1283,7 +1303,7 @@ function detailHTML(b){
     <button class="btn danger" data-act="delbook" data-id="${b.id}" style="margin-top:20px">Delete this book</button>
   </div>`;
 }
-function openDetail(id,focus){const b=find(id);if(!b)return closeSheet();openSheet(detailHTML(b),'d'+id);if(focus)setTimeout(()=>{const el=$('#pgIn');el&&el.focus()},320)}
+function openDetail(id,focus){const b=find(id);if(!b){ss.del('pp-book');return closeSheet()}ss.set('pp-book',id);openSheet(detailHTML(b),'d'+id);if(focus)setTimeout(()=>{const el=$('#pgIn');el&&el.focus()},320)}
 
 let Q=null;
 function openQuote(id){
@@ -1328,7 +1348,7 @@ document.addEventListener('click',async e=>{
   if(a.startsWith('t')&&await timerAct(a,t))return;
   if(a==='opentimer'){await timerAct(a,t);return}
   switch(a){
-    case'tab':view=t.dataset.v;render();window.scrollTo(0,0);break;
+    case'tab':if(t.dataset.v===view){window.scrollTo({top:0,behavior:'smooth'});break}setView(t.dataset.v,true);break;
     case'filter':filter=t.dataset.v;document.querySelectorAll('[data-act=filter]').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===filter));renderList();break;
     case'add':openAdd();break;
     case'upnow':applyUpdate();break;
@@ -2030,7 +2050,11 @@ function showWhatsNew(justUpdated){
 
 /* ---------- boot ---------- */
 (async()=>{
+  view=startView();try{history.replaceState(null,'','#'+view)}catch(e){}
   await load();applyStyle();applyTheme(true);render();
+  {const y=+(ss.get('pp-scroll-'+view)||0);const restore=()=>window.scrollTo(0,y);restore();requestAnimationFrame(restore);
+   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(Math.abs(window.scrollY-y)>2)restore()});
+   const bk=ss.get('pp-book');if(bk&&find(bk))setTimeout(()=>openDetail(bk),50)}
   if(darkMQ){const onMQ=()=>{curTheme='';applyTheme();if(!sheetFor)render()};if(darkMQ.addEventListener)darkMQ.addEventListener('change',onMQ);else if(darkMQ.addListener)darkMQ.addListener(onMQ)}
   setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()},60*1000);
   setupSW();
