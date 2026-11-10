@@ -457,9 +457,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.9.0';
+const APP_VERSION='1.9.1';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.9.1',items:['“Follow the clock” now uses real sunrise and sunset, so the app turns dark when it gets dark outside','Optionally use your location for exact sunrise and sunset times','Settings now shows what light/dark mode is doing right now, including whether your phone is in light or dark mode']},
   {v:'1.9.0',items:['Ruhi and Dori are now in 3D, with real lighting, soft shadows and fur sheen','Ruhi gallops with flapping ears and a wagging tail; Dori turns her head to watch her and blinks','Eight mountain ranges from around the world: Swiss Alps, Himalaya, Patagonia, Mount Fuji, Dolomites, Canadian Rockies, Iceland (with aurora at night) and Kilimanjaro','Or let the mountains change every day']},
   {v:'1.8.0',items:['A mountain landscape behind everything, changing from sunrise to starry night','Ruhi plays in the meadow on your Library, chasing a butterfly, while Dori watches from her rock','Clear glass cards let the scenery show through (Settings → Background)','Use your own photo as the background if you like']},
   {v:'1.7.0',items:['A cinematic new Library: a hero carousel of what you’re reading, and scrolling shelves for Up Next, Want to Read, Finished, Saved Quotes and your favourite author','Beautiful poster artwork for books without a cover photo','Each book now opens with a cinematic header','Prefer the old look? Settings → Style → Library layout → Classic list','A new app icon: your baby piglet reading its first book']},
@@ -705,7 +706,47 @@ const hx=h=>{h=h.replace('#','');return[0,2,4].map(i=>parseInt(h.slice(i,i+2),16
 const mix=(a,b,t)=>{const A=hx(a),B=hx(b);return'#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
 const rgba=(h,a)=>{const [r,g,b]=hx(h);return`rgba(${r},${g},${b},${a})`};
 const PH={dawn:{name:'Morning',greet:'Good morning',icon:I.rise},day:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},golden:{name:'Golden hour',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
-function autoPhase(){const h=new Date().getHours();return h>=5&&h<11?'dawn':h>=11&&h<17?'day':h>=17&&h<20?'golden':'night'}
+// Real sunrise/sunset (NOAA approximation) for her location; estimated from the time zone until she shares it.
+function guessGeo(){
+  const g=S&&S.settings.geo;if(g&&isFinite(g.lat))return g;
+  let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch(e){}
+  const south=/^(Australia|Antarctica)\/|Auckland|Johannesburg|Argentina|Sao_Paulo|Santiago|Montevideo|Lima|La_Paz|Asuncion|Maputo|Harare|Lusaka|Windhoek|Fiji|Tongatapu/.test(tz);
+  const lat=south?-33:/^Europe\//.test(tz)?50:/^Asia\/(Kolkata|Calcutta|Colombo|Dhaka)/.test(tz)?20:/^(Asia\/(Singapore|Jakarta|Bangkok|Manila|Kuala_Lumpur)|Africa\/(Lagos|Nairobi|Accra))/.test(tz)?5:38;
+  return{lat,lon:-new Date().getTimezoneOffset()/4,est:true};
+}
+function sunTimes(d){
+  const {lat,lon}=guessGeo(),rad=Math.PI/180;
+  const start=Date.UTC(d.getFullYear(),0,0),n=Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-start)/864e5);
+  const g=2*Math.PI/365*(n-1+.5);
+  const eq=229.18*(.000075+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g));
+  const dec=.006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g);
+  const cosH=(Math.cos(90.833*rad)-Math.sin(lat*rad)*Math.sin(dec))/(Math.cos(lat*rad)*Math.cos(dec));
+  if(cosH>1)return{polar:'night'};if(cosH<-1)return{polar:'day'};
+  const H=Math.acos(cosH)/rad;
+  const mid=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()+(-d.getTimezoneOffset())*6e4;
+  const utcMidnight=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());
+  const riseMin=720-4*(lon+H)-eq,setMin=720-4*(lon-H)-eq;
+  return{rise:new Date(utcMidnight+riseMin*6e4),set:new Date(utcMidnight+setMin*6e4)};
+}
+function autoPhase(){
+  const now=new Date();let t;try{t=sunTimes(now)}catch(e){t=null}
+  if(!t||!t.rise){if(t&&t.polar)return t.polar;const h=now.getHours();return h>=6&&h<10?'dawn':h>=10&&h<16?'day':h>=16&&h<18?'golden':'night'}
+  const m=now.getTime(),R=t.rise.getTime(),St=t.set.getTime(),hr=36e5;
+  if(m<R-.5*hr||m>=St+.5*hr)return'night';
+  if(m<R+2.5*hr)return'dawn';
+  if(m<St-1.5*hr)return'day';
+  return'golden';
+}
+const fmtClockTime=d=>d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+function modeStatus(){
+  const st=S.settings,ph=themePhase(),names={dawn:'Morning light',day:'Daylight',golden:'Golden hour',night:'Night (dark)'};
+  let sun='';try{const t=sunTimes(new Date());if(t.rise)sun=`Today the sun rises at ${fmtClockTime(t.rise)} and sets at ${fmtClockTime(t.set)}. The app turns dark at ${fmtClockTime(new Date(t.set.getTime()+18e5))}.`}catch(e){}
+  const now=`Right now: <b>${names[ph]}</b>.`;
+  if(st.mode==='clock')return`${now} ${sun}`;
+  if(st.mode==='system')return darkMQ?`${now} Your phone is set to <b>${darkMQ.matches?'Dark':'Light'}</b> mode, so the app is ${darkMQ.matches?'dark':'light'}. Change it in your phone’s Display settings and the app follows straight away.`:`${now} Your phone doesn’t report light or dark mode, so the app follows the clock.`;
+  if(st.mode==='light')return`${now} Always light. The colours still warm at sunrise and sunset if the tint below is on.`;
+  return`${now} Always dark.`;
+}
 function phase(){return autoPhase()}
 // Greeting follows the real clock: morning 5–12, afternoon 12–5, evening 5–10, night 10–5.
 const GREET={morning:{name:'Morning',greet:'Good morning',icon:I.rise},afternoon:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},evening:{name:'Evening',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
@@ -1133,7 +1174,8 @@ function settingsHTML(){
   <div class="section"><div class="card">
     <h3>Light &amp; dark</h3>
     ${chipset('mode',st.mode,[['clock','Follow the clock'],['system','Match my phone'],['light','Always light'],['dark','Always dark']])}
-    <p class="hint">${{clock:'Light during the day, dark after 8 pm.',system:'Follows your phone’s light or dark setting.',light:'Always the light version.',dark:'Always the dark version.'}[st.mode]}</p>
+    <p class="hint" id="modeStatus">${modeStatus()}</p>
+    ${st.mode==='clock'?(guessGeo().est?`<button class="link" data-act="geo" style="align-self:flex-start">Use my location for exact sunrise and sunset</button>`:`<span class="hint">Using your location. <button class="link" data-act="geoclear">Forget it</button></span>`):''}
     <label class="toggle"><span>Warm tint at sunrise and sunset</span><input type="checkbox" id="tintToggle" ${st.tint!==false?'checked':''}></label>
   </div></div>
   <div class="section"><div class="card">
@@ -1307,7 +1349,10 @@ document.addEventListener('click',async e=>{
     case'checkin':{const d=t.dataset.d;if(d>today())break;S.checkins[d]=+t.dataset.v;await save();render();toast(d===today()?'Marked today as read':'Marked '+fmt(d)+' as read');break}
     case'uncheck':delete S.checkins[t.dataset.v];delete S.exCheckins[t.dataset.v];await save();render();break;
     case'palette':S.settings.palette=t.dataset.v;await save();applyTheme();render();break;
-    case'mode':S.settings.mode=t.dataset.v;await save();applyTheme();render();break;
+    case'mode':S.settings.mode=t.dataset.v;await save();applyTheme();render();toast({clock:'Following sunrise and sunset',system:'Matching your phone',light:'Always light',dark:'Always dark'}[t.dataset.v]);break;
+    case'geo':{if(!navigator.geolocation){toast('Location isn’t available on this phone');break}t.textContent='Finding you…';
+      navigator.geolocation.getCurrentPosition(async pos=>{S.settings.geo={lat:+pos.coords.latitude.toFixed(2),lon:+pos.coords.longitude.toFixed(2)};await save();curTheme='';applyTheme();render();toast('Sunrise and sunset set for your location')},()=>{toast('Location was not shared. Using your time zone instead.');render()},{timeout:15000,maximumAge:864e5});break}
+    case'geoclear':delete S.settings.geo;await save();curTheme='';applyTheme();render();break;
     case'fontD':S.settings.fontD=t.dataset.v;await save();applyStyle();render();break;
     case'fontB':S.settings.fontB=t.dataset.v;await save();applyStyle();render();break;
     case'layout':S.settings.layout=t.dataset.v;await save();render();break;
@@ -1986,7 +2031,7 @@ function showWhatsNew(justUpdated){
 /* ---------- boot ---------- */
 (async()=>{
   await load();applyStyle();applyTheme(true);render();
-  if(darkMQ&&darkMQ.addEventListener)darkMQ.addEventListener('change',()=>{applyTheme();if(!sheetFor)render()});
+  if(darkMQ){const onMQ=()=>{curTheme='';applyTheme();if(!sheetFor)render()};if(darkMQ.addEventListener)darkMQ.addEventListener('change',onMQ);else if(darkMQ.addListener)darkMQ.addListener(onMQ)}
   setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()},60*1000);
   setupSW();
   checkLevelUp();updatePill();if(T().state==='running')startTick();
