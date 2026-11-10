@@ -37,13 +37,15 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Page loads: serve the saved app, refresh it in the background when online.
+  // Page loads: get the newest app when online (3 s limit), otherwise the saved copy.
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
       const c = await caches.open(CACHE);
-      const hit = await c.match('index.html');
-      const net = fetch(req).then(r => { if (r.ok) c.put('index.html', r.clone()); return r; }).catch(() => null);
-      return hit || (await net) || new Response('Offline', { status: 503 });
+      try {
+        const r = await Promise.race([fetch(req, { cache: 'no-store' }), new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 3000))]);
+        if (r && r.ok) { c.put('index.html', r.clone()); return r; }
+      } catch (err) {}
+      return (await c.match('index.html')) || (await c.match('./')) || new Response('Offline', { status: 503 });
     })());
     return;
   }

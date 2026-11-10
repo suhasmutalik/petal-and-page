@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Petal &amp; Page</title>
-<meta name="theme-color" content="#FDF5F6">
+<meta name="theme-color" content="#FBF4F5">
 <meta name="description" content="A reading journal for a home library, stored on your phone.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
@@ -16,36 +16,31 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Jost:wght@400;500;600&display=swap">
 <style>
-:root{padding-top:env(safe-area-inset-top,0px)}
-body{margin:0}
-img{max-width:100%}
-[hidden]{display:none!important}
-/* Layout: one-column reading journal (max 640px), tab bar along the bottom, sheets slide up from below.
-   Palette shifts with the time of day: dawn blush, afternoon rose, golden-hour peach-rose, night plum. */
+/* Layout: one-column reading journal (max 640px), five-tab bar along the bottom, sheets slide up.
+   Colours are computed in script from the chosen palette and the time of day; these are first-paint values. */
 :root{
-  --bg:#FDF5F6; --surface:#FFFFFF; --ink:#36202B; --muted:#86677A; --accent:#B8436E; --accent-ink:#FFFFFF;
-  --soft:#F8DCE5; --line:#EFDCE2; --glow:rgba(244,182,204,.5); --scrim:rgba(54,32,43,.38);
-  --covS:45%; --covL:83%; --covInk:#5A2E42;
+  --bg:#FBF4F5; --surface:#FFFFFF; --raised:#FBF6F7; --ink:#36202A; --muted:#7A6670; --accent:#B23A62; --accent-ink:#FFFFFF;
+  --soft:#F5DCE4; --line:#EEDDE2; --gold:#C9A15E; --glow:rgba(245,190,205,.5); --scrim:rgba(40,20,28,.4);
+  --covS:35%; --covL:84%; --covInk:#5B2C3E;
   --display:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
   --body:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);
 }
-:root[data-phase="dawn"]{--bg:#FBF0F2;--surface:#FFFDFD;--ink:#3A2330;--muted:#8A6B79;--accent:#C0507A;--soft:#F6D4DF;--line:#EED7DF;--glow:rgba(255,206,192,.6)}
-:root[data-phase="golden"]{--bg:#F7E7E2;--surface:#FFF8F5;--ink:#3D2228;--muted:#88676B;--accent:#AE445C;--soft:#F1CEC8;--line:#E7CDC7;--glow:rgba(248,172,140,.5);--covInk:#5C2C33}
-:root[data-phase="night"]{--bg:#1C1218;--surface:#281A22;--ink:#F4E3EA;--muted:#B897A6;--accent:#EC8DB1;--accent-ink:#2A1420;--soft:#42283A;--line:#3A2531;--glow:rgba(176,72,124,.32);--scrim:rgba(8,3,6,.6);--covS:28%;--covL:30%;--covInk:#F4DDE7;color-scheme:dark}
-
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
-body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;transition:background-color .9s ease,color .9s ease;-webkit-tap-highlight-color:transparent}
-.glow{position:fixed;inset:0 0 auto;height:340px;background:radial-gradient(120% 100% at 50% 0%,var(--glow),transparent 70%);pointer-events:none;z-index:0;transition:background .9s}
-#app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px calc(116px + env(safe-area-inset-bottom,0px))}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;transition:background-color .9s ease,color .9s ease;-webkit-tap-highlight-color:transparent}
+img{max-width:100%}
+[hidden]{display:none!important}
+.glow{position:fixed;inset:0 0 auto;height:360px;background:radial-gradient(120% 100% at 50% 0%,var(--glow),transparent 70%);pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px calc(120px + env(safe-area-inset-bottom,0px))}
 h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:.005em}
-h1{font-size:2.35rem;line-height:1.05}
+h1{font-size:2.3rem;line-height:1.05}
 h1 em{font-style:italic;font-weight:500;color:var(--accent)}
 h2{font-size:1.6rem;line-height:1.15}
-h3{font-size:1.25rem}
+h3{font-size:1.28rem;line-height:1.2}
 .eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:6px}
-.eyebrow svg{width:14px;height:14px}
+.eyebrow svg{width:14px;height:14px;color:var(--gold)}
 .muted{color:var(--muted)}
 .small{font-size:.85rem}
 .stack{display:flex;flex-direction:column;gap:14px}
@@ -54,11 +49,13 @@ h3{font-size:1.25rem}
 .section-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .hdr{display:flex;flex-direction:column;gap:6px}
 .tnum{font-variant-numeric:tabular-nums}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55;margin:4px 0}
 
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.btn{border:0;border-radius:999px;padding:11px 18px;background:var(--accent);color:var(--accent-ink);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn{border:0;border-radius:999px;padding:11px 18px;background:var(--accent);color:var(--accent-ink);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;letter-spacing:.01em}
+.btn svg{width:18px;height:18px}
 .btn.ghost{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .btn.soft{background:var(--soft);color:var(--ink)}
 .btn.danger{background:transparent;color:var(--accent);text-decoration:underline;text-underline-offset:3px;min-height:40px}
@@ -66,119 +63,167 @@ button{cursor:pointer}
 .btn:disabled{opacity:.45;cursor:default}
 .link{background:none;border:0;color:var(--accent);padding:4px 0;font-weight:500}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.88rem;min-height:36px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:.88rem;min-height:38px}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.field{display:flex;flex-direction:column;gap:5px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .field label,.lbl{font-size:.78rem;color:var(--muted);letter-spacing:.04em}
-input[type=text],input[type=search],input[type=number],input[type=date],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px;min-height:44px;font-size:16px}
+input[type=text],input[type=search],input[type=number],input[type=date],select,textarea{width:100%;min-width:0;background:var(--raised);border:1px solid var(--line);border-radius:12px;padding:11px 13px;min-height:44px;font-size:16px}
+input[type=date]{-webkit-appearance:none;appearance:none}
 textarea{min-height:88px;resize:vertical;line-height:1.5}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* covers */
-.cover{flex:none;border-radius:4px 8px 8px 4px;object-fit:cover;background:hsl(var(--h,340) var(--covS) var(--covL));color:var(--covInk);display:grid;place-items:center;font-family:var(--display);font-style:italic;box-shadow:inset 3px 0 0 rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.08)}
+.cover{flex:none;border-radius:3px 8px 8px 3px;object-fit:cover;background:hsl(var(--h,340) var(--covS) var(--covL));color:var(--covInk);display:grid;place-items:center;font-family:var(--display);font-style:italic;box-shadow:inset 3px 0 0 rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.1)}
 .cover.s{width:44px;height:64px;font-size:1.5rem}
 .cover.m{width:72px;height:106px;font-size:2.2rem}
 .cover.l{width:96px;height:140px;font-size:3rem}
 
-/* reading now */
 .now{display:flex;gap:16px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;width:100%}
 .now .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 .now h3{font-size:1.4rem;line-height:1.1}
 .bar{height:6px;border-radius:999px;background:var(--soft);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width .5s}
 
-/* list */
 .list{display:flex;flex-direction:column}
 .item{display:flex;gap:14px;align-items:center;padding:12px 2px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;width:100%}
 .item:last-child{border-bottom:0}
 .item .meta{flex:1;min-width:0}
 .item .t{font-family:var(--display);font-size:1.18rem;font-weight:600;line-height:1.15;overflow-wrap:anywhere}
 .item .a{font-size:.85rem;color:var(--muted)}
-.pill{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:500}
+.pill{font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap;font-weight:500}
 .pill.reading{background:var(--accent);color:var(--accent-ink)}
 .pill.want{background:var(--soft);color:var(--ink)}
 .pill.done{box-shadow:inset 0 0 0 1px var(--muted);color:var(--muted)}
-.pill.ex{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+.pill.ex{box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
 .banner{background:var(--soft);border-radius:14px;padding:12px 14px;font-size:.9rem;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .empty{text-align:center;padding:36px 12px;color:var(--muted)}
 .empty h3{color:var(--ink);margin-bottom:6px}
 
-.fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:20;box-shadow:0 8px 24px -8px var(--accent);padding:13px 20px}
+.fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:20;box-shadow:0 10px 24px -10px var(--accent);padding:13px 20px}
 @media (min-width:700px){.fab{right:calc(50% - 320px + 18px)}}
 
-/* nav */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
-nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
-nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.72rem;letter-spacing:.04em;color:var(--muted);min-height:52px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.68rem;letter-spacing:.04em;color:var(--muted);min-height:52px}
 nav.tabs button svg{width:22px;height:22px}
 nav.tabs button[aria-current="page"]{color:var(--accent)}
+
+/* habit */
+.habit{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.streak{display:flex;align-items:center;gap:14px}
+.streak .num{font-family:var(--display);font-size:3.2rem;line-height:.9;font-weight:600;color:var(--accent)}
+.streak .lab{display:flex;flex-direction:column;font-size:.85rem;color:var(--muted)}
+.streak .lab b{color:var(--ink);font-weight:500;font-size:1rem}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.week div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.7rem;color:var(--muted)}
+.week span{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center}
+.week span.l1{background:var(--soft);box-shadow:none}
+.week span.l2{background:color-mix(in srgb,var(--accent) 45%,var(--soft));box-shadow:none}
+.week span.l3{background:var(--accent);box-shadow:none;color:var(--accent-ink)}
+.week span svg{width:14px;height:14px}
+.week .td span{outline:1.5px solid var(--gold);outline-offset:2px}
 
 /* calendar */
 .cal-h{display:flex;align-items:center;justify-content:space-between}
 .iconbtn{background:none;border:1px solid var(--line);border-radius:999px;width:40px;height:40px;display:grid;place-items:center;color:var(--ink)}
 .iconbtn svg{width:18px;height:18px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px}
-.cal .dow{font-size:.7rem;text-align:center;color:var(--muted);letter-spacing:.08em;padding:4px 0}
-.day{border:0;background:none;border-radius:12px;aspect-ratio:1;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-variant-numeric:tabular-nums;font-size:.95rem;position:relative}
+.cal .dow{font-size:.68rem;text-align:center;color:var(--muted);letter-spacing:.08em;padding:4px 0}
+.day{border:0;background:none;border-radius:50%;aspect-ratio:1;max-width:100%;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-variant-numeric:tabular-nums;font-size:.92rem;position:relative;color:var(--ink)}
 .day.blank{pointer-events:none}
-.day.today{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent);font-weight:600}
-.day.sel{background:var(--ink);color:var(--bg)}
-.day.span{background:var(--soft)}
-.day.sel.span{background:var(--ink)}
-.dots{display:flex;gap:3px;height:6px}
-.dots i{width:6px;height:6px;border-radius:50%;background:hsl(var(--h) 55% 55%)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.day.l1{background:var(--soft)}
+.day.l2{background:color-mix(in srgb,var(--accent) 40%,var(--soft))}
+.day.l3{background:var(--accent);color:var(--accent-ink)}
+.day.today::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:1.5px solid var(--gold)}
+.day.sel{outline:2px solid var(--ink);outline-offset:1px}
+.day.future{opacity:.45}
+.dots{display:flex;gap:2px;height:5px}
+.dots i{width:5px;height:5px;border-radius:50%;background:hsl(var(--h) 55% 55%)}
+.day.l3 .dots i{background:var(--accent-ink)}
+.legend{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);flex-wrap:wrap}
+.legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
 .stat b{display:block;font-family:var(--display);font-size:1.8rem;line-height:1;font-weight:600}
-.stat span{font-size:.75rem;color:var(--muted)}
+.stat span{font-size:.74rem;color:var(--muted)}
 .ev{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .ev:last-child{border-bottom:0}
 .ev .sw{width:10px;height:10px;border-radius:50%;background:hsl(var(--h) 55% 55%);flex:none}
+.ev .sw.ck{background:var(--gold)}
 
-/* quotes */
+/* stats */
+.goal{display:flex;gap:18px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px}
+.goal svg{width:112px;height:112px;flex:none}
+.goal .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:1.1rem;line-height:1}
+.chart{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.bars{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:6px;align-items:end;height:140px;position:relative}
+.bars .b{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
+.bars .b i{display:block;width:100%;max-width:26px;background:var(--soft);border-radius:6px 6px 2px 2px;min-height:2px}
+.bars .b.cur i{background:var(--accent)}
+.bars .b em{font-style:normal;font-size:.62rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bars-x{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:6px;font-size:.68rem;color:var(--muted);text-align:center}
+.heat{display:grid;grid-template-columns:repeat(26,minmax(0,1fr));grid-template-rows:repeat(7,auto);grid-auto-flow:column;gap:3px;width:100%}
+.heat i{display:block;width:100%;height:0;padding-top:100%;border-radius:3px;background:var(--raised);box-shadow:inset 0 0 0 1px var(--line)}
+.heat i.l1{background:var(--soft);box-shadow:none}
+.heat i.l2{background:color-mix(in srgb,var(--accent) 45%,var(--soft));box-shadow:none}
+.heat i.l3{background:var(--accent);box-shadow:none}
+.heat i.x{visibility:hidden}
+
 .quote{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px}
 .quote blockquote{margin:0;font-family:var(--display);font-size:1.32rem;line-height:1.35;font-style:italic;overflow-wrap:anywhere}
-.quote blockquote::before{content:"\201C";color:var(--accent);font-size:2.2rem;line-height:0;vertical-align:-.45em;margin-right:2px}
+.quote blockquote::before{content:"\201C";color:var(--gold);font-size:2.2rem;line-height:0;vertical-align:-.45em;margin-right:2px}
 .quote .src{font-size:.82rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .quote img{border-radius:10px;max-height:180px;object-fit:cover;width:100%}
 
-/* sheet */
 .scrim{position:fixed;inset:0;background:var(--scrim);z-index:50;opacity:0;transition:opacity .25s}
 .scrim.on{opacity:1}
 .panel{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:640px;max-height:92dvh;overflow:auto;overscroll-behavior:contain;background:var(--surface);border-radius:22px 22px 0 0;z-index:51;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .panel.on{transform:none}
-.sheet-h{position:sticky;top:0;background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 0 10px;z-index:2}
+.sheet-h{position:sticky;top:0;background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 0 10px;z-index:2}
 .sheet-h::before{content:"";position:absolute;top:7px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:var(--line)}
-.scan{display:flex;gap:14px;align-items:center;border:1.5px dashed var(--accent);border-radius:16px;padding:16px;cursor:pointer;background:var(--bg)}
+.scan{display:flex;gap:14px;align-items:center;border:1.5px dashed var(--accent);border-radius:16px;padding:16px;cursor:pointer;background:var(--raised);text-align:left;width:100%;color:var(--ink)}
 .scan svg{width:30px;height:30px;color:var(--accent);flex:none}
 .scan b{display:block;font-weight:600}
+.scan-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scan-opts .scan{flex-direction:column;align-items:flex-start;gap:8px;padding:14px}
 .hint{font-size:.85rem;color:var(--muted);margin:0}
 .hint.ok{color:var(--accent)}
+.live{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3;max-width:100%}
+.live video{width:100%;height:100%;object-fit:cover;display:block}
+.live .guide{position:absolute;left:10%;right:10%;top:32%;bottom:32%;border:2px solid rgba(255,255,255,.9);border-radius:12px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.live .guide::after{content:"";position:absolute;left:6%;right:6%;top:50%;height:2px;background:var(--accent);animation:scanline 1.6s ease-in-out infinite alternate}
+@keyframes scanline{from{transform:translateY(-28px)}to{transform:translateY(28px)}}
+.live p{position:absolute;left:0;right:0;bottom:8px;margin:0;text-align:center;color:#fff;font-size:.82rem;text-shadow:0 1px 3px #000}
 .d-top{display:flex;gap:16px;align-items:flex-end}
 .d-top .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .d-top h2{overflow-wrap:anywhere}
-.bm{background:var(--bg);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.bm{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .bm .big{font-family:var(--display);font-size:2.6rem;line-height:1;font-weight:600}
 .bm .big small{font-size:1rem;color:var(--muted);font-family:var(--body);font-weight:400;margin-left:4px}
-.lg{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.lg{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.9rem}
 .lg:last-child{border-bottom:0}
-.x{background:none;border:0;color:var(--muted);font-size:1.1rem;width:36px;height:36px;border-radius:50%}
-.note{background:var(--bg);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.x{background:none;border:0;color:var(--muted);font-size:1.1rem;width:36px;height:36px;border-radius:50%;flex:none}
+.note{background:var(--raised);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
 .note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
-.words{display:flex;flex-wrap:wrap;gap:4px 3px;background:var(--bg);border-radius:12px;padding:12px;max-height:260px;overflow:auto;font-family:var(--display);font-size:1.15rem;line-height:1.5}
+.words{display:flex;flex-wrap:wrap;gap:4px 3px;background:var(--raised);border-radius:12px;padding:12px;max-height:260px;overflow:auto;font-family:var(--display);font-size:1.15rem;line-height:1.5}
 .words button{border:0;background:none;padding:0 2px;border-radius:4px;font:inherit}
 .words button.hl{background:var(--soft);box-shadow:0 2px 0 var(--accent)}
-.qimg{border-radius:12px;max-height:240px;object-fit:contain;width:100%;background:var(--bg)}
-.toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(10px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.9rem;z-index:80;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.qimg{border-radius:12px;max-height:240px;object-fit:contain;width:100%;background:var(--raised)}
+.toast{position:fixed;left:50%;bottom:calc(144px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(10px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.9rem;z-index:80;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
-pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160px;overflow:auto;background:var(--bg);border-radius:10px;padding:10px;margin:0}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sw-btn{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.sw-btn[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.sw-btn .strip{display:flex;height:26px;border-radius:8px;overflow:hidden}
+.sw-btn .strip i{flex:1}
+pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160px;overflow:auto;background:var(--raised);border-radius:10px;padding:10px;margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
-
 <div class="glow" aria-hidden="true"></div>
 <main id="app"></main>
 <nav class="tabs" aria-label="Sections"><div class="in" id="tabs"></div></nav>
@@ -195,11 +240,13 @@ const ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const today=()=>ds(new Date());
 const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return ds(d)};
 const pd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return ds(d)};
 const fmt=s=>{if(!s)return'';const d=pd(s);return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:d.getFullYear()!==new Date().getFullYear()?'numeric':undefined})};
 const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const HUES=[340,352,322,8,300,20,332];
 const STATUS={reading:'Reading',want:'To read',done:'Finished'};
+const MON=['J','F','M','A','M','J','J','A','S','O','N','D'];
 const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})();
 let toastT;
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
@@ -207,12 +254,14 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clea
 const I={
   book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg>',
   cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  stats:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 20V12M10 20V6M15 20v-9M20 20V4"/></svg>',
   quote:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 7C6.5 7.5 5 9.5 5 13v4h5v-5H7.2c.2-1.8 1-2.7 2.3-3zM18.5 7c-3 .5-4.5 2.5-4.5 6v4h5v-5h-2.8c.2-1.8 1-2.7 2.3-3z"/></svg>',
-  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 15v3.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V15"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.4-.9a7 7 0 0 0 2 1.2l.4 2.6h4l.4-2.6a7 7 0 0 0 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>',
   scan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><path d="M8 8v8M11 8v8M13.5 8v8M16 8v8"/></svg>',
   cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg>',
   prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m14.5 6-6 6 6 6"/></svg>',
   next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m9.5 6 6 6-6 6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
   sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>',
   rise:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 4v4M5 10l1.4 1.4M19 10l-1.4 1.4"/></svg>',
   set:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 9V5M9.5 7.5 12 5l2.5 2.5"/></svg>',
@@ -225,22 +274,30 @@ const DB={db:null,
   get(k){return new Promise((res,rej)=>{const t=this.db.transaction('kv').objectStore('kv').get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error)})},
   set(k,v){return new Promise((res,rej)=>{const tx=this.db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
 };
-let S={books:[],settings:{phase:'auto'}};
-let persistOK=true;
+let S=null,persistOK=true;
+function normalize(s){
+  s=s||{};s.books=Array.isArray(s.books)?s.books:[];
+  s.settings=Object.assign({phase:'auto',palette:'peony',goal:{type:'minutes',value:20},yearGoal:12},s.settings||{});
+  if(!s.settings.goal||!s.settings.goal.type)s.settings.goal={type:'minutes',value:20};
+  s.checkins=s.checkins||{};
+  s.books.forEach(b=>{b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
+  return s;
+}
 async function save(){try{if(!DB.db)throw 0;await DB.set('state',S)}catch(e){if(persistOK){persistOK=false;toast('This browser isn’t keeping data. Make a backup.')}}}
 async function load(){
-  try{await DB.open();const v=await DB.get('state');if(v&&Array.isArray(v.books)){S=v}else{S=seed();await save()}}
-  catch(e){persistOK=false;S=seed()}
-  S.settings=S.settings||{phase:'auto'};
+  try{await DB.open();const v=await DB.get('state');if(v&&Array.isArray(v.books)){S=normalize(v)}else{S=normalize(seed());await save()}}
+  catch(e){persistOK=false;S=normalize(seed())}
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 }
-function seed(){return{settings:{phase:'auto'},books:[
+function seed(){
+  const ck={};[2,5,6,8,11].forEach(n=>ck[daysAgo(n)]=15);
+  return{checkins:ck,books:[
   {id:uid(),example:true,title:'The Secret Garden',author:'Frances Hodgson Burnett',isbn:'',pages:331,status:'reading',start:daysAgo(13),finish:'',page:142,hue:340,cover:null,
-   sessions:[{id:uid(),date:daysAgo(13),page:21},{id:uid(),date:daysAgo(10),page:52},{id:uid(),date:daysAgo(7),page:88},{id:uid(),date:daysAgo(4),page:117},{id:uid(),date:daysAgo(1),page:142}],
+   sessions:[{id:uid(),date:daysAgo(13),page:21,min:30},{id:uid(),date:daysAgo(10),page:52,min:35},{id:uid(),date:daysAgo(7),page:88,min:40},{id:uid(),date:daysAgo(4),page:117,min:25},{id:uid(),date:daysAgo(3),page:124,min:12},{id:uid(),date:daysAgo(1),page:142,min:20}],
    notes:[{id:uid(),date:daysAgo(7),text:'Mary is softening. The robin chapters are lovely.'}],
    quotes:[{id:uid(),date:daysAgo(4),page:112,text:'If you look the right way, you can see that the whole world is a garden.',img:null}]},
   {id:uid(),example:true,title:'Pride and Prejudice',author:'Jane Austen',isbn:'',pages:432,status:'done',start:daysAgo(52),finish:daysAgo(19),page:432,hue:8,cover:null,
-   sessions:[{id:uid(),date:daysAgo(52),page:40},{id:uid(),date:daysAgo(44),page:130},{id:uid(),date:daysAgo(33),page:255},{id:uid(),date:daysAgo(25),page:360},{id:uid(),date:daysAgo(19),page:432}],
+   sessions:[{id:uid(),date:daysAgo(52),page:40,min:45},{id:uid(),date:daysAgo(44),page:130,min:60},{id:uid(),date:daysAgo(33),page:255,min:70},{id:uid(),date:daysAgo(25),page:360,min:55},{id:uid(),date:daysAgo(19),page:432,min:40}],
    notes:[{id:uid(),date:daysAgo(19),text:'Reread of a favourite. Elizabeth’s letter scene still lands.'}],
    quotes:[{id:uid(),date:daysAgo(52),page:1,text:'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.',img:null}]},
   {id:uid(),example:true,title:'Middlemarch',author:'George Eliot',isbn:'',pages:880,status:'want',start:'',finish:'',page:0,hue:322,cover:null,sessions:[],notes:[],quotes:[]}
@@ -248,30 +305,161 @@ function seed(){return{settings:{phase:'auto'},books:[
 const find=id=>S.books.find(b=>b.id===id);
 const pct=b=>b.pages?Math.min(100,Math.round((b.page||0)/b.pages*100)):0;
 
-/* ---------- time-of-day theme ---------- */
+/* ---------- palettes × time of day ---------- */
+const PALETTES={
+  peony:{name:'Peony',h:340,s:56},
+  rosewood:{name:'Rosewood',h:352,s:38},
+  blush:{name:'Blush & Gold',h:346,s:44,gold:true},
+  mauve:{name:'Dusty Mauve',h:318,s:24}
+};
 const PH={dawn:{name:'Morning',greet:'Good morning',icon:I.rise},day:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},golden:{name:'Golden hour',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
 function autoPhase(){const h=new Date().getHours();return h>=5&&h<11?'dawn':h>=11&&h<17?'day':h>=17&&h<20?'golden':'night'}
-function phase(){const p=S.settings&&S.settings.phase;return p&&p!=='auto'?p:autoPhase()}
-function applyPhase(){const p=phase();if(document.documentElement.dataset.phase!==p){document.documentElement.dataset.phase=p;const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();if(view==='library')render()}}
+function phase(){const p=S&&S.settings.phase;return p&&p!=='auto'?p:autoPhase()}
+function tokens(pk,ph){
+  const p=PALETTES[pk]||PALETTES.peony,s=p.s;
+  if(ph==='night')return{bg:`hsl(${p.h} 20% 8.5%)`,surface:`hsl(${p.h} 17% 12.5%)`,raised:`hsl(${p.h} 16% 15.5%)`,ink:`hsl(${p.h} 28% 93%)`,muted:`hsl(${p.h} 12% 67%)`,
+    accent:`hsl(${p.h} ${Math.min(68,s+14)}% 76%)`,'accent-ink':`hsl(${p.h} 40% 12%)`,soft:`hsl(${p.h} 22% 22%)`,line:`hsl(${p.h} 15% 20%)`,
+    gold:`hsl(38 ${p.gold?55:42}% 70%)`,glow:`hsla(${p.h} 55% 40% / .3)`,scrim:'rgba(6,2,4,.62)',covS:'24%',covL:'30%',covInk:`hsl(${p.h} 35% 90%)`,scheme:'dark'};
+  const sh={dawn:4,day:0,golden:6}[ph],h=p.h+sh,L={dawn:[97.4,100],day:[96.8,100],golden:[94.8,98.8]}[ph];
+  return{bg:`hsl(${h} ${(s*.42).toFixed(1)}% ${L[0]}%)`,surface:`hsl(${h} ${(s*.5).toFixed(1)}% ${L[1]}%)`,raised:`hsl(${h} ${(s*.45).toFixed(1)}% ${L[1]-2}%)`,
+    ink:`hsl(${p.h} 26% 16%)`,muted:`hsl(${p.h} 10% 43%)`,accent:`hsl(${h} ${s}% ${ph==='golden'?42:44}%)`,'accent-ink':'#fff',
+    soft:`hsl(${h} ${(s*.72).toFixed(1)}% 90.5%)`,line:`hsl(${h} ${(s*.32).toFixed(1)}% 87.5%)`,
+    gold:`hsl(${ph==='golden'?33:38} ${p.gold?60:46}% ${p.gold?50:56}%)`,
+    glow:ph==='dawn'?'hsla(18 90% 86% / .55)':ph==='golden'?'hsla(22 85% 76% / .5)':`hsla(${h} 70% 86% / .5)`,
+    scrim:`hsla(${p.h} 30% 12% / .42)`,covS:`${(s*.55).toFixed(1)}%`,covL:'84%',covInk:`hsl(${p.h} 35% 27%)`,scheme:'light'};
+}
+let curTheme='';
+function applyTheme(force){
+  const ph=phase(),pk=(S&&S.settings.palette)||'peony',key=pk+ph;
+  if(key===curTheme&&!force)return;curTheme=key;
+  const t=tokens(pk,ph),r=document.documentElement;
+  for(const [k,v] of Object.entries(t)){if(k==='scheme')r.style.colorScheme=v;else r.style.setProperty('--'+k,v)}
+  r.dataset.phase=ph;
+  const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t.bg;
+}
 
 /* ---------- images ---------- */
 function compress(src,max,q){return new Promise((res,rej)=>{const img=new Image();const url=typeof src==='string'?src:URL.createObjectURL(src);img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);if(typeof src!=='string')URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',q))};img.onerror=()=>rej(new Error('image'));img.src=url})}
 function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load'));document.head.appendChild(s)})}
 
-/* ---------- barcode, lookup, OCR ---------- */
-async function decodeCode(dataUrl){
-  if('BarcodeDetector' in window){try{let fm=['ean_13','ean_8','upc_a','upc_e','qr_code','code_128'];try{const sup=await BarcodeDetector.getSupportedFormats();fm=fm.filter(x=>sup.includes(x))}catch(e){}const det=new BarcodeDetector({formats:fm});const r=await det.detect(await loadImg(dataUrl));if(r&&r.length)return r[0].rawValue}catch(e){}}
-  if(!window.ZXing){try{await loadScript('vendor/zxing.min.js')}catch(e){}}
-  if(window.ZXing){try{const rd=new ZXing.BrowserMultiFormatReader();const r=await rd.decodeFromImageUrl(dataUrl);return r.getText()}catch(e){}}
+/* ---------- barcode scanning ---------- */
+let nativeDet=null,zx=null;
+async function getNative(){
+  if(nativeDet!==null)return nativeDet;nativeDet=false;
+  if('BarcodeDetector' in window){try{let fm=['ean_13','ean_8','upc_a','upc_e','qr_code','code_128'];const sup=await BarcodeDetector.getSupportedFormats();fm=fm.filter(x=>sup.includes(x));if(fm.length)nativeDet=new BarcodeDetector({formats:fm})}catch(e){nativeDet=false}}
+  return nativeDet;
+}
+async function getZX(){
+  if(zx)return zx;
+  if(!window.ZXing)await loadScript('vendor/zxing.min.js');
+  const Z=window.ZXing,h=new Map();
+  h.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.UPC_E,Z.BarcodeFormat.QR_CODE,Z.BarcodeFormat.CODE_128]);
+  h.set(Z.DecodeHintType.TRY_HARDER,true);
+  const r=new Z.MultiFormatReader();r.setHints(h);zx={Z,r};return zx;
+}
+function lumSource(Z,c){
+  if(Z.HTMLCanvasElementLuminanceSource)return new Z.HTMLCanvasElementLuminanceSource(c);
+  const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,g=new Uint8ClampedArray(c.width*c.height);
+  for(let i=0,j=0;j<g.length;i+=4,j++)g[j]=(d[i]*306+d[i+1]*601+d[i+2]*117)>>10;
+  return new Z.RGBLuminanceSource(g,c.width,c.height);
+}
+function zxCanvas(c){try{const {Z,r}=zx;const src=lumSource(Z,c);const bmp=new Z.BinaryBitmap(new Z.HybridBinarizer(src));const res=r.decodeWithState(bmp);r.reset();return res.getText()}catch(e){try{zx.r.reset()}catch(_){}return null}}
+function drawTo(src,sw,sh,crop,w,rot){
+  // crop = [x,y,w,h] in source pixels; output width w; rot 0|90
+  const c=document.createElement('canvas'),k=w/crop[2];
+  const ow=Math.round(crop[2]*k),oh=Math.round(crop[3]*k);
+  c.width=rot?oh:ow;c.height=rot?ow:oh;const g=c.getContext('2d',{willReadFrequently:true});
+  if(rot){g.translate(c.width/2,c.height/2);g.rotate(Math.PI/2);g.drawImage(src,crop[0],crop[1],crop[2],crop[3],-ow/2,-oh/2,ow,oh)}
+  else g.drawImage(src,crop[0],crop[1],crop[2],crop[3],0,0,ow,oh);
+  return c;
+}
+async function decodePhoto(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await loadImg(url);const W=img.naturalWidth,H=img.naturalHeight;
+    const nd=await getNative();
+    if(nd){try{const r=await nd.detect(img);if(r&&r.length)return r[0].rawValue}catch(e){}}
+    await getZX();
+    const full=[0,0,W,H],mid=[W*.1,H*.25,W*.8,H*.5],midTall=[W*.25,H*.1,W*.5,H*.8];
+    const tries=[[full,1000,0],[mid,1000,0],[full,1600,0],[full,1000,1],[midTall,1000,1],[mid,700,0],[full,700,0]];
+    for(const [crop,w,rot] of tries){const t=zxCanvas(drawTo(img,W,H,crop,w,rot));if(t)return t}
+    return null;
+  }finally{URL.revokeObjectURL(url)}
+}
+let live=null;
+const canLive=()=>!framed&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+async function startLive(){
+  if(live)return;
+  const box=$('#liveBox'),v=$('#liveV'),m=$('#scanMsg');box.hidden=false;$('#scanOpts').hidden=true;
+  m.className='hint';m.textContent='Starting the camera…';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+    live={stream,stop:false,n:0};v.srcObject=stream;v.setAttribute('playsinline','');v.muted=true;await v.play();
+    m.textContent='Hold the barcode inside the frame, about a hand’s length away.';
+    const nd=await getNative();if(!nd)await getZX();
+    const tick=async()=>{
+      if(!live||live.stop)return;
+      const W=v.videoWidth,H=v.videoHeight;let code=null;
+      if(W&&H){
+        if(nd){try{const r=await nd.detect(v);if(r&&r.length)code=r[0].rawValue}catch(e){}}
+        else{const crop=[W*.08,H*.28,W*.84,H*.44];live.n++;code=zxCanvas(drawTo(v,W,H,crop,live.n%2?900:640,0));if(!code&&live.n%5===0)code=zxCanvas(drawTo(v,W,H,[0,0,W,H],800,0))}
+      }
+      if(code){stopLive();if(navigator.vibrate)navigator.vibrate(60);handleCode(code);return}
+      setTimeout(tick,nd?150:90);
+    };tick();
+  }catch(err){stopLive();m.className='hint';m.textContent=err&&err.name==='NotAllowedError'?'Camera access was blocked. Allow the camera for this site in your phone’s settings, or use Take a photo.':'The camera couldn’t start. Use Take a photo instead.'}
+}
+function stopLive(){
+  if(live){live.stop=true;try{live.stream.getTracks().forEach(t=>t.stop())}catch(e){}live=null}
+  const b=$('#liveBox');if(b)b.hidden=true;const o=$('#scanOpts');if(o)o.hidden=false;
+}
+
+/* ---------- ISBN ---------- */
+function toIsbn13(x){
+  x=x.replace(/[^0-9Xx]/g,'').toUpperCase();
+  if(/^97[89]\d{10}$/.test(x))return x;
+  if(/^\d{9}[\dX]$/.test(x)){const b='978'+x.slice(0,9);let s=0;for(let i=0;i<12;i++)s+=(+b[i])*(i%2?3:1);return b+((10-s%10)%10)}
   return null;
 }
-async function lookupIsbn(isbn){
-  const ac=new AbortController();const t=setTimeout(()=>ac.abort(),8000);
-  try{const r=await fetch('https://openlibrary.org/api/books?bibkeys=ISBN:'+isbn+'&format=json&jscmd=data',{signal:ac.signal});const j=await r.json();const d=j['ISBN:'+isbn];if(!d)return null;
-    return{title:d.title+(d.subtitle?': '+d.subtitle:''),author:(d.authors||[]).map(a=>a.name).join(', '),pages:d.number_of_pages||''}}
-  finally{clearTimeout(t)}
+async function fetchJSON(url,ms){const ac=new AbortController();const t=setTimeout(()=>ac.abort(),ms||8000);try{const r=await fetch(url,{signal:ac.signal});if(!r.ok)throw new Error('http '+r.status);return await r.json()}finally{clearTimeout(t)}}
+async function coverData(url){
+  if(!url)return null;
+  try{const ac=new AbortController();setTimeout(()=>ac.abort(),8000);const r=await fetch(url,{signal:ac.signal});if(!r.ok)return null;const b=await r.blob();if(b.size<1200)return null;return await compress(b,360,.78)}catch(e){return null}
 }
-function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load'));document.head.appendChild(s)})}
+async function lookupIsbn(isbn){
+  if(!navigator.onLine)throw new Error('offline');
+  let found=null,errs=0;
+  try{const j=await fetchJSON('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn);const v=j.items&&j.items[0]&&j.items[0].volumeInfo;
+    if(v)found={title:v.title+(v.subtitle?': '+v.subtitle:''),author:(v.authors||[]).join(', '),pages:v.pageCount||'',cover:v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail)?(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail).replace('http:','https:').replace('&edge=curl',''):null}}catch(e){errs++}
+  if(!found||!found.pages||!found.author){
+    try{const j=await fetchJSON('https://openlibrary.org/api/books?bibkeys=ISBN:'+isbn+'&format=json&jscmd=data');const d=j['ISBN:'+isbn];
+      if(d){const ol={title:d.title+(d.subtitle?': '+d.subtitle:''),author:(d.authors||[]).map(a=>a.name).join(', '),pages:d.number_of_pages||'',cover:d.cover&&(d.cover.medium||d.cover.small)||null};
+        found=found?{title:found.title||ol.title,author:found.author||ol.author,pages:found.pages||ol.pages,cover:found.cover||ol.cover}:ol}}catch(e){errs++}
+  }
+  if(!found&&errs===2)throw new Error('network');
+  if(found&&!found.cover)found.cover='https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg?default=false';
+  return found;
+}
+async function fillFromIsbn(isbn){
+  const m=$('#scanMsg');m.className='hint';m.textContent='Looking up ISBN '+isbn+'…';
+  try{
+    const r=await lookupIsbn(isbn);
+    if(!r){m.textContent='No book found for ISBN '+isbn+'. It’s saved; type the title below.';return}
+    if(r.title)$('#fTitle').value=r.title;if(r.author)$('#fAuthor').value=r.author;if(r.pages)$('#fPages').value=r.pages;
+    m.className='hint ok';m.textContent='Found it. Check the details, then add to your shelf.';
+    if(r.cover&&!window._cover){const c=await coverData(r.cover);if(c&&$('#covPrev')){window._cover=c;$('#covPrev').innerHTML=`<img class="cover s" src="${c}" alt="">`}}
+  }catch(e){m.className='hint';m.textContent=e.message==='offline'?'You’re offline. The ISBN is saved; type the title below, or tap Look up later.':'Couldn’t reach the book catalogues. Check the connection and tap Look up again.'}
+}
+async function handleCode(code){
+  const m=$('#scanMsg');if(!m)return;
+  const isbn=toIsbn13(code);
+  if(isbn){$('#fIsbn').value=isbn;await fillFromIsbn(isbn)}
+  else if(/^\d{12}$/.test(code)){$('#fIsbn').value=code;m.className='hint';m.textContent='That’s a store barcode (UPC), not the ISBN. Look for the barcode starting 978 or 979, often on the back cover or inside.'}
+  else{if(!$('#fTitle').value)$('#fTitle').value=code.slice(0,200);m.className='hint ok';m.textContent='Scanned a code. Its text was added as the title; edit as needed.'}
+}
+
+/* ---------- text recognition ---------- */
 let ocrWorker=null;
 async function getWorker(){
   if(ocrWorker)return ocrWorker;
@@ -287,39 +475,37 @@ async function recognize(dataUrl){
   return r.data.text||'';
 }
 
-let live=null;
-const canLive=()=>!framed&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
-async function handleCode(code){
-  const m=$('#scanMsg');if(!m)return;
-  const digits=code.replace(/[^0-9Xx]/g,'');
-  if(/^(97[89]\d{10}|\d{9}[\dXx])$/.test(digits)){$('#fIsbn').value=digits;m.className='hint ok';m.textContent='Scanned ISBN '+digits+'. Looking up the title…';
-    try{const r=await lookupIsbn(digits);if(r){$('#fTitle').value=r.title||'';if(r.author)$('#fAuthor').value=r.author;if(r.pages)$('#fPages').value=r.pages;m.textContent='Found it. Check the details and save.'}else{m.className='hint';m.textContent='Scanned ISBN '+digits+'. No title found, so type it below.'}}
-    catch(err){m.className='hint';m.textContent='Scanned ISBN '+digits+'. No internet right now, so type the title below.'}}
-  else{if(!$('#fTitle').value)$('#fTitle').value=code.slice(0,200);m.className='hint ok';m.textContent='Scanned a code. Its text was added as the title; edit as needed.'}
+/* ---------- reading data ---------- */
+function dayStats(){
+  const m={},g=d=>m[d]||(m[d]={pages:0,min:0,books:new Set(),ev:[],check:false});
+  S.books.forEach(b=>{
+    let prev=0;[...b.sessions].sort((a,c)=>a.date.localeCompare(c.date)||a.page-c.page).forEach(s=>{
+      const delta=Math.max(0,s.page-prev);prev=Math.max(prev,s.page);const x=g(s.date);
+      x.pages+=delta;x.min+=(+s.min||0);x.books.add(b.id);x.ev.push({t:'read',b,page:s.page,delta,min:+s.min||0})});
+    if(b.start)g(b.start).ev.push({t:'start',b});if(b.finish)g(b.finish).ev.push({t:'finish',b});
+  });
+  Object.entries(S.checkins).forEach(([d,min])=>{const x=g(d);x.min+=(+min||0);x.check=true;x.ckMin=+min||0});
+  Object.values(m).forEach(x=>x.read=x.books.size>0||x.check);
+  return m;
 }
-async function startLive(){
-  const v=$('#liveV'),box=$('#liveBox'),m=$('#scanMsg');box.hidden=false;m.className='hint';m.textContent='Point the camera at the barcode and hold steady…';
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-    live={stream,stop:false};v.srcObject=stream;await v.play();
-    let det=null;
-    if('BarcodeDetector' in window){try{let fm=['ean_13','ean_8','upc_a','upc_e','qr_code','code_128'];try{const sup=await BarcodeDetector.getSupportedFormats();fm=fm.filter(x=>sup.includes(x))}catch(e){}if(fm.length)det=new BarcodeDetector({formats:fm})}catch(e){det=null}}
-    if(det){const loop=async()=>{if(!live||live.stop)return;try{const r=await det.detect(v);if(r&&r.length){const c=r[0].rawValue;stopLive();if(navigator.vibrate)navigator.vibrate(60);return handleCode(c)}}catch(e){}setTimeout(loop,180)};loop()}
-    else{if(!window.ZXing)await loadScript('vendor/zxing.min.js');const rd=new ZXing.BrowserMultiFormatReader();live.reader=rd;
-      rd.decodeFromVideoElementContinuously(v,(res)=>{if(res&&live&&!live.stop){const c=res.getText();stopLive();if(navigator.vibrate)navigator.vibrate(60);handleCode(c)}})}
-  }catch(err){stopLive();m.className='hint';m.textContent='The camera couldn’t start. Allow camera access for this site, or use the photo option.'}
+function level(x){
+  if(!x||!x.read)return 0;const G=S.settings.goal;const v=G.type==='pages'?x.pages:x.min;
+  if(!G.value)return 3;const r=v/G.value;return r>=1?3:r>=.5?2:1;
 }
-function stopLive(){if(!live)return;live.stop=true;try{live.reader&&live.reader.reset()}catch(e){}try{live.stream.getTracks().forEach(t=>t.stop())}catch(e){}live=null;const b=$('#liveBox');if(b)b.hidden=true}
+function streaks(M){
+  const days=Object.keys(M).filter(k=>M[k].read).sort();const set=new Set(days);
+  let cur=0,d=today();if(!set.has(d))d=addDays(d,-1);while(set.has(d)){cur++;d=addDays(d,-1)}
+  let best=0,run=0,last=null;days.forEach(k=>{run=last&&addDays(last,1)===k?run+1:1;best=Math.max(best,run);last=k});
+  return{cur,best,readToday:set.has(today())};
+}
 
 /* ---------- views ---------- */
 let view='library',filter='all',query='',qquery='',calMonth=new Date(),selDay=today();
 calMonth.setDate(1);
-const TABS=[['library','Library',I.book],['calendar','Calendar',I.cal],['quotes','Quotes',I.quote],['backup','Backup',I.gear]];
-
+const TABS=[['library','Library',I.book],['calendar','Calendar',I.cal],['stats','Stats',I.stats],['quotes','Quotes',I.quote],['settings','Settings',I.gear]];
 function render(){
   $('#tabs').innerHTML=TABS.map(([k,l,i])=>`<button data-act="tab" data-v="${k}" ${view===k?'aria-current="page"':''}>${i}<span>${l}</span></button>`).join('');
-  const app=$('#app');
-  app.innerHTML=view==='library'?libraryHTML():view==='calendar'?calendarHTML():view==='quotes'?quotesHTML():backupHTML();
+  $('#app').innerHTML=view==='library'?libraryHTML():view==='calendar'?calendarHTML():view==='stats'?statsHTML():view==='quotes'?quotesHTML():settingsHTML();
   if(view==='library')renderList();
   if(view==='quotes')renderQuoteList();
 }
@@ -330,12 +516,12 @@ function libraryHTML(){
   const B=S.books,yr=new Date().getFullYear();
   const reading=B.filter(b=>b.status==='reading');
   const doneYr=B.filter(b=>b.status==='done'&&b.finish&&pd(b.finish).getFullYear()===yr).length;
-  const hasEx=B.some(b=>b.example);
+  const st=streaks(dayStats());
   return`${header(`<h1>${PH[phase()].greet},<br><em>what are we reading?</em></h1>`)}
-  <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${reading.length} reading · ${doneYr} finished in ${yr}</p>
-  ${hasEx?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
+  <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${doneYr} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p>
+  ${B.some(b=>b.example)?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
   ${reading.length?`<div class="section"><div class="eyebrow">On the nightstand</div>${reading.map(b=>`
-    <button class="now" data-act="open" data-id="${b.id}">${cover(b,'m')}<div class="meta">
+    <button class="now" data-act="open" data-id="${b.id}" data-focus="1">${cover(b,'m')}<div class="meta">
       <h3>${esc(b.title)}</h3><span class="muted small">${esc(b.author||'')}</span>
       <div class="bar" style="margin-top:6px"><i style="width:${pct(b)}%"></i></div>
       <span class="small tnum">Page ${b.page||0}${b.pages?` of ${b.pages} · ${pct(b)}%`:''}</span>
@@ -343,13 +529,12 @@ function libraryHTML(){
   <div class="section"><div class="section-h"><h2>The shelf</h2></div>
     <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}</div>
     <input type="search" id="search" placeholder="Search title, author or ISBN" value="${esc(query)}" aria-label="Search books">
-    <div class="list" id="booklist"></div>
+    <div class="list" id="booklist" style="margin-bottom:56px"></div>
   </div>
   <button class="btn fab" data-act="add">+ Add book</button>`;
 }
 function renderList(){
-  const el=$('#booklist');if(!el)return;
-  const ord={reading:0,want:1,done:2};
+  const el=$('#booklist');if(!el)return;const ord={reading:0,want:1,done:2};
   let L=S.books.filter(b=>filter==='all'||b.status===filter);
   if(query){const t=query.toLowerCase();L=L.filter(b=>((b.title||'')+' '+(b.author||'')+' '+(b.isbn||'')).toLowerCase().includes(t))}
   L.sort((a,b)=>ord[a.status]-ord[b.status]||a.title.localeCompare(b.title));
@@ -357,38 +542,86 @@ function renderList(){
   el.innerHTML=L.map(b=>`<button class="item" data-act="open" data-id="${b.id}">${cover(b,'s')}<div class="meta"><div class="t">${esc(b.title)}</div><div class="a">${esc(b.author||'Unknown author')}${b.status==='done'&&b.finish?' · finished '+fmt(b.finish):''}</div>${b.status==='reading'?`<div class="bar" style="margin-top:6px;max-width:180px"><i style="width:${pct(b)}%"></i></div>`:''}</div><span class="pill ${b.status}">${STATUS[b.status]}</span></button>`).join('');
 }
 
-function eventsMap(){
-  const m={};const add=(d,e)=>{(m[d]=m[d]||[]).push(e)};
-  S.books.forEach(b=>{
-    let prev=0;[...b.sessions].sort((a,c)=>a.date.localeCompare(c.date)).forEach(s=>{add(s.date,{t:'read',b,page:s.page,delta:Math.max(0,s.page-prev)});prev=Math.max(prev,s.page)});
-    if(b.start)add(b.start,{t:'start',b});if(b.finish)add(b.finish,{t:'finish',b});
-  });return m;
+function habitCard(M,st,dayKey){
+  const G=S.settings.goal,x=M[dayKey],isToday=dayKey===today();
+  const v=x?(G.type==='pages'?x.pages:x.min):0;
+  const wk=[];for(let i=6;i>=0;i--){const k=addDays(today(),-i);wk.push(k)}
+  const chips=[10,20,30,45,60];
+  return`<div class="habit">
+    <div class="streak"><span class="num tnum">${st.cur}</span><span class="lab"><b>day${st.cur===1?'':'s'} in a row</b>${st.readToday?'Today is done. Lovely.':st.cur?'Read today to keep it going.':'Read today to start a streak.'}${st.best>st.cur?` Best: ${st.best}.`:''}</span></div>
+    <div class="week">${wk.map(k=>`<div class="${k===today()?'td':''}"><span class="l${level(M[k])}">${M[k]&&M[k].read?I.check:''}</span>${pd(k).toLocaleDateString(undefined,{weekday:'narrow'})}</div>`).join('')}</div>
+    <div class="rule"></div>
+    <div class="row" style="justify-content:space-between"><b style="font-weight:500">${isToday?'Today':fmt(dayKey)}: <span class="tnum">${v} of ${G.value} ${G.type==='pages'?'pages':'min'}</span></b>${x&&x.check?`<button class="link" data-act="uncheck" data-v="${dayKey}">Clear check-in</button>`:''}</div>
+    <div class="bar"><i style="width:${Math.min(100,G.value?v/G.value*100:0)}%"></i></div>
+    <span class="lbl">${x&&x.check?'Change the time read':'Mark as read'}${isToday?'':' on '+fmt(dayKey)}</span>
+    <div class="chips">${chips.map(c=>`<button class="chip" data-act="checkin" data-d="${dayKey}" data-v="${c}" aria-pressed="${!!(x&&x.check&&x.ckMin===c)}">${c} min</button>`).join('')}<button class="chip" data-act="checkin" data-d="${dayKey}" data-v="0" aria-pressed="${!!(x&&x.check&&x.ckMin===0)}">Just read</button></div>
+  </div>`;
 }
 function calendarHTML(){
-  const y=calMonth.getFullYear(),mo=calMonth.getMonth(),startDow=new Date(y,mo,1).getDay(),n=new Date(y,mo+1,0).getDate();
-  const ev=eventsMap(),td=today();
-  const spans=S.books.filter(b=>b.start).map(b=>[b.start,b.finish||(b.status==='reading'?td:b.start)]);
+  const M=dayStats(),st=streaks(M);
+  const y=calMonth.getFullYear(),mo=calMonth.getMonth(),startDow=new Date(y,mo,1).getDay(),n=new Date(y,mo+1,0).getDate(),td=today();
   let cells='';['S','M','T','W','T','F','S'].forEach(d=>cells+=`<div class="dow">${d}</div>`);
   for(let i=0;i<startDow;i++)cells+='<div class="day blank"></div>';
-  let readDays=0,pages=0;
+  let readDays=0,pages=0,mins=0,met=0;
   for(let d=1;d<=n;d++){
-    const k=y+'-'+pad(mo+1)+'-'+pad(d),E=ev[k]||[];
-    const hues=[...new Set(E.filter(e=>e.t==='read').map(e=>e.b.hue))].slice(0,3);
-    if(E.some(e=>e.t==='read')){readDays++;pages+=E.reduce((s,e)=>s+(e.delta||0),0)}
-    const inSpan=spans.some(([a,b])=>k>=a&&k<=b);
-    cells+=`<button class="day${k===td?' today':''}${k===selDay?' sel':''}${inSpan?' span':''}" data-act="day" data-v="${k}" aria-label="${fmt(k)}${E.length?', '+E.length+' entries':''}"><span>${d}</span><span class="dots">${hues.map(h=>`<i style="--h:${h}"></i>`).join('')}</span></button>`;
+    const k=y+'-'+pad(mo+1)+'-'+pad(d),x=M[k],lv=level(x);
+    if(x&&x.read){readDays++;pages+=x.pages;mins+=x.min;if(lv===3)met++}
+    const hues=x?[...new Set(x.ev.filter(e=>e.t==='read').map(e=>e.b.hue))].slice(0,3):[];
+    cells+=`<button class="day l${lv}${k===td?' today':''}${k===selDay?' sel':''}${k>td?' future':''}" data-act="day" data-v="${k}" aria-label="${fmt(k)}${x&&x.read?', read':''}"><span>${d}</span><span class="dots">${hues.map(h=>`<i style="--h:${h}"></i>`).join('')}</span></button>`;
   }
-  const finished=S.books.filter(b=>b.finish&&pd(b.finish).getMonth()===mo&&pd(b.finish).getFullYear()===y).length;
-  const E=(ev[selDay]||[]);
-  const evHTML=E.length?E.map(e=>`<div class="ev"><span class="sw" style="--h:${e.b.hue}"></span><div style="flex:1;min-width:0"><b style="font-family:var(--display);font-size:1.1rem">${esc(e.b.title)}</b><div class="small muted tnum">${e.t==='read'?`Read to page ${e.page}${e.delta?` (+${e.delta} pages)`:''}`:e.t==='start'?'Started reading':'Finished the book'}</div></div><button class="link" data-act="open" data-id="${e.b.id}">Open</button></div>`).join(''):`<p class="muted small" style="margin:0">Nothing logged on this day. Save a page number from a book to mark the day.</p>`;
-  return`${header(`<h1>Reading <em>calendar</em></h1>`)}
+  const x=M[selDay],E=x?x.ev:[];
+  const evHTML=(E.length||(x&&x.check))?[...(x&&x.check?[`<div class="ev"><span class="sw ck"></span><div style="flex:1"><b style="font-weight:500">Checked in as read</b><div class="small muted">${x.ckMin?x.ckMin+' minutes':'No time recorded'}</div></div></div>`]:[]),...E.map(e=>`<div class="ev"><span class="sw" style="--h:${e.b.hue}"></span><div style="flex:1;min-width:0"><b style="font-family:var(--display);font-size:1.1rem">${esc(e.b.title)}</b><div class="small muted tnum">${e.t==='read'?`Read to page ${e.page}${e.delta?` · ${e.delta} pages`:''}${e.min?` · ${e.min} min`:''}`:e.t==='start'?'Started reading':'Finished the book'}</div></div><button class="link" data-act="open" data-id="${e.b.id}">Open</button></div>`)].join(''):`<p class="muted small" style="margin:0">Nothing logged this day.</p>`;
+  return`${header(`<h1>Reading <em>habit</em></h1>`)}
+  <div class="section">${habitCard(M,st,selDay>td?td:selDay)}</div>
   <div class="section">
     <div class="cal-h"><button class="iconbtn" data-act="calprev" aria-label="Previous month">${I.prev}</button><h2>${calMonth.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><button class="iconbtn" data-act="calnext" aria-label="Next month">${I.next}</button></div>
     <div class="cal">${cells}</div>
-    <p class="hint">Dots mark days you read. Shaded days fall between a book’s start and finish.</p>
-    <div class="stats tnum"><div class="stat"><b>${readDays}</b><span>days read</span></div><div class="stat"><b>${pages}</b><span>pages read</span></div><div class="stat"><b>${finished}</b><span>finished</span></div></div>
+    <div class="legend"><i style="background:var(--soft)"></i>Read <i style="background:color-mix(in srgb,var(--accent) 40%,var(--soft))"></i>Half the goal <i style="background:var(--accent)"></i>Goal met · dots show the books</div>
+    <div class="grid3 tnum"><div class="stat"><b>${readDays}</b><span>days read</span></div><div class="stat"><b>${met}</b><span>goal met</span></div><div class="stat"><b>${pages}</b><span>pages</span></div></div>
   </div>
-  <div class="section"><h3>${fmt(selDay)}</h3><div>${evHTML}</div></div>`;
+  <div class="section"><h3>${fmt(selDay)}</h3><div>${evHTML}</div><p class="hint">Tap any past day in the calendar to see it or mark it as read.</p></div>`;
+}
+
+function statsHTML(){
+  const M=dayStats(),st=streaks(M),yr=new Date().getFullYear(),cm=new Date().getMonth();
+  const yk=Object.keys(M).filter(k=>k.startsWith(yr+'-')&&M[k].read);
+  const pagesY=yk.reduce((s,k)=>s+M[k].pages,0),minY=yk.reduce((s,k)=>s+M[k].min,0);
+  const fin=S.books.filter(b=>b.status==='done'&&b.finish&&pd(b.finish).getFullYear()===yr).sort((a,b)=>b.finish.localeCompare(a.finish));
+  const durs=fin.filter(b=>b.start).map(b=>Math.round((pd(b.finish)-pd(b.start))/864e5)+1);
+  const avgDays=durs.length?Math.round(durs.reduce((a,c)=>a+c,0)/durs.length):0;
+  const goal=S.settings.yearGoal||12,frac=Math.min(1,fin.length/goal);
+  const R=46,C=2*Math.PI*R;
+  const mp=Array(12).fill(0);yk.forEach(k=>mp[+k.slice(5,7)-1]+=M[k].pages);const mmax=Math.max(1,...mp);
+  const wd=Array(7).fill(0);Object.keys(M).filter(k=>M[k].read).forEach(k=>wd[pd(k).getDay()]++);const wmax=Math.max(1,...wd);
+  const bestWd=wd.indexOf(Math.max(...wd));
+  // heatmap: last 26 weeks ending this week
+  const weeks=26,end=pd(today());const startD=new Date(end);startD.setDate(end.getDate()-end.getDay()-(weeks-1)*7);
+  let heat='';for(let i=0;i<weeks*7;i++){const d=new Date(startD);d.setDate(startD.getDate()+i);const k=ds(d);heat+=k>today()?'<i class="x"></i>':`<i class="l${level(M[k])}" title="${fmt(k)}"></i>`}
+  const reading=S.books.filter(b=>b.status==='reading');
+  return`${header(`<h1>Reading <em>stats</em></h1>`)}
+  <div class="section"><div class="goal">
+    <svg viewBox="0 0 112 112" role="img" aria-label="${fin.length} of ${goal} books"><circle cx="56" cy="56" r="${R}" fill="none" stroke="var(--soft)" stroke-width="9"/><circle cx="56" cy="56" r="${R}" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 56 56)"/><text x="56" y="58" text-anchor="middle" font-family="Cormorant Garamond,Georgia,serif" font-size="32" font-weight="600" fill="var(--ink)">${fin.length}</text><text x="56" y="76" text-anchor="middle" font-size="11" fill="var(--muted)">of ${goal}</text></svg>
+    <div class="meta"><div class="eyebrow">${yr} reading goal</div><h3>${fin.length>=goal?'Goal reached!':`${goal-fin.length} book${goal-fin.length===1?'':'s'} to go`}</h3>
+      <div class="stepper"><button data-act="ygoal" data-v="-1" aria-label="Lower goal">−</button><span class="small tnum">${goal} books</span><button data-act="ygoal" data-v="1" aria-label="Raise goal">+</button></div></div>
+  </div></div>
+  <div class="section"><div class="grid3 tnum">
+    <div class="stat"><b>${st.cur}</b><span>day streak</span></div><div class="stat"><b>${st.best}</b><span>best streak</span></div><div class="stat"><b>${yk.length}</b><span>days read</span></div>
+    <div class="stat"><b>${pagesY.toLocaleString()}</b><span>pages this year</span></div><div class="stat"><b>${Math.round(minY/60)}</b><span>hours this year</span></div><div class="stat"><b>${yk.length?Math.round(pagesY/yk.length):0}</b><span>pages per reading day</span></div>
+  </div></div>
+  <div class="section"><div class="chart"><div class="section-h"><h3>Pages by month</h3><span class="small muted">${yr}</span></div>
+    <div class="bars" style="--n:12">${mp.map((v,i)=>`<div class="b${i===cm?' cur':''}">${v?`<em>${v}</em>`:''}<i style="height:${(v/mmax*100).toFixed(1)}%"></i></div>`).join('')}</div>
+    <div class="bars-x" style="--n:12">${MON.map(m=>`<span>${m}</span>`).join('')}</div></div></div>
+  <div class="section"><div class="chart"><div class="section-h"><h3>Last six months</h3><span class="small muted">each square is a day</span></div>
+    <div class="heat" aria-label="Reading days, last 26 weeks">${heat}</div>
+    <div class="legend"><i style="background:var(--soft);border-radius:3px"></i>Read <i style="background:color-mix(in srgb,var(--accent) 45%,var(--soft));border-radius:3px"></i>Half the goal <i style="background:var(--accent);border-radius:3px"></i>Goal met</div></div></div>
+  <div class="section"><div class="chart"><div class="section-h"><h3>When she reads</h3><span class="small muted">${Math.max(...wd)?['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'][bestWd]+' most':''}</span></div>
+    <div class="bars" style="--n:7;height:90px">${wd.map((v,i)=>`<div class="b${i===bestWd&&v?' cur':''}">${v?`<em>${v}</em>`:''}<i style="height:${(v/wmax*100).toFixed(1)}%"></i></div>`).join('')}</div>
+    <div class="bars-x" style="--n:7">${['S','M','T','W','T','F','S'].map(d=>`<span>${d}</span>`).join('')}</div></div></div>
+  <div class="section"><div class="section-h"><h3>Finished in ${yr}</h3><span class="small muted">${avgDays?`about ${avgDays} days per book`:''}</span></div>
+    ${fin.length?`<div class="list">${fin.map(b=>`<button class="item" data-act="open" data-id="${b.id}">${cover(b,'s')}<div class="meta"><div class="t">${esc(b.title)}</div><div class="a">${esc(b.author||'')} · ${fmt(b.finish)}${b.start?` · ${Math.round((pd(b.finish)-pd(b.start))/864e5)+1} days`:''}</div></div></button>`).join('')}</div>`:`<p class="muted small" style="margin:0">Finished books show up here.</p>`}
+  </div>
+  ${reading.length?`<div class="section"><h3>In progress</h3>${reading.map(b=>{const days=b.start?Math.max(1,Math.round((pd(today())-pd(b.start))/864e5)+1):0;const rate=days?(b.page||0)/days:0;const left=b.pages?Math.max(0,b.pages-(b.page||0)):0;const eta=rate&&left?Math.ceil(left/rate):0;
+    return`<div class="lg"><span style="min-width:0"><b style="font-family:var(--display);font-size:1.1rem">${esc(b.title)}</b><br><span class="small muted tnum">${pct(b)}% · ${rate?rate.toFixed(0)+' pages a day':'no pages logged yet'}</span></span><span class="small muted tnum" style="text-align:right">${eta?`about ${eta} day${eta===1?'':'s'} left`:''}</span></div>`}).join('')}</div>`:''}`;
 }
 
 function quotesHTML(){
@@ -398,44 +631,51 @@ function quotesHTML(){
   <div class="section"><input type="search" id="qsearch" placeholder="Search quotes" value="${esc(qquery)}" aria-label="Search quotes"><div class="stack" id="qlist"></div></div>`;
 }
 function renderQuoteList(){
-  const el=$('#qlist');if(!el)return;
-  let L=[];S.books.forEach(b=>b.quotes.forEach(q=>L.push({q,b})));
+  const el=$('#qlist');if(!el)return;let L=[];S.books.forEach(b=>b.quotes.forEach(q=>L.push({q,b})));
   if(qquery){const t=qquery.toLowerCase();L=L.filter(x=>(x.q.text+' '+x.b.title).toLowerCase().includes(t))}
   L.sort((a,c)=>c.q.date.localeCompare(a.q.date));
   el.innerHTML=L.length?L.map(({q,b})=>quoteCard(q,b,true)).join(''):`<div class="empty"><h3>No quotes yet</h3>Open a book and tap <b>Capture a quote</b>.</div>`;
 }
-function quoteCard(q,b,showBook){return`<article class="quote">${q.img?`<img src="${q.img}" alt="Photo of the page">`:''}<blockquote>${esc(q.text)}</blockquote><div class="src"><span>${showBook?`<b>${esc(b.title)}</b> · `:''}${q.page?'p. '+q.page+' · ':''}${fmt(q.date)}</span><span class="row" style="gap:4px"><button class="link" data-act="copyq" data-id="${b.id}" data-q="${q.id}">Copy</button>${showBook?'':`<button class="link" data-act="delquote" data-id="${b.id}" data-q="${q.id}" style="color:var(--muted);margin-left:10px">Delete</button>`}</span></div></article>`}
+function quoteCard(q,b,showBook){return`<article class="quote">${q.img?`<img src="${q.img}" alt="Photo of the page">`:''}<blockquote>${esc(q.text)}</blockquote><div class="src"><span>${showBook?`<b>${esc(b.title)}</b> · `:''}${q.page?'p. '+q.page+' · ':''}${fmt(q.date)}</span><span class="row" style="gap:12px"><button class="link" data-act="copyq" data-id="${b.id}" data-q="${q.id}">Copy</button>${showBook?'':`<button class="link" data-act="delquote" data-id="${b.id}" data-q="${q.id}" style="color:var(--muted)">Delete</button>`}</span></div></article>`}
 
-function backupHTML(){
-  const ph=S.settings.phase||'auto';
-  return`${header(`<h1>Backup &amp; <em>settings</em></h1>`)}
+function settingsHTML(){
+  const st=S.settings,ph=st.phase||'auto',G=st.goal;
+  const sw=Object.entries(PALETTES).map(([k,p])=>{const a=tokens(k,'day'),b=tokens(k,'golden'),c=tokens(k,'night');
+    return`<button class="sw-btn" data-act="palette" data-v="${k}" aria-pressed="${st.palette===k}"><span class="strip"><i style="background:${a.soft}"></i><i style="background:${a.accent}"></i><i style="background:${b.gold}"></i><i style="background:${c.bg}"></i><i style="background:${c.accent}"></i></span><span class="small" style="font-weight:500">${p.name}</span></button>`}).join('');
+  return`${header(`<h1>Settings &amp; <em>backup</em></h1>`)}
   <div class="section"><div class="card">
-    <h3>Theme</h3><p class="hint">The colours follow the time of day: blush in the morning, rose in the afternoon, peach at golden hour, deep plum at night.</p>
-    <div class="chips">${[['auto','Follow the time'],['dawn','Morning'],['day','Afternoon'],['golden','Golden hour'],['night','Night']].map(([k,l])=>`<button class="chip" data-act="phase" data-v="${k}" aria-pressed="${ph===k}">${l}</button>`).join('')}</div>
+    <h3>Colours</h3><div class="swatches">${sw}</div>
+    <span class="lbl">Time of day</span>
+    <div class="chips">${[['auto','Follow the clock'],['dawn','Morning'],['day','Afternoon'],['golden','Golden hour'],['night','Night']].map(([k,l])=>`<button class="chip" data-act="phase" data-v="${k}" aria-pressed="${ph===k}">${l}</button>`).join('')}</div>
+    <p class="hint">Following the clock, the colours warm through the day and turn dark after 8 pm.</p>
   </div></div>
   <div class="section"><div class="card">
-    <h3>Where your library lives</h3>
-    <p class="hint">${persistOK?'Everything is saved only on this phone, inside this browser. Nothing is uploaded.':'This browser is not keeping data right now (private mode or blocked storage). Make a backup before closing.'} Clearing the browser’s website data would erase it, so keep a backup every few weeks.</p>
+    <h3>Daily reading goal</h3>
+    <div class="chips"><button class="chip" data-act="goaltype" data-v="minutes" aria-pressed="${G.type==='minutes'}">Minutes</button><button class="chip" data-act="goaltype" data-v="pages" aria-pressed="${G.type==='pages'}">Pages</button></div>
+    <div class="stepper"><button data-act="dgoal" data-v="-5" aria-label="Lower">−</button><span class="tnum" style="min-width:110px;text-align:center"><b>${G.value}</b> ${G.type==='pages'?'pages':'minutes'} a day</span><button data-act="dgoal" data-v="5" aria-label="Raise">+</button></div>
+    <p class="hint">The calendar fills a day in when the goal is met, and half-fills it at half the goal.</p>
+  </div></div>
+  <div class="section"><div class="card">
+    <h3>Backup</h3>
+    <p class="hint">${persistOK?'Everything is saved only on this phone. Nothing is uploaded.':'This browser is not keeping data right now (private mode or blocked storage). Make a backup before closing.'} Deleting the app or clearing website data erases it, so save a backup every few weeks.</p>
     ${framed?'':`<button class="btn" data-act="export">Save backup file</button>`}
     <button class="btn ${framed?'':'ghost'}" data-act="copybackup">Copy backup text</button>
     <pre class="bk" id="bkout" hidden></pre>
+    <span class="lbl" style="margin-top:6px">Restore (replaces the library on this phone)</span>
+    <label class="btn soft" style="cursor:pointer"><input type="file" id="restoreFile" accept=".json,application/json,text/plain" class="vh">Choose backup file</label>
+    <textarea id="restoreText" placeholder="…or paste backup text here"></textarea>
+    <button class="btn ghost" data-act="restore">Restore from pasted text</button>
   </div></div>
   <div class="section"><div class="card">
     <h3>Offline</h3>
-    <p class="hint">${'serviceWorker' in navigator&&navigator.serviceWorker.controller?'The app is saved for offline use.':'The app finishes saving itself for offline use after its first open with internet.'} ${readerReady()?'The text reader is ready offline too.':'The text reader still needs a one-time download (about 5 MB).'}</p>
+    <p class="hint">${'serviceWorker' in navigator&&navigator.serviceWorker.controller?'The app is saved for offline use.':'The app saves itself for offline use after its first open with internet.'} ${readerReady()?'The text reader is ready offline too.':'The text reader still needs a one-time download (about 5 MB).'}</p>
     ${readerReady()?'':`<button class="btn soft" data-act="prepocr">Prepare text reader for offline</button>`}
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Restore</h3><p class="hint">Choose a backup file, or paste backup text. This replaces the library on this phone.</p>
-    <label class="btn soft" style="cursor:pointer"><input type="file" id="restoreFile" accept=".json,application/json,text/plain" class="vh">Choose backup file</label>
-    <textarea id="restoreText" placeholder="…or paste backup text here"></textarea>
-    <button class="btn ghost" data-act="restore" id="restoreBtn">Restore from pasted text</button>
   </div></div>
   ${S.books.some(b=>b.example)?`<div class="section"><button class="btn danger" data-act="clearex">Remove the example books</button></div>`:''}`;
 }
 
 /* ---------- sheets ---------- */
-let sheetFor=null,onSheetClose=null;
+let sheetFor=null;
 function openSheet(html,key){
   const p=$('#panel'),sc=$('#scrim');const keep=sheetFor===key?p.scrollTop:0;sheetFor=key;
   p.innerHTML=html;p.hidden=false;sc.hidden=false;
@@ -444,22 +684,23 @@ function openSheet(html,key){
 function closeSheet(){stopLive();const p=$('#panel'),sc=$('#scrim');p.classList.remove('on');sc.classList.remove('on');sheetFor=null;setTimeout(()=>{if(!sheetFor){p.hidden=true;sc.hidden=true;p.innerHTML=''}},300);render()}
 
 function openAdd(id){
-  const b=id?find(id):null;
+  const b=id?find(id):null;window._cover=b?b.cover:null;
   openSheet(`<div class="sheet-h"><h2>${b?'Edit book':'Add a book'}</h2><button class="x" data-act="close" aria-label="Close">✕</button></div>
   <div class="stack">
-    <label class="scan"><input type="file" accept="image/*" capture="environment" id="scanIn" class="vh">${I.scan}<span><b>Scan barcode or QR code</b><span class="hint">Take a clear, close photo of the back cover barcode</span></span></label>
-    ${canLive()?`<button class="btn ghost" data-act="live">${I.scan.replace('<svg','<svg width="18" height="18"')} Scan with live camera</button>
-    <div id="liveBox" hidden class="stack"><video id="liveV" playsinline muted style="width:100%;border-radius:14px;background:#000;max-height:280px;object-fit:cover"></video><button class="btn soft" data-act="stoplive">Stop camera</button></div>`:''}
-    <p class="hint" id="scanMsg" aria-live="polite"></p>
+    <div class="scan-opts" id="scanOpts">
+      ${canLive()?`<button class="scan" data-act="live">${I.scan}<span><b>Scan barcode</b><span class="hint">Live camera</span></span></button>`:''}
+      <label class="scan" ${canLive()?'':'style="grid-column:1/-1"'}><input type="file" accept="image/*" capture="environment" id="scanIn" class="vh">${I.cam}<span><b>Take a photo</b><span class="hint">Of the barcode</span></span></label>
+    </div>
+    <div id="liveBox" hidden class="stack"><div class="live"><video id="liveV" playsinline muted autoplay></video><div class="guide"></div><p>Fill the frame with the barcode</p></div><button class="btn soft" data-act="stoplive">Stop camera</button></div>
+    <p class="hint" id="scanMsg" aria-live="polite">Scan the barcode starting 978 or 979, usually on the back cover.</p>
     <div class="field"><label for="fIsbn">ISBN</label><div class="row" style="flex-wrap:nowrap"><input type="text" inputmode="numeric" id="fIsbn" value="${esc(b?b.isbn:'')}" placeholder="978…"><button class="btn soft" data-act="lookup" style="flex:none">Look up</button></div></div>
     <div class="field"><label for="fTitle">Title</label><input type="text" id="fTitle" value="${esc(b?b.title:'')}" placeholder="Book title"></div>
     <div class="field"><label for="fAuthor">Author</label><input type="text" id="fAuthor" value="${esc(b?b.author:'')}"></div>
     <div class="grid2"><div class="field"><label for="fPages">Total pages</label><input type="number" inputmode="numeric" id="fPages" min="0" value="${b&&b.pages?b.pages:''}"></div>
     <div class="field"><label for="fStatus">Status</label><select id="fStatus">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}" ${(b?b.status:'want')===k?'selected':''}>${l}</option>`).join('')}</select></div></div>
-    <div class="field"><span class="lbl">Cover photo (optional)</span><div class="row"><span id="covPrev">${b?cover(b,'s'):''}</span><label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" capture="environment" id="covIn" class="vh">${I.cam} ${b&&b.cover?'Replace':'Add'} cover</label></div></div>
+    <div class="field"><span class="lbl">Cover</span><div class="row"><span id="covPrev">${b?cover(b,'s'):''}</span><label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" capture="environment" id="covIn" class="vh">${I.cam} ${b&&b.cover?'Replace':'Photograph'} cover</label></div><span class="hint">Found automatically when the ISBN lookup works.</span></div>
     <button class="btn wide" data-act="savebook" data-id="${b?b.id:''}">${b?'Save changes':'Add to shelf'}</button>
   </div>`,'add'+(id||''));
-  window._cover=b?b.cover:null;
 }
 function detailHTML(b){
   const S2=[...b.sessions].sort((a,c)=>c.date.localeCompare(a.date));
@@ -468,20 +709,18 @@ function detailHTML(b){
     <div class="d-top">${cover(b,'l')}<div class="meta"><h2>${esc(b.title)}</h2><span class="muted">${esc(b.author||'Unknown author')}</span>${b.isbn?`<span class="small muted tnum">ISBN ${esc(b.isbn)}</span>`:''}</div></div>
     <div class="chips" role="group" aria-label="Status">${Object.entries(STATUS).map(([k,l])=>`<button class="chip" data-act="status" data-id="${b.id}" data-v="${k}" aria-pressed="${b.status===k}">${l}</button>`).join('')}</div>
     <div class="grid2"><div class="field"><label for="dStart">Started</label><input type="date" id="dStart" data-field="start" data-id="${b.id}" value="${b.start||''}"></div><div class="field"><label for="dFinish">Finished</label><input type="date" id="dFinish" data-field="finish" data-id="${b.id}" value="${b.finish||''}"></div></div>
-
     <div class="bm"><div class="eyebrow">Bookmark</div>
       <div class="big tnum">p. ${b.page||0}${b.pages?`<small>of ${b.pages} · ${pct(b)}%</small>`:''}</div>
       ${b.pages?`<div class="bar"><i style="width:${pct(b)}%"></i></div>`:''}
-      <div class="grid2"><div class="field"><label for="pgIn">Stopped at page</label><input type="number" inputmode="numeric" id="pgIn" min="0" placeholder="${(b.page||0)+1}"></div><div class="field"><label for="pgDate">On</label><input type="date" id="pgDate" value="${today()}"></div></div>
+      <div class="grid2"><div class="field"><label for="pgIn">Stopped at page</label><input type="number" inputmode="numeric" id="pgIn" min="0" placeholder="${(b.page||0)+1}"></div><div class="field"><label for="pgMin">Minutes read</label><input type="number" inputmode="numeric" id="pgMin" min="0" placeholder="optional"></div></div>
+      <div class="field"><label for="pgDate">Date</label><input type="date" id="pgDate" value="${today()}"></div>
       <button class="btn" data-act="savepage" data-id="${b.id}">Save bookmark</button>
-      ${S2.length?`<div><div class="lbl" style="margin:4px 0">Reading log</div>${S2.slice(0,8).map(s=>`<div class="lg tnum"><span>${fmt(s.date)}</span><span>page ${s.page}</span><button class="x" data-act="delsess" data-id="${b.id}" data-s="${s.id}" aria-label="Remove entry">✕</button></div>`).join('')}${S2.length>8?`<p class="hint">+ ${S2.length-8} earlier entries (see Calendar)</p>`:''}</div>`:''}
+      ${S2.length?`<div><div class="lbl" style="margin:4px 0">Reading log</div>${S2.slice(0,8).map(s=>`<div class="lg tnum"><span>${fmt(s.date)}</span><span>page ${s.page}${s.min?` · ${s.min} min`:''}</span><button class="x" data-act="delsess" data-id="${b.id}" data-s="${s.id}" aria-label="Remove entry">✕</button></div>`).join('')}${S2.length>8?`<p class="hint">+ ${S2.length-8} earlier entries in the calendar</p>`:''}</div>`:''}
     </div>
-
     <div class="section" style="margin-top:12px"><div class="section-h"><h3>Quotes</h3><span class="small muted">${b.quotes.length}</span></div>
-      <button class="btn ghost" data-act="addquote" data-id="${b.id}">${I.cam.replace('<svg','<svg width="18" height="18"')} Capture a quote</button>
+      <button class="btn ghost" data-act="addquote" data-id="${b.id}">${I.cam} Capture a quote</button>
       ${[...b.quotes].sort((a,c)=>c.date.localeCompare(a.date)).map(q=>quoteCard(q,b,false)).join('')}
     </div>
-
     <div class="section" style="margin-top:12px"><div class="section-h"><h3>Notes</h3><span class="small muted">${b.notes.length}</span></div>
       <textarea id="noteIn" placeholder="Thoughts, comments, who recommended it…"></textarea>
       <button class="btn soft" data-act="addnote" data-id="${b.id}">Add note</button>
@@ -497,7 +736,7 @@ function openQuote(id){
   const b=find(id);Q={id,img:null,words:[],a:null,b:null};
   openSheet(`<div class="sheet-h"><h2>Capture a quote</h2><button class="link" data-act="back" data-id="${id}">Back</button></div>
   <div class="stack">
-    <p class="hint">From <b>${esc(b.title)}</b>. Photograph the page, let the reader pick out the words, then tap the first and last word of the passage.</p>
+    <p class="hint">From <b>${esc(b.title)}</b>. Photograph the page, tap Recognise text, then tap the first and last word of the passage.</p>
     <label class="scan"><input type="file" accept="image/*" capture="environment" id="qPhoto" class="vh">${I.cam}<span><b>Photograph the page</b><span class="hint">Or choose a photo you already took</span></span></label>
     <img id="qImg" class="qimg" alt="Photo of the page" hidden>
     <button class="btn soft" data-act="ocr" id="ocrBtn" disabled>Recognise text</button>
@@ -522,11 +761,11 @@ function setStatus(b,v){
   if(v==='done'){if(!b.finish)b.finish=today();if(b.pages&&(b.page||0)<b.pages){b.page=b.pages;b.sessions.push({id:uid(),date:b.finish,page:b.pages})}if(!b.start)b.start=b.finish}
   if(v!=='done')b.finish='';
 }
-function backupText(){return JSON.stringify({app:'petal-page',version:1,saved:new Date().toISOString(),...S})}
+function backupText(){return JSON.stringify({app:'petal-page',version:2,saved:new Date().toISOString(),...S})}
 async function doRestore(text){
   let d;try{d=JSON.parse(text)}catch(e){toast('That isn’t a valid backup. Check you copied all of it.');return false}
   if(!d||!Array.isArray(d.books)){toast('No books found in that backup.');return false}
-  S={books:d.books,settings:d.settings||{phase:'auto'}};await save();applyPhase();render();toast('Restored '+S.books.length+' books');return true;
+  S=normalize({books:d.books,settings:d.settings,checkins:d.checkins});await save();applyTheme(true);render();toast('Restored '+S.books.length+' books');return true;
 }
 
 document.addEventListener('click',async e=>{
@@ -537,25 +776,32 @@ document.addEventListener('click',async e=>{
     case'filter':filter=t.dataset.v;document.querySelectorAll('[data-act=filter]').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===filter));renderList();break;
     case'add':openAdd();break;
     case'live':startLive();break;
-    case'stoplive':stopLive();break;
-    case'prepocr':{t.disabled=true;t.textContent='Preparing…';try{await prepareReader();toast('Text reader is ready for offline use')}catch(err){toast('Couldn’t prepare it. Connect to the internet and try again.')}render();break}
-    case'open':openDetail(id,!!t.closest('.now'));break;
+    case'stoplive':stopLive();$('#scanMsg').textContent='';break;
+    case'open':openDetail(id,!!t.dataset.focus);break;
     case'close':closeSheet();break;
     case'back':openDetail(id);break;
     case'edit':openAdd(id);break;
-    case'clearex':S.books=S.books.filter(x=>!x.example);await save();render();toast('Examples removed');break;
+    case'clearex':S.books=S.books.filter(x=>!x.example);S.checkins={};await save();render();toast('Examples removed');break;
     case'calprev':calMonth.setMonth(calMonth.getMonth()-1);render();break;
     case'calnext':calMonth.setMonth(calMonth.getMonth()+1);render();break;
     case'day':selDay=t.dataset.v;render();break;
-    case'phase':S.settings.phase=t.dataset.v;await save();applyPhase();render();break;
+    case'checkin':{const d=t.dataset.d;if(d>today())break;S.checkins[d]=+t.dataset.v;await save();render();toast(d===today()?'Marked today as read':'Marked '+fmt(d)+' as read');break}
+    case'uncheck':delete S.checkins[t.dataset.v];await save();render();break;
+    case'phase':S.settings.phase=t.dataset.v;await save();applyTheme();render();break;
+    case'palette':S.settings.palette=t.dataset.v;await save();applyTheme();render();break;
+    case'goaltype':{const G=S.settings.goal;if(G.type!==t.dataset.v){G.type=t.dataset.v;G.value=G.type==='pages'?20:20}await save();render();break}
+    case'dgoal':{const G=S.settings.goal;G.value=Math.max(5,Math.min(300,(G.value||0)+(+t.dataset.v)));await save();render();break}
+    case'ygoal':S.settings.yearGoal=Math.max(1,Math.min(365,(S.settings.yearGoal||12)+(+t.dataset.v)));await save();render();break;
+    case'prepocr':{t.disabled=true;t.textContent='Preparing…';try{await prepareReader();toast('Text reader is ready for offline use')}catch(err){toast('Couldn’t prepare it. Connect to the internet and try again.')}render();break}
     case'status':setStatus(b,t.dataset.v);await save();openDetail(id);break;
     case'savepage':{
-      const v=parseInt($('#pgIn').value,10);if(isNaN(v)||v<0){toast('Enter the page number you stopped at');break}
-      const d=$('#pgDate').value||today();b.page=v;b.sessions.push({id:uid(),date:d,page:v});
+      const v=parseInt($('#pgIn').value,10);if(isNaN(v)||v<0){toast('Enter the page number you stopped at');$('#pgIn').focus();break}
+      const d=$('#pgDate').value||today(),min=parseInt($('#pgMin').value,10)||0;
+      b.page=v;b.sessions.push({id:uid(),date:d,page:v,min});
       if(b.status==='want'){b.status='reading';b.start=b.start||d}
       if(b.pages&&v>=b.pages&&b.status!=='done'){b.status='done';b.finish=d;toast('Finished! Lovely.')}else toast('Bookmark saved at page '+v);
       await save();openDetail(id);break}
-    case'delsess':b.sessions=b.sessions.filter(s=>s.id!==t.dataset.s);const last=[...b.sessions].sort((x,y)=>y.date.localeCompare(x.date))[0];b.page=last?last.page:0;await save();openDetail(id);break;
+    case'delsess':{b.sessions=b.sessions.filter(s=>s.id!==t.dataset.s);const last=[...b.sessions].sort((x,y)=>y.date.localeCompare(x.date))[0];b.page=last?last.page:0;await save();openDetail(id);break}
     case'addnote':{const v=$('#noteIn').value.trim();if(!v){toast('Write a note first');break}b.notes.push({id:uid(),date:today(),text:v});await save();openDetail(id);toast('Note added');break}
     case'delnote':b.notes=b.notes.filter(n=>n.id!==t.dataset.n);await save();openDetail(id);break;
     case'delquote':b.quotes=b.quotes.filter(q=>q.id!==t.dataset.q);await save();openDetail(id);break;
@@ -568,27 +814,25 @@ document.addEventListener('click',async e=>{
       try{const txt=await recognize(Q.img);Q.words=txt.split(/\s+/).filter(Boolean);Q.a=Q.b=null;
         if(!Q.words.length){m.textContent='No words found. Try a sharper, well-lit photo taken straight on.'}
         else{$('#words').hidden=false;renderWords();m.className='hint ok';m.textContent='Tap the first word of the passage, then the last.'}}
-      catch(err){m.textContent='The text reader isn’t set up on this phone yet. Open the app once with internet (or tap Prepare in the Backup tab). Meanwhile you can type the quote or paste it from Live Text / Google Lens.'}
+      catch(err){m.textContent='The text reader isn’t set up yet. Open the app once with internet (or tap Prepare in Settings). Meanwhile you can type the quote, or paste it from Live Text or Google Lens.'}
       t.disabled=false;break}
     case'saveq':{
       const txt=$('#qText').value.trim();if(!txt){toast('Add the quote text first');break}
       const img=Q.img&&$('#qKeep').checked?await compress(Q.img,900,.7):null;
       b.quotes.push({id:uid(),date:today(),page:parseInt($('#qPage').value,10)||'',text:txt,img});await save();openDetail(id);toast('Quote saved');break}
     case'lookup':{
-      const isbn=$('#fIsbn').value.replace(/[^0-9Xx]/g,'');const m=$('#scanMsg');
-      if(isbn.length!==10&&isbn.length!==13){m.className='hint';m.textContent='Enter a 10 or 13 digit ISBN first.';break}
-      m.className='hint';m.textContent='Looking up '+isbn+'…';
-      try{const r=await lookupIsbn(isbn);if(r){if(r.title)$('#fTitle').value=r.title;if(r.author)$('#fAuthor').value=r.author;if(r.pages)$('#fPages').value=r.pages;m.className='hint ok';m.textContent='Found it. Check the details and save.'}else m.textContent='No match for that ISBN. Type the title below.'}
-      catch(err){m.textContent='No internet right now. The ISBN is kept; type the title below.'}
-      break}
+      const raw=$('#fIsbn').value;const isbn=toIsbn13(raw);const m=$('#scanMsg');
+      if(!isbn){m.className='hint';m.textContent='Enter the 10 or 13 digit ISBN (it starts with 978 or 979).';break}
+      $('#fIsbn').value=isbn;await fillFromIsbn(isbn);break}
     case'savebook':{
       const title=$('#fTitle').value.trim();if(!title){toast('Add a title');$('#fTitle').focus();break}
+      stopLive();
       const data={title,author:$('#fAuthor').value.trim(),isbn:$('#fIsbn').value.trim(),pages:parseInt($('#fPages').value,10)||0,cover:window._cover||null};
       const st=$('#fStatus').value;let bk;
       if(id){bk=find(id);Object.assign(bk,data);delete bk.example;if(bk.status!==st)setStatus(bk,st)}
       else{bk={id:uid(),...data,status:'want',start:'',finish:'',page:0,hue:HUES[Math.floor(Math.random()*HUES.length)],sessions:[],notes:[],quotes:[]};setStatus(bk,st);S.books.push(bk)}
       await save();openDetail(bk.id);toast(id?'Saved':'Added to your shelf');break}
-    case'export':{try{const blob=new Blob([backupText()],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='petal-and-page-backup-'+today()+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);toast('Backup saved')}catch(err){toast('Couldn’t save a file here. Use Copy backup text.')}break}
+    case'export':{try{const blob=new Blob([backupText()],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='petal-and-page-backup-'+today()+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('Backup saved')}catch(err){toast('Couldn’t save a file here. Use Copy backup text.')}break}
     case'copybackup':{const s=backupText();try{await navigator.clipboard.writeText(s);toast('Backup copied. Paste it into a note or email to yourself.')}catch(err){const o=$('#bkout');o.hidden=false;o.textContent=s;const r=document.createRange();r.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast('Selected. Use your phone’s Copy.')}break}
     case'restore':{const v=$('#restoreText').value.trim();if(!v){toast('Paste backup text first');break}
       if(!t.dataset.armed){t.dataset.armed=1;t.textContent='Tap again to replace this library';break}
@@ -606,26 +850,25 @@ document.addEventListener('change',async e=>{
   const f=el.files&&el.files[0];if(!f)return;
   if(el.id==='scanIn'){
     const m=$('#scanMsg');m.className='hint';m.textContent='Reading the barcode…';
-    try{const img=await compress(f,1600,.9);const code=await decodeCode(img);
-      if(!code){m.textContent='Couldn’t read a code in that photo. Try closer, in good light, or type the ISBN.';}
-      else await handleCode(code);
-    }catch(err){m.textContent='That photo couldn’t be opened. Try another.'}
+    try{const code=await decodePhoto(f);if(!code)m.textContent='Couldn’t read a barcode in that photo. Fill most of the photo with the barcode, keep it sharp and flat, or type the ISBN.';else await handleCode(code)}
+    catch(err){m.textContent='That photo couldn’t be read. Try another, or type the ISBN.'}
+    el.value='';
   }
-  if(el.id==='covIn'){try{window._cover=await compress(f,360,.75);$('#covPrev').innerHTML=`<img class="cover s" src="${window._cover}" alt="">`}catch(err){toast('That photo couldn’t be opened')}}
+  if(el.id==='covIn'){try{window._cover=await compress(f,360,.78);$('#covPrev').innerHTML=`<img class="cover s" src="${window._cover}" alt="">`}catch(err){toast('That photo couldn’t be opened')}}
   if(el.id==='qPhoto'){try{Q.img=await compress(f,1800,.85);const im=$('#qImg');im.src=Q.img;im.hidden=false;$('#ocrBtn').disabled=false;$('#words').hidden=true;$('#ocrMsg').textContent=''}catch(err){toast('That photo couldn’t be opened')}}
   if(el.id==='restoreFile'){const txt=await f.text();await doRestore(txt);el.value=''}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetFor)closeSheet()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();else{applyTheme();}});
 
 /* ---------- boot ---------- */
 (async()=>{
-  document.documentElement.dataset.phase=autoPhase();
-  render();
-  await load();applyPhase();render();
-  setInterval(applyPhase,5*60*1000);
-  if('serviceWorker' in navigator&&!framed&&(location.protocol==='https:'||location.hostname==='localhost')){try{await navigator.serviceWorker.register('sw.js')}catch(e){}}
-  if(!framed&&navigator.onLine&&!readerReady()){setTimeout(()=>{prepareReader().then(w=>{w.terminate();ocrWorker=null;if(view==='backup')render()}).catch(()=>{})},4000)}
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)applyPhase()});
+  await load();applyTheme(true);render();
+  setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render()},60*1000);
+  if('serviceWorker' in navigator&&!framed&&(location.protocol==='https:'||location.hostname==='localhost')){
+    try{await navigator.serviceWorker.register('sw.js')}catch(e){}
+  }
+  if(!framed&&navigator.onLine&&!readerReady()){setTimeout(()=>{prepareReader().then(w=>{w.terminate();ocrWorker=null;if(view==='settings')render()}).catch(()=>{})},5000)}
 })();
 })();
 </script>
