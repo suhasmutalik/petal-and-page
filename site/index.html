@@ -411,31 +411,28 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 .landopt small{padding:0 10px 9px;color:var(--muted);font-size:.72rem}
 .stage{position:relative;margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)));margin-top:6px;margin-bottom:-28px;pointer-events:none}
 .stage svg{display:block;width:100%;height:auto;max-width:100%}
-.stage .rrun{transform-box:fill-box;transform-origin:center;animation:runpath 16s ease-in-out infinite}
-.stage .rtongue{transform-box:fill-box;transform-origin:50% 0;animation:pant .32s ease-in-out infinite alternate}
-@keyframes pant{to{transform:scaleY(1.12)}}
-.stage .rbounce{transform-box:fill-box;transform-origin:50% 100%;animation:gallop .5s ease-in-out infinite}
-@keyframes gallop{0%,100%{transform:translateY(0) scale(1.02,.98)}45%{transform:translateY(-6px) scale(.98,1.02)}70%{transform:translateY(-2px) scale(1,1)}}
-.stage .rshadow{transform-box:fill-box;transform-origin:center;animation:shad .5s ease-in-out infinite}
-@keyframes shad{45%{transform:scaleX(.82);opacity:.09}}
+.stage .rrun{transform-box:fill-box;transform-origin:center;animation:runpath 14s ease-in-out infinite}
+.stage .rbounce{animation:gallop .46s ease-in-out infinite}
+@keyframes gallop{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-4px) rotate(-3deg)}60%{transform:translateY(-1px) rotate(2deg)}}
+.stage .rshadow{transform-box:fill-box;transform-origin:center;animation:shad .46s ease-in-out infinite}
+@keyframes shad{30%{transform:scaleX(.88);opacity:.1}}
 .stage .lg{transform-box:fill-box;transform-origin:50% 6%}
-.stage .lnf{animation:legF .5s ease-in-out infinite}.stage .lff{animation:legF .5s ease-in-out infinite -.25s}
-.stage .lnb{animation:legB .5s ease-in-out infinite}.stage .lfb{animation:legB .5s ease-in-out infinite -.25s}
-@keyframes legF{0%,100%{transform:rotate(14deg)}50%{transform:rotate(-14deg)}}
-@keyframes legB{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
-.stage .rear{transform-box:fill-box;transform-origin:40% 3%;animation:earF .5s ease-in-out infinite}
-.stage .rearf{transform-box:fill-box;transform-origin:70% 5%;animation:earF .5s ease-in-out infinite -.1s}
-@keyframes earF{0%,100%{transform:rotate(-3deg)}45%{transform:rotate(9deg)}}
-.stage .rtail2{transform-box:fill-box;transform-origin:5% 95%;animation:rwag .2s ease-in-out infinite alternate}
-.stage .rhead{transform-box:fill-box;transform-origin:60% 85%;animation:headbob 1s ease-in-out infinite}
-@keyframes headbob{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg)}}
+.stage .lnf{animation:legF .46s ease-in-out infinite}.stage .lff{animation:legF .46s ease-in-out infinite -.08s}
+.stage .lnb{animation:legB .46s ease-in-out infinite}.stage .lfb{animation:legB .46s ease-in-out infinite -.08s}
+@keyframes legF{0%,100%{transform:rotate(26deg)}50%{transform:rotate(-30deg)}}
+@keyframes legB{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(24deg)}}
+.stage .rear{transform-box:fill-box;transform-origin:35% 4%;animation:earF .46s ease-in-out infinite}
+@keyframes earF{0%,100%{transform:rotate(-4deg)}35%{transform:rotate(16deg)}}
+.stage .rtail2{transform-box:fill-box;transform-origin:5% 90%;animation:rwag .23s ease-in-out infinite alternate}
+.stage .rhead{transform-box:fill-box;transform-origin:70% 80%;animation:headbob .46s ease-in-out infinite}
+@keyframes headbob{30%{transform:rotate(3deg)}}
 .stage .rblink,.stage .dblink2{transform-box:fill-box;transform-origin:center;animation:blink 5.4s infinite}
 .stage .dblink2{animation-duration:6.3s;animation-delay:-2s}
 .stage .dtail2{transform-box:fill-box;transform-origin:0% 100%;animation:dswish 3.8s ease-in-out infinite}
 .stage .dhead2{transform-box:fill-box;transform-origin:50% 95%;animation:dlook 14s ease-in-out infinite}
 .stage .dpup{transform-box:fill-box;transform-origin:center;animation:dpup 14s ease-in-out infinite}
 @keyframes dpup{0%,100%{transform:translateX(1.2px)}44%,50%{transform:translateX(-1px)}}
-@keyframes runpath{0%,6%{transform:translateX(0) scaleX(1)}44%{transform:translateX(-104px) scaleX(1)}47%,53%{transform:translateX(-104px) scaleX(-1)}92%{transform:translateX(0) scaleX(-1)}95%,100%{transform:translateX(0) scaleX(1)}}
+@keyframes runpath{0%{transform:translateX(0) scaleX(1)}45%{transform:translateX(-112px) scaleX(1)}48%,50%{transform:translateX(-112px) scaleX(-1)}95%{transform:translateX(0) scaleX(-1)}98%,100%{transform:translateX(0) scaleX(1)}}
 .stage .bounce{animation:bound .52s ease-in-out infinite}
 @keyframes bound{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-3deg)}}
 .stage .legf,.stage .legb{transform-box:fill-box;transform-origin:50% 0}
@@ -446,9 +443,8 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 @keyframes earflap{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(22deg)}}
 .stage .rtail{transform-box:fill-box;transform-origin:0 80%;animation:rwag .26s ease-in-out infinite alternate}
 @keyframes rwag{from{transform:rotate(-14deg)}to{transform:rotate(16deg)}}
-.stage .bfly{animation:bflypath 16s ease-in-out infinite}
-@keyframes bflypath{0%,6%{transform:translate(0,0)}25%{transform:translate(-50px,-16px)}44%{transform:translate(-120px,2px)}50%{transform:translate(-128px,-14px)}75%{transform:translate(-62px,-24px)}94%{transform:translate(-4px,-6px)}100%{transform:translate(0,0)}}
-@keyframes bflypath-old{0%{transform:translate(0,0)}25%{transform:translate(-60px,-18px)}44%{transform:translate(-130px,4px)}50%{transform:translate(-138px,-10px)}75%{transform:translate(-70px,-26px)}94%{transform:translate(-6px,-6px)}100%{transform:translate(0,0)}}
+.stage .bfly{animation:bflypath 14s ease-in-out infinite}
+@keyframes bflypath{0%{transform:translate(0,0)}25%{transform:translate(-60px,-18px)}44%{transform:translate(-130px,4px)}50%{transform:translate(-138px,-10px)}75%{transform:translate(-70px,-26px)}94%{transform:translate(-6px,-6px)}100%{transform:translate(0,0)}}
 .stage .wing{transform-box:fill-box;transform-origin:100% 50%;animation:flap .18s ease-in-out infinite alternate}
 .stage .wing.r{transform-origin:0 50%}
 @keyframes flap{to{transform:scaleX(.25)}}
@@ -500,9 +496,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.10.3';
+const APP_VERSION='1.10.4';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.10.4',items:['Ruhi is back as the storybook runner, now in her true colours: dark brown with golden highlights']},
   {v:'1.10.3',items:['Ruhi is fuzzier, warmer and happier: big shiny eyes, a happy smile, curly ears and soft little legs','She trots and bounces after the butterfly instead of stiffly galloping']},
   {v:'1.10.2',items:['Updates now install by themselves when you open the app, so you always have the latest version']},
   {v:'1.10.1',items:['Ruhi and Dori redrawn as storybook illustrations, with soft shading and fur detail','Ruhi gallops with flowing ears and a happy tail; Dori follows her with her eyes']},
@@ -1675,7 +1672,7 @@ function stageSVG(ph){
   <path d="M52 116 C60 110 74 108 86 109" stroke="#FFFFFF" stroke-opacity="${night?.12:.45}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
   <g transform="translate(55 45) scale(.82)">${doriSVG()}</g>
   <!-- Ruhi playing -->
-  <g class="rrun"><g transform="translate(228 41) scale(1.02)"><ellipse class="rshadow" cx="54" cy="75" rx="30" ry="4" fill="#000" opacity=".16" filter="url(#softBlur)"/><g class="rbounce">${ruhiSVG()}</g></g></g>
+  <g class="rrun"><g transform="translate(232 52) scale(.82)"><ellipse class="rshadow" cx="62" cy="80" rx="40" ry="4.5" fill="#000" opacity=".16" filter="url(#softBlur)"/><g class="rbounce">${ruhiSVG()}</g></g></g>
   ${PET_DEFS}
   <!-- butterfly she chases -->
   <g transform="translate(236 40)"><g class="bfly"><path class="wing" d="M0 0 q-8 -9 -11 -2 q2 6 11 2z" fill="#F7B6C8"/><path class="wing r" d="M0 0 q8 -9 11 -2 q-2 6 -11 2z" fill="#F4D27A"/><path d="M0 -3 v6" stroke="#4A2E3B" stroke-width="1.2"/></g></g>
@@ -1693,55 +1690,45 @@ function renderScene(){
 function stageHTML(){if(S.settings.bg!=='mountains')return'';return`<div class="stage">${stageSVG(themePhase())}</div>`}
 
 /* ---------- illustrated Ruhi & Dori ---------- */
-function scallop(pts,amp){/* closed path through pts with soft outward bumps between them */
-  let d=`M${pts[0][0]} ${pts[0][1]}`;
-  for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;const nx=dy/l,ny=-dx/l;d+=` Q${(mx+nx*amp).toFixed(1)} ${(my+ny*amp).toFixed(1)} ${b[0]} ${b[1]}`}
-  return d+'Z';
-}
-function ruhiSVG(){
-  const ear=scallop([[33,14],[40,13],[44,19],[45,27],[47,35],[48,43],[46,51],[41,57],[35,57],[31,52],[29,45],[28,37],[28,28],[29,20]],2.2);
-  const earFar=scallop([[16,15],[11,19],[8,27],[7,35],[9,42],[13,44],[16,38],[17,29],[18,21]],1.8);
-  const bib=scallop([[22,46],[28,50],[35,51],[41,49],[42,55],[39,61],[33,64],[27,62],[23,57]],1.6);
-  const tail=scallop([[74,48],[79,40],[83,33],[88,29],[92,30],[91,35],[94,38],[89,42],[86,47],[80,52]],2);
-  const tuft=scallop([[22,10],[26,6],[31,6],[35,9],[30,10],[26,11]],1.2);
-  return`
+function ruhiSVG(){return`
 <g class="ruhi-body">
-  <g class="rtail2"><path d="${tail}" fill="url(#rEarG)" filter="url(#fuzz)"/><path d="M78 46 C82 40 86 35 90 32 M81 48 C85 44 88 40 92 37" stroke="#F7CF95" stroke-width="1" fill="none" stroke-linecap="round" opacity=".7"/></g>
-  <g class="lg lfb"><rect x="66" y="56" width="10" height="16" rx="5" fill="url(#rFarG)" filter="url(#fuzz)"/></g>
-  <g class="lg lff"><rect x="34" y="56" width="10" height="16" rx="5" fill="url(#rFarG)" filter="url(#fuzz)"/></g>
-  <path d="M28 52 C28 40 40 35 54 35 C68 35 80 40 80 52 C80 62 70 66 54 66 C38 66 28 62 28 52Z" fill="url(#rBodyG)" filter="url(#fuzz)"/>
-  <path d="M38 64 q3 4 6 0 q3 4 6 0 q3 4 6 0 q3 4 6 0 q3 4 6 0" fill="url(#rBodyG)" filter="url(#fuzz)"/>
-  <path d="M44 40 C52 37 62 37 72 40" stroke="#FFE3B8" stroke-width="2.4" fill="none" opacity=".55" stroke-linecap="round"/>
-  
-  <g class="lg lnb"><rect x="70" y="57" width="11" height="16" rx="5.5" fill="url(#rBodyG)" filter="url(#fuzz)"/><ellipse cx="75.5" cy="72" rx="6.5" ry="3.4" fill="url(#rCreamG)" filter="url(#fuzz)"/><path d="M73 73.5 v-1.8 M75.5 74 v-2 M78 73.5 v-1.8" stroke="#E2CBA9" stroke-width=".6"/></g>
-  <g class="lg lnf"><rect x="40" y="57" width="11" height="16" rx="5.5" fill="url(#rBodyG)" filter="url(#fuzz)"/><ellipse cx="45.5" cy="72" rx="6.5" ry="3.4" fill="url(#rCreamG)" filter="url(#fuzz)"/><path d="M43 73.5 v-1.8 M45.5 74 v-2 M48 73.5 v-1.8" stroke="#E2CBA9" stroke-width=".6"/></g>
-  <path d="${bib}" fill="url(#rCreamG)" filter="url(#fuzz)"/>
+  <g class="lg lfb"><path d="M80 42 C92 40 100 48 98 56 C96 62 92 64 94 70 C95 73 98 74 98 76 C94 78 89 77 88 75 C87 70 86 66 84 62 C78 58 76 48 80 42Z" fill="url(#rFarG)"/></g>
+  <g class="lg lff"><path d="M44 46 C52 44 56 50 54 56 C53 62 51 68 50 74 C52 76 48 78 44 77 C42 76 42 74 44 73 C44 67 43 60 42 54 C41 50 41 48 44 46Z" fill="url(#rFarG)"/></g>
+  <g class="rtail2"><path d="M91 39 C97 33 101 27 106 21 C109 17 114 16 116 19 C117 22 114 24 116 27 C113 29 114 32 112 34 C107 38 101 42 96 45Z" fill="url(#rEarG)"/>
+    <path d="M95 40 C100 35 104 30 108 24 M98 43 C103 39 107 35 111 30" stroke="#D9994F" stroke-width=".9" fill="none" opacity=".65" stroke-linecap="round"/></g>
+  <path d="M30 40 C32 28 46 24 62 25 C78 26 92 30 95 40 C97 50 90 57 78 58 C64 60 46 60 38 56 C31 53 29 47 30 40Z" fill="url(#rBodyG)"/>
+  <path d="M42 57 Q46 64 51 58.5 Q55 65 60 59 Q65 65 70 59 Q75 64 80 57.5" fill="#5A2E18"/>
+  <path d="M46 59 q1 3 3 4 M56 60 q1 3 3 4 M66 60 q1 3 3 4" stroke="#B9773A" stroke-width=".8" fill="none" stroke-linecap="round" opacity=".8"/>
+  <path d="M44 29 C56 26 74 26 88 30" stroke="#E0A25A" stroke-width="2.6" fill="none" opacity=".55" stroke-linecap="round"/>
+  <path d="M58 33 c3 2 5 2 8 0 M72 33 c3 2 5 2 8 0 M64 44 c3 2 5 2 8 0" stroke="#3E1F10" stroke-width=".8" fill="none" opacity=".35" stroke-linecap="round"/>
+  <path d="M30 38 C26 48 30 58 38 64 C40 61 42 62 44 59 C45 54 45 48 42 44 C38 41 34 39 30 38Z" fill="url(#rCreamG)"/>
+  <path d="M33 46 q1 6 4 11 M37 45 q2 6 4 10" stroke="#E5D0B2" stroke-width=".8" fill="none" stroke-linecap="round"/>
+  <g class="lg lnb"><path d="M74 44 C86 42 94 50 92 58 C90 64 86 66 88 72 C89 75 92 76 92 78 C88 80 83 79 82 77 C81 72 80 68 78 64 C72 60 70 50 74 44Z" fill="url(#rBodyG)"/>
+    <path d="M79 60 C78 66 79 71 81 75" stroke="#C48143" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".75"/>
+    <ellipse cx="88" cy="78" rx="5.2" ry="2.7" fill="#F6E6CF"/></g>
+  <g class="lg lnf"><path d="M38 48 C46 46 50 52 48 58 C47 64 45 70 44 76 C46 78 42 80 38 79 C36 78 36 76 38 75 C38 69 37 62 36 56 C35 52 35 50 38 48Z" fill="url(#rBodyG)"/>
+    <path d="M42 60 C42 66 41 71 41 75" stroke="#C48143" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".75"/>
+    <ellipse cx="40" cy="78.5" rx="5.2" ry="2.7" fill="#F6E6CF"/></g>
   <g class="rhead">
-    <g class="rearf"><path d="${earFar}" fill="url(#rEarDG)" filter="url(#fuzz)"/></g>
-    <path d="M7 31 C7 17 16 8 28 8 C40 8 47 17 47 29 C47 41 39 49 27 49 C17 49 7 43 7 31Z" fill="url(#rHeadG)" filter="url(#fuzz)"/>
-    <path d="${tuft}" fill="url(#rEarG)" filter="url(#fuzz)"/>
-    <path d="M15 14 C20 10 28 9 34 11" stroke="#FFE6BF" stroke-width="2.2" fill="none" opacity=".6" stroke-linecap="round"/>
-    <path d="M-1 39 C-1 31 6 27 14 27 C22 27 27 32 27 39 C27 46 20 50 12 50 C4 50 -1 46 -1 39Z" fill="url(#rCreamG)" filter="url(#fuzz)"/>
-    <ellipse cx="31" cy="38" rx="5" ry="3.2" fill="#F59A92" opacity=".45"/>
-    <g class="rblink">
-      <ellipse cx="26.5" cy="27.5" rx="4.3" ry="5" fill="url(#rEyeG)"/><circle cx="28" cy="25.6" r="1.6" fill="#fff"/><circle cx="25.3" cy="29.8" r=".7" fill="#fff" opacity=".85"/>
-      <ellipse cx="11.5" cy="27" rx="3.1" ry="4.2" fill="url(#rEyeG)"/><circle cx="12.6" cy="25.4" r="1.15" fill="#fff"/>
-    </g>
-    <path d="M22.5 20.5 Q26.5 18.5 30.5 20.6 M8.6 21.2 Q11.6 19.6 14.4 21" stroke="#A86A33" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-    <path d="M4 33.6 C4 31.2 6.4 30.2 8.6 30.2 C10.8 30.2 12.8 31.4 12.6 33.5 C12.4 35.8 10.2 37.6 8.4 37.6 C6.4 37.6 4 36 4 33.6Z" fill="url(#rNoseG)"/>
-    <ellipse cx="7.2" cy="31.8" rx="1.6" ry=".85" fill="#fff" opacity=".6"/>
-    <path d="M8.4 37.6 V41" stroke="#5C3424" stroke-width="1.1" stroke-linecap="round"/>
-    <path d="M2.5 40.5 Q5.5 47.5 11.5 46.8 Q17.8 46 19.8 39.6 Q14.5 42.6 8.4 41 Q5 41 2.5 40.5Z" fill="#6E3326"/>
-    <g class="rtongue"><path d="M6.4 43.2 C6 49 8.4 52.4 11.6 52 C14.6 51.6 15.6 47 14.8 42.6 C12 43.8 9 43.8 6.4 43.2Z" fill="url(#rTongueG)"/><path d="M10.8 44 L11.2 49.6" stroke="#D45E78" stroke-width=".8" stroke-linecap="round"/></g>
-    <path d="M24 45.5 C30 50 38 51 44 47 L45.4 51.6 C38.6 56 29 55 22.4 50Z" fill="url(#rCollarG)"/>
-    <path d="M24.6 47.6 C30.4 51.6 38 52.4 44.4 49" stroke="#F49186" stroke-width=".7" fill="none" opacity=".75"/>
-    <g class="rtag"><circle cx="34.5" cy="55.6" r="3" fill="url(#rTagG)"/><path d="M33.4 54.8 l1.1 1.1 1.4 -1.6" stroke="#A9781F" stroke-width=".5" fill="none"/><circle cx="33.6" cy="54.6" r=".7" fill="#fff" opacity=".85"/></g>
-    <g transform="translate(5 1)"><g class="rear"><path d="${ear}" fill="url(#rEarG)" filter="url(#fuzz)"/>
-      <path d="M33 18 C35 28 34 40 36 52 M38.5 18 C41 28 41 40 42 51 M31 26 C31.5 34 31 42 32.5 49" stroke="#8C5224" stroke-width=".9" fill="none" opacity=".4" stroke-linecap="round"/>
-      <path d="M34 15.5 C38.5 16 41.5 20 42 25" stroke="#F0C185" stroke-width="1.6" fill="none" opacity=".65" stroke-linecap="round"/></g></g>
+    <path d="M22 24 C21 34 25 42 33 47 L55 35 C51 27 45 21 37 19Z" fill="url(#rBodyG)"/>
+    <path d="M26 33 C31 39 40 41 47.5 36 L49 41 C41.5 46.5 30 44.5 23.5 38Z" fill="url(#rCollarG)"/>
+    <path d="M27 35.5 C32 40.5 40 42.5 47.8 38.4" stroke="#F49186" stroke-width=".7" fill="none" opacity=".75"/>
+    <g class="rtag"><circle cx="36.5" cy="46" r="2.8" fill="url(#rTagG)"/><circle cx="35.6" cy="45.1" r=".75" fill="#fff" opacity=".85"/></g>
+    <path d="M10 14 C12 4 22 -1 32 1 C41 3 45 12 43 21 C41 29 34 33 26 32 C20 32 15 30 12 31 C6 33 0 31 -1 26 C-2 21 2 17 8 17 C9 16 9.5 15 10 14Z" fill="url(#rHeadG)"/>
+    <path d="M16 4 C22 0 30 0 35 3" stroke="#E0A25A" stroke-width="2" fill="none" opacity=".65" stroke-linecap="round"/>
+    <path d="M-1 26 C-2 21 2 17.5 8.5 17.5 C13.5 17.5 16.5 20.5 16.5 25 C15.5 30.5 9 32.5 4 31 C1.5 30 0 28.5 -1 26Z" fill="url(#rCreamG)"/>
+    <path d="M13 17 C14.5 13 16 10 18 8" stroke="#3E1F10" stroke-width="1" fill="none" opacity=".45" stroke-linecap="round"/>
+    <g class="rtongue"><path d="M4.5 29.5 C3.5 35.5 5.2 39.5 8.4 39 C11.2 38.6 11.6 33.6 10.2 29.8Z" fill="url(#rTongueG)"/><path d="M7.4 31.4 L7.8 36.8" stroke="#D45E78" stroke-width=".8"/></g>
+    <path d="M1.5 29.5 C4.5 31.6 9.5 31.8 13.5 29" stroke="#6B3B2A" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+    <ellipse cx="-.6" cy="21.4" rx="3.3" ry="2.8" fill="url(#rNoseG)"/><ellipse cx="-1.4" cy="20.4" rx="1.05" ry=".62" fill="#fff" opacity=".75"/>
+    <g class="rblink"><ellipse cx="19" cy="17" rx="2.9" ry="3.2" fill="#2B1810"/><circle cx="20" cy="15.8" r="1.05" fill="#fff"/><circle cx="18.2" cy="18.3" r=".45" fill="#fff" opacity=".8"/></g>
+    <path d="M15.2 12.6 Q19 10.6 22.8 12.8" stroke="#9A6130" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <g class="rear"><path d="M31 6 C40 4 45 11 44.5 20 C46.5 27 49.5 34 45.5 41 C42.5 45 37.5 44 36 40.5 C32.5 43 28.5 40 29.5 35.5 C26 31 26 20 27 14 C27 10 28.5 7.5 31 6Z" fill="url(#rEarG)"/>
+      <path d="M32 10 C35 18 35.5 27 36.5 37 M36.5 9 C40 17 41 26 42.5 36 M29.5 16 C30 23 30.5 29 31.5 34" stroke="#2E160A" stroke-width=".85" fill="none" opacity=".45" stroke-linecap="round"/>
+      <path d="M33 7.5 C37.5 9 40.5 13.5 41 18.5" stroke="#D9994F" stroke-width="1.4" fill="none" opacity=".6" stroke-linecap="round"/>
+      <path d="M36 40.5 Q38.5 43 41 41.5 M30.5 36.5 Q31.5 40 34 40" stroke="#2E160A" stroke-width=".8" fill="none" opacity=".6"/></g>
   </g>
 </g>`}
-
 function doriSVG(){return`
 <g class="dori">
   <ellipse cx="30" cy="80" rx="24" ry="3.4" fill="#000" opacity=".18" filter="url(#softBlur)"/>
@@ -1772,18 +1759,15 @@ function doriSVG(){return`
 </g>`}
 const PET_DEFS=`<defs>
   <filter id="softBlur" x="-30%" y="-200%" width="160%" height="500%"><feGaussianBlur stdDeviation="1.8"/></filter>
-  <radialGradient id="rBodyG" cx="38%" cy="22%" r="85%"><stop offset="0" stop-color="#FAD79F"/><stop offset=".5" stop-color="#EBB06B"/><stop offset="1" stop-color="#C5853F"/></radialGradient>
-  <radialGradient id="rHeadG" cx="42%" cy="25%" r="78%"><stop offset="0" stop-color="#FCDDA8"/><stop offset=".55" stop-color="#EDB470"/><stop offset="1" stop-color="#C8873F"/></radialGradient>
-  <linearGradient id="rFarG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C98A47"/><stop offset="1" stop-color="#A56A32"/></linearGradient>
-  <linearGradient id="rEarG" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="#E0A260"/><stop offset=".6" stop-color="#C07D3A"/><stop offset="1" stop-color="#9C5F2A"/></linearGradient>
+  <radialGradient id="rBodyG" cx="35%" cy="22%" r="88%"><stop offset="0" stop-color="#C07A40"/><stop offset=".45" stop-color="#7E4426"/><stop offset="1" stop-color="#4A2614"/></radialGradient>
+  <radialGradient id="rHeadG" cx="45%" cy="20%" r="80%"><stop offset="0" stop-color="#C98446"/><stop offset=".5" stop-color="#84492A"/><stop offset="1" stop-color="#512A16"/></radialGradient>
+  <linearGradient id="rFarG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E3019"/><stop offset="1" stop-color="#42200F"/></linearGradient>
+  <linearGradient id="rEarG" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="#94562B"/><stop offset=".6" stop-color="#6A381D"/><stop offset="1" stop-color="#482411"/></linearGradient>
   <radialGradient id="rCreamG" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#FFFBF4"/><stop offset="1" stop-color="#EBD6B9"/></radialGradient>
   <linearGradient id="rTongueG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F59AAE"/><stop offset="1" stop-color="#E06F8A"/></linearGradient>
-  <radialGradient id="rNoseG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#6A4A40"/><stop offset="1" stop-color="#22140F"/></radialGradient>
+  <radialGradient id="rNoseG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#5A4038"/><stop offset="1" stop-color="#1B1210"/></radialGradient>
   <linearGradient id="rCollarG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E2554A"/><stop offset="1" stop-color="#A72F2A"/></linearGradient>
   <radialGradient id="rTagG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFE9A3"/><stop offset="1" stop-color="#C8962E"/></radialGradient>
-  <radialGradient id="rEyeG" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#5A3422"/><stop offset=".6" stop-color="#2A160E"/><stop offset="1" stop-color="#120905"/></radialGradient>
-  <linearGradient id="rEarDG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9672D"/><stop offset="1" stop-color="#7F4A1E"/></linearGradient>
-  <filter id="fuzz" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.3" xChannelSelector="R" yChannelSelector="G"/></filter>
   <radialGradient id="dBlackG" cx="62%" cy="22%" r="90%"><stop offset="0" stop-color="#4A4450"/><stop offset=".45" stop-color="#211D24"/><stop offset="1" stop-color="#0D0B0E"/></radialGradient>
   <radialGradient id="dHeadG" cx="60%" cy="25%" r="80%"><stop offset="0" stop-color="#4E4854"/><stop offset=".5" stop-color="#231F26"/><stop offset="1" stop-color="#0F0D10"/></radialGradient>
   <radialGradient id="dWhiteG" cx="55%" cy="25%" r="85%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".7" stop-color="#F1F0F4"/><stop offset="1" stop-color="#D7D5DD"/></radialGradient>
