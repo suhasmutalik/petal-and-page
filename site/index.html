@@ -286,16 +286,16 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 @keyframes breathe{50%{transform:scale(1.018,.988)}}
 .pig .blinker{transform-box:fill-box;transform-origin:center;animation:blink 5.2s infinite}
 @keyframes blink{0%,93%,100%{transform:scaleY(1)}95.5%{transform:scaleY(.08)}}
-.pig .earl{transform-origin:76px 62px;animation:earL 7s ease-in-out infinite}
-.pig .earr{transform-origin:124px 62px;animation:earR 7s ease-in-out infinite 1.3s}
+.pig .earl{transform-origin:70px 66px;animation:earL 7s ease-in-out infinite}
+.pig .earr{transform-origin:130px 66px;animation:earR 7s ease-in-out infinite 1.3s}
 @keyframes earL{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-9deg)}96%{transform:rotate(3deg)}}
 @keyframes earR{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(9deg)}96%{transform:rotate(-3deg)}}
-.pig .tassel{transform-origin:138px 46px;animation:swing 2.8s ease-in-out infinite}
+.pig .tassel{transform-origin:142px 42px;animation:swing 2.8s ease-in-out infinite}
 @keyframes swing{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(8deg)}}
-.pig .tail{transform-origin:150px 150px;animation:wag 1.8s ease-in-out infinite}
+.pig .tail{transform-origin:136px 166px;animation:wag 1.8s ease-in-out infinite}
 @keyframes wag{50%{transform:rotate(14deg)}}
 .pig .closed,.pig .zzz{display:none}
-.pig.reading .head{transform-origin:100px 130px;animation:nod 3.4s ease-in-out infinite}
+.pig.reading .head{transform-origin:100px 150px;animation:nod 3.4s ease-in-out infinite}
 @keyframes nod{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(1px)}}
 .pig.reading .scan{animation:scan 3.4s ease-in-out infinite}
 @keyframes scan{0%,100%{transform:translate(-2.2px,1.6px)}50%{transform:translate(2.2px,1.6px)}}
@@ -304,7 +304,7 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 @keyframes flip{0%,58%{transform:scaleX(1);opacity:0}60%{opacity:1}84%{transform:scaleX(-1);opacity:1}90%,100%{transform:scaleX(-1);opacity:0}}
 .pig.sleep .open{display:none}.pig.sleep .closed{display:inline}
 .pig.sleep .zzz{display:inline}
-.pig.sleep .head{transform-origin:100px 130px;transform:rotate(-4deg) translateY(3px)}
+.pig.sleep .head{transform-origin:100px 150px;transform:rotate(-4deg) translateY(3px)}
 .pig .zzz text{animation:zz 3s ease-in infinite;opacity:0;font-family:var(--display);font-weight:600}
 .pig .zzz text:nth-child(2){animation-delay:1s}.pig .zzz text:nth-child(3){animation-delay:2s}
 @keyframes zz{0%{opacity:0;transform:translate(0,6px)}30%{opacity:1}100%{opacity:0;transform:translate(12px,-22px)}}
@@ -337,9 +337,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.5.0';
+const APP_VERSION='1.5.1';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.5.1',items:['Your piglet is now a true baby: bigger head, big sparkly eyes, and it stays little as it grows wiser']},
   {v:'1.5.0',items:['Reading timer with a glassy, calm design','Meet your piglet: it reads along, naps when you pause, and grows wiser with every hour you read','Six levels from Piglet to Grand Sage, with a celebration at each one','The timer keeps going even if you close the app']},
   {v:'1.4.1',items:['The greeting now always matches the time of day, even when the app was left open']},
   {v:'1.4.0',items:['Choose from 10 colour themes, or pick your own colour','Light, dark, follow the clock or match your phone','10 heading fonts and 10 text fonts to choose from','Corner style, card style and text size options']},
@@ -1170,55 +1171,55 @@ const PIG=[
   {h:3,n:'Curious Piglet',d:'Turning pages with wonder'},
   {h:12,n:'Bookworm',d:'Found her reading glasses'},
   {h:35,n:'Scholar',d:'Graduated with honours'},
-  {h:80,n:'Sage',d:'Wise beyond her years'},
-  {h:160,n:'Grand Sage',d:'Keeper of all the stories'}
+  {h:80,n:'Little Sage',d:'Tiny, but so very wise'},
+  {h:160,n:'Grand Sage',d:'The littlest keeper of all the stories'}
 ];
 function lifeMinutes(){return Object.values(dayStats()).reduce((s,x)=>s+(x.min||0),0)}
 function pigLevel(min){const h=(min??lifeMinutes())/60;let i=0;PIG.forEach((p,k)=>{if(h>=p.h)i=k});return i}
 function pigProgress(min){const m=min??lifeMinutes(),i=pigLevel(m),cur=PIG[i],nx=PIG[i+1];return{i,cur,nx,hours:m/60,frac:nx?Math.min(1,(m/60-cur.h)/(nx.h-cur.h)):1}}
 function pigSVG(lv,mode,crop){
-  const sc=lv===0?.86:lv===1?.93:1;
+  // Baby proportions at every level: big head, low big eyes, tiny body. Wisdom shows only in accessories.
+  const sc=lv===0?.9:lv===1?.95:1;
   const bookCol=['#7CC6C1','#F4B860','#B66E7B','#5D6FA8','#6E5A8A','#4B3A7A'][lv];
-  const book=`<g class="book">
+  const book=`<g transform="translate(100 166) scale(.78) translate(-100 -148)"><g class="book">
     <path d="M100 136 L62 128 L62 162 L100 170 L138 162 L138 128 Z" fill="${bookCol}"/>
     <path d="M100 134 L66 127 L66 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
     <path d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
-    ${lv===0?'<circle cx="83" cy="146" r="6" fill="#F4B860"/><path d="M112 150 l6 -8 l6 8z" fill="#7CC6C1"/>':'<path d="M72 138 L94 142 M72 145 L94 149 M72 152 L90 155 M106 142 L128 138 M106 149 L128 145 M106 155 L124 152" stroke="#D9C3BC" stroke-width="1.6" stroke-linecap="round"/>'}
+    ${lv===0?'<circle cx="83" cy="146" r="7" fill="#F4B860"/><path d="M110 152 l7 -10 l7 10z" fill="#7CC6C1"/>':'<path d="M72 138 L94 142 M72 145 L94 149 M72 152 L90 155 M106 142 L128 138 M106 149 L128 145 M106 155 L124 152" stroke="#D9C3BC" stroke-width="1.8" stroke-linecap="round"/>'}
     <path class="flip" d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFF8F2" stroke="#E7CFC6" stroke-width="1.2"/>
-    <ellipse cx="64" cy="152" rx="8" ry="7" fill="#F5B3C3"/><ellipse cx="136" cy="152" rx="8" ry="7" fill="#F5B3C3"/>
-  </g>`;
-  const glasses=lv>=2?`<g fill="rgba(255,255,255,.28)" stroke="#4A2E3B" stroke-width="2.6"><circle cx="83" cy="86" r="11"/><circle cx="117" cy="86" r="11"/></g><path d="M94 85 Q100 80 106 85" stroke="#4A2E3B" stroke-width="2.4" fill="none"/>`:'';
-  const bow=lv===1?`<g transform="translate(126 50) rotate(18)"><path d="M0 0 L-12 -8 L-12 8Z M0 0 L12 -8 L12 8Z" fill="#E36C8E"/><circle r="4" fill="#C94F74"/></g>`:'';
-  const cap=lv>=3&&lv<5?`<g><path d="M76 50 L76 60 Q100 69 124 60 L124 50 Z" fill="#2E1F29"/><path d="M100 30 L148 44 L100 58 L52 44 Z" fill="#3A2733"/><circle cx="100" cy="44" r="3" fill="#C9A15E"/><g class="tassel"><path d="M100 44 L138 46 L138 66" stroke="#C9A15E" stroke-width="2" fill="none"/><path d="M134 64 L142 64 L140 74 L136 74Z" fill="#C9A15E"/></g></g>`:'';
-  const hat=lv===5?`<g><path d="M58 56 Q100 66 142 56 L112 4 Q106 -4 100 6 Z" fill="#4B3A7A"/><path d="M54 56 Q100 70 146 56 Q100 62 54 56Z" fill="#3A2C63"/><path d="M96 26 l3 6 l6 1 l-4.5 4 l1 6 l-5.5 -3 l-5.5 3 l1 -6 l-4.5 -4 l6 -1z" fill="#F3D27A"/><circle cx="118" cy="44" r="2.4" fill="#F3D27A"/><circle cx="82" cy="40" r="1.8" fill="#F3D27A"/></g>`:'';
-  const brows=lv>=4?`<path d="M72 70 Q83 63 94 69 M106 69 Q117 63 128 70" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" fill="none"/>`:'';
-  const beard=lv>=4?`<path d="M84 116 Q86 140 100 146 Q114 140 116 116 Q108 124 100 123 Q92 124 84 116Z" fill="#FFFFFF" stroke="#EDE6EA" stroke-width="1"/>`:'';
-  const stack=lv>=4?`<g><rect x="150" y="168" width="40" height="10" rx="2" fill="#B66E7B"/><rect x="153" y="159" width="34" height="9" rx="2" fill="#5D6FA8"/><rect x="149" y="150" width="38" height="9" rx="2" fill="#C9A15E"/></g>`:'';
-  const sparks=lv>=5?`<g fill="#F3D27A"><path class="spark" d="M30 60 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2z"/><path class="spark" d="M172 40 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2z"/><path class="spark" d="M178 110 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 l4 -1.5z"/></g>`:'';
-  const eyeR=lv===0?6.5:5.4;
-  return`<svg class="pig ${mode||'idle'}" viewBox="${crop?(lv===5?'36 -6 128 128':lv>=3?'42 8 116 116':'44 30 112 112'):'0 0 200 210'}" role="img" aria-label="${PIG[lv].n}">
+    <ellipse cx="63" cy="152" rx="10" ry="9" fill="#F7BCCA"/><ellipse cx="137" cy="152" rx="10" ry="9" fill="#F7BCCA"/>
+  </g></g>`;
+  const glasses=lv>=2?`<g fill="rgba(255,255,255,.25)" stroke="#4A2E3B" stroke-width="2.6"><circle cx="80" cy="99" r="13.5"/><circle cx="120" cy="99" r="13.5"/></g><path d="M93.5 97 Q100 92.5 106.5 97" stroke="#4A2E3B" stroke-width="2.4" fill="none"/>`:'';
+  const bow=lv===1?`<g transform="translate(130 56) rotate(18)"><path d="M0 0 L-13 -9 L-13 9Z M0 0 L13 -9 L13 9Z" fill="#E36C8E"/><circle r="4.5" fill="#C94F74"/></g>`:'';
+  const cap=lv>=3&&lv<5?`<g><path d="M74 46 L74 57 Q100 66 126 57 L126 46 Z" fill="#2E1F29"/><path d="M100 26 L152 40 L100 54 L48 40 Z" fill="#3A2733"/><circle cx="100" cy="40" r="3.2" fill="#C9A15E"/><g class="tassel"><path d="M100 40 L142 42 L142 62" stroke="#C9A15E" stroke-width="2.2" fill="none"/><path d="M138 60 L146 60 L144 71 L140 71Z" fill="#C9A15E"/></g></g>`:'';
+  const hat=lv===5?`<g><path d="M56 54 Q100 66 144 54 L112 0 Q106 -8 100 2 Z" fill="#4B3A7A"/><path d="M50 54 Q100 70 150 54 Q100 62 50 54Z" fill="#3A2C63"/><path d="M96 22 l3 6 l6 1 l-4.5 4 l1 6 l-5.5 -3 l-5.5 3 l1 -6 l-4.5 -4 l6 -1z" fill="#F3D27A"/><circle cx="118" cy="40" r="2.4" fill="#F3D27A"/><circle cx="82" cy="36" r="1.8" fill="#F3D27A"/></g>`:'';
+  const tuft=lv<3?`<path d="M97 46 q2 -12 12 -8 q-7 1 -6 8" stroke="#EE9AB0" stroke-width="3.2" fill="none" stroke-linecap="round"/>`:'';
+  const stack=lv>=4?`<g><rect x="150" y="176" width="38" height="10" rx="2" fill="#B66E7B"/><rect x="153" y="167" width="32" height="9" rx="2" fill="#5D6FA8"/><rect x="149" y="158" width="36" height="9" rx="2" fill="#C9A15E"/></g>`:'';
+  const sparks=lv>=4?`<g fill="#F3D27A"><path class="spark" d="M28 62 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2z"/><path class="spark" d="M172 46 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2z"/>${lv===5?'<path class="spark" d="M178 112 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 l4 -1.5z"/>':''}</g>`:'';
+  const vb=crop?(lv===5?'28 -10 144 144':lv>=3?'40 18 120 120':'42 34 116 116'):'0 0 200 210';
+  return`<svg class="pig ${mode||'idle'}" viewBox="${vb}" role="img" aria-label="${PIG[lv].n}">
   ${sparks}${stack}
-  <g class="all"><g transform="translate(${(100-100*sc).toFixed(1)} ${(198-198*sc).toFixed(1)}) scale(${sc})">
-    <path class="tail" d="M146 150 q16 -4 12 -15 q-4 -8 -11 -1 q-4 6 3 8" stroke="#E894A9" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-    <ellipse cx="100" cy="155" rx="50" ry="38" fill="#F6B9C8"/>
-    <ellipse cx="76" cy="191" rx="12" ry="7" fill="#EFA2B6"/><ellipse cx="124" cy="191" rx="12" ry="7" fill="#EFA2B6"/>
+  <g class="all"><g transform="translate(${(100-100*sc).toFixed(1)} ${(200-200*sc).toFixed(1)}) scale(${sc})">
+    <path class="tail" d="M136 168 q15 -4 11 -14 q-4 -7 -10 -1 q-3 5 3 7" stroke="#E894A9" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="100" cy="170" rx="40" ry="29" fill="#F6B9C8"/>
+    <ellipse cx="83" cy="197" rx="10" ry="6" fill="#EFA2B6"/><ellipse cx="117" cy="197" rx="10" ry="6" fill="#EFA2B6"/>
     <g class="head">
-      <path class="earl" d="M64 66 Q56 30 86 46 Q78 60 64 66Z" fill="#F2A1B5"/>
-      <path class="earr" d="M136 66 Q144 30 114 46 Q122 60 136 66Z" fill="#F2A1B5"/>
+      <path class="earl" d="M56 74 Q46 42 78 50 Q70 66 56 74Z" fill="#F2A1B5"/><path d="M60 68 Q56 52 72 54 Q66 62 60 68Z" fill="#FBD3DD"/>
+      <path class="earr" d="M144 74 Q154 42 122 50 Q130 66 144 74Z" fill="#F2A1B5"/><path d="M140 68 Q144 52 128 54 Q134 62 140 68Z" fill="#FBD3DD"/>
       ${bow}
-      <circle cx="100" cy="90" r="44" fill="#F9C7D3"/>
-      <ellipse cx="70" cy="102" rx="9" ry="6" fill="#F395AE" opacity=".5"/><ellipse cx="130" cy="102" rx="9" ry="6" fill="#F395AE" opacity=".5"/>
-      <g class="open"><g class="scan"><g class="blinker"><ellipse cx="83" cy="86" rx="${eyeR*.85}" ry="${eyeR}" fill="#3B2430"/><ellipse cx="117" cy="86" rx="${eyeR*.85}" ry="${eyeR}" fill="#3B2430"/></g><circle cx="85" cy="83.5" r="1.7" fill="#fff"/><circle cx="119" cy="83.5" r="1.7" fill="#fff"/></g></g>
-      <g class="closed" stroke="#3B2430" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M76 88 Q83 93 90 88"/><path d="M110 88 Q117 93 124 88"/></g>
-      ${brows}
-      <ellipse cx="100" cy="106" rx="17" ry="12" fill="#F4A6B9" stroke="#EA90A7" stroke-width="1.4"/>
-      <ellipse cx="94" cy="106" rx="2.6" ry="3.6" fill="#B95F79"/><ellipse cx="106" cy="106" rx="2.6" ry="3.6" fill="#B95F79"/>
-      <path d="M93 121 Q100 126 107 121" stroke="#B95F79" stroke-width="2" fill="none" stroke-linecap="round"/>
-      ${beard}${glasses}${cap}${hat}
+      <circle cx="100" cy="98" r="52" fill="#F9C7D3"/>
+      ${tuft}
+      <ellipse cx="65" cy="116" rx="11" ry="7.5" fill="#F395AE" opacity=".55"/><ellipse cx="135" cy="116" rx="11" ry="7.5" fill="#F395AE" opacity=".55"/>
+      <g class="open"><g class="scan"><g class="blinker"><ellipse cx="80" cy="100" rx="7.6" ry="9.2" fill="#3B2430"/><ellipse cx="120" cy="100" rx="7.6" ry="9.2" fill="#3B2430"/></g><circle cx="83" cy="96" r="3" fill="#fff"/><circle cx="123" cy="96" r="3" fill="#fff"/><circle cx="78" cy="104" r="1.4" fill="#fff"/><circle cx="118" cy="104" r="1.4" fill="#fff"/></g></g>
+      <g class="closed" stroke="#3B2430" stroke-width="2.8" fill="none" stroke-linecap="round"><path d="M72 101 Q80 107 88 101"/><path d="M112 101 Q120 107 128 101"/></g>
+      <ellipse cx="100" cy="119" rx="13.5" ry="9.5" fill="#F4A6B9" stroke="#EA90A7" stroke-width="1.3"/>
+      <ellipse cx="95.5" cy="119" rx="2.2" ry="3" fill="#B95F79"/><ellipse cx="104.5" cy="119" rx="2.2" ry="3" fill="#B95F79"/>
+      <path d="M95 132 Q100 136 105 132" stroke="#B95F79" stroke-width="2" fill="none" stroke-linecap="round"/>
+      ${glasses}${cap}${hat}
     </g>
     ${book}
   </g></g>
-  <g class="zzz" fill="var(--muted)"><text x="146" y="58" font-size="16">z</text><text x="156" y="44" font-size="20">z</text><text x="168" y="28" font-size="24">Z</text></g>
+  <g class="zzz" fill="var(--muted)"><text x="148" y="58" font-size="16">z</text><text x="158" y="44" font-size="20">z</text><text x="170" y="28" font-size="24">Z</text></g>
   </svg>`;
 }
 function pigFace(){return pigSVG(pigLevel(),'idle',true)}
