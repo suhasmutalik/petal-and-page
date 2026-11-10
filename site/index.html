@@ -261,9 +261,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.4.0';
+const APP_VERSION='1.4.1';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.4.1',items:['The greeting now always matches the time of day, even when the app was left open']},
   {v:'1.4.0',items:['Choose from 10 colour themes, or pick your own colour','Light, dark, follow the clock or match your phone','10 heading fonts and 10 text fonts to choose from','Corner style, card style and text size options']},
   {v:'1.3.0',items:['New elegant colour palettes: Rose Gold, Ballet Slipper, Champagne Rose and Peony','New app icon','No more accidental zooming when tapping twice','You’ll now be told when an update is ready, and can see the version in Settings']},
   {v:'1.2.0',items:['Sample library to try every feature','Reading stats, streaks and a habit tracker in the calendar','Better barcode scanning and ISBN lookup']},
@@ -474,6 +475,11 @@ const rgba=(h,a)=>{const [r,g,b]=hx(h);return`rgba(${r},${g},${b},${a})`};
 const PH={dawn:{name:'Morning',greet:'Good morning',icon:I.rise},day:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},golden:{name:'Golden hour',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
 function autoPhase(){const h=new Date().getHours();return h>=5&&h<11?'dawn':h>=11&&h<17?'day':h>=17&&h<20?'golden':'night'}
 function phase(){return autoPhase()}
+// Greeting follows the real clock: morning 5–12, afternoon 12–5, evening 5–10, night 10–5.
+const GREET={morning:{name:'Morning',greet:'Good morning',icon:I.rise},afternoon:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},evening:{name:'Evening',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
+function greetKey(){const h=new Date().getHours();return h>=5&&h<12?'morning':h>=12&&h<17?'afternoon':h>=17&&h<22?'evening':'night'}
+let shownGreet='',shownDay='';
+function refreshIfStale(){const g=greetKey(),d=today();if((g!==shownGreet||d!==shownDay)&&!sheetFor)render()}
 const darkMQ=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
 function themePhase(){
   const m=S?S.settings.mode:'clock',ph=autoPhase(),lightPh=ph==='night'?'day':ph;
@@ -665,12 +671,14 @@ let view='library',filter='all',query='',qquery='',calMonth=new Date(),selDay=to
 calMonth.setDate(1);
 const TABS=[['library','Library',I.book],['calendar','Calendar',I.cal],['stats','Stats',I.stats],['quotes','Quotes',I.quote],['settings','Settings',I.gear]];
 function render(){
+  if(!S)return;
+  shownGreet=greetKey();shownDay=today();
   $('#tabs').innerHTML=TABS.map(([k,l,i])=>`<button data-act="tab" data-v="${k}" ${view===k?'aria-current="page"':''}>${i}<span>${l}</span></button>`).join('');
   $('#app').innerHTML=view==='library'?libraryHTML():view==='calendar'?calendarHTML():view==='stats'?statsHTML():view==='quotes'?quotesHTML():settingsHTML();
   if(view==='library')renderList();
   if(view==='quotes')renderQuoteList();
 }
-function header(title){const p=PH[phase()];return`<header class="hdr"><div class="eyebrow">${p.icon}<span>${p.name} · ${new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span></div>${title}</header>`}
+function header(title){const p=GREET[greetKey()];return`<header class="hdr"><div class="eyebrow">${p.icon}<span>${p.name} · ${new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span></div>${title}</header>`}
 function cover(b,size){return b.cover?`<img class="cover ${size}" src="${b.cover}" alt="">`:`<div class="cover ${size}" style="--h:${b.hue}" aria-hidden="true">${esc((b.title||'?').trim()[0]||'?')}</div>`}
 
 function libraryHTML(){
@@ -678,7 +686,7 @@ function libraryHTML(){
   const reading=B.filter(b=>b.status==='reading');
   const doneYr=B.filter(b=>b.status==='done'&&b.finish&&pd(b.finish).getFullYear()===yr).length;
   const st=streaks(dayStats());
-  return`${header(`<h1>${PH[phase()].greet},<br><em>what are we reading?</em></h1>`)}
+  return`${header(`<h1>${GREET[greetKey()].greet},<br><em>what are we reading?</em></h1>`)}
   <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${doneYr} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p>
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
   ${reading.length?`<div class="section"><div class="eyebrow">On the nightstand</div>${reading.map(b=>`
@@ -1069,7 +1077,9 @@ document.addEventListener('change',async e=>{
   if(el.id==='restoreFile'){const txt=await f.text();await doRestore(txt);el.value=''}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetFor)closeSheet()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();else{applyTheme();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();else{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()}});
+window.addEventListener('focus',()=>{applyTheme();refreshIfStale()});
+window.addEventListener('pageshow',()=>{applyTheme();refreshIfStale()});
 
 /* ---------- updates ---------- */
 let swReg=null,updating=false;
@@ -1102,7 +1112,7 @@ function showWhatsNew(justUpdated){
 (async()=>{
   await load();applyStyle();applyTheme(true);render();
   if(darkMQ&&darkMQ.addEventListener)darkMQ.addEventListener('change',()=>{applyTheme();if(!sheetFor)render()});
-  setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render()},60*1000);
+  setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()},60*1000);
   setupSW();
   try{const seen=localStorage.getItem('pp-version');if(seen&&seen!==APP_VERSION)setTimeout(()=>showWhatsNew(true),600);localStorage.setItem('pp-version',APP_VERSION)}catch(e){}
   if(!framed&&navigator.onLine&&!readerReady()){setTimeout(()=>{prepareReader().then(w=>{w.terminate();ocrWorker=null;if(view==='settings')render()}).catch(()=>{})},5000)}
