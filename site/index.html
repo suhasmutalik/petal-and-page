@@ -439,6 +439,25 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 .stage .slot{position:absolute;inset:0}
 .pets3d{display:block;width:100%;height:100%}
 .bgthumb{width:64px;height:64px;border-radius:var(--ri);object-fit:cover;border:1px solid var(--line)}
+.sgroup{display:flex;flex-direction:column;gap:6px;margin-top:22px}
+.sgroup>.lbl{padding-left:14px;text-transform:uppercase;letter-spacing:.08em;font-size:.7rem}
+.slist{border-radius:var(--rc);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.has-scene .slist{background:color-mix(in srgb,var(--surface) var(--ga),transparent);backdrop-filter:blur(var(--gb)) saturate(140%);-webkit-backdrop-filter:blur(var(--gb)) saturate(140%);border-color:var(--glassline)}
+.srow{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:11px 14px;min-height:54px;text-align:left;color:var(--ink);position:relative}
+.srow+.srow::before{content:"";position:absolute;top:0;left:58px;right:0;height:1px;background:var(--line)}
+.srow:active{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.sic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;flex:none}
+.sic svg{width:18px;height:18px}
+.sic.big{width:40px;height:40px;border-radius:11px}.sic.big svg{width:24px;height:24px}
+.stx{flex:1;min-width:0;font-weight:500}
+.sval{color:var(--muted);font-size:.86rem;max-width:45%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{color:var(--muted);font-size:1.3rem;line-height:1;margin-left:2px}
+.subhead{margin-bottom:6px}
+.back{border:0;background:none;color:var(--primary);font-weight:500;font-size:1rem;padding:6px 0;min-height:40px}
+.view-in{animation:slidein .28s cubic-bezier(.2,.8,.2,1)}
+.view-back{animation:slideback .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes slidein{from{opacity:0;transform:translateX(28px)}}
+@keyframes slideback{from{opacity:0;transform:translateX(-28px)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -457,9 +476,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.9.2';
+const APP_VERSION='1.10.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.10.0',items:['Settings is now tidy and nested like the iPhone Settings app: tap a row to open it','Each row shows its current choice at a glance','Settings remembers which page you were on']},
   {v:'1.9.2',items:['Refreshing or updating keeps you on the same tab, at the same spot, with the same book open','Fixed the screen jumping slightly when the app reloads','Tap the current tab again to scroll back to the top']},
   {v:'1.9.1',items:['“Follow the clock” now uses real sunrise and sunset, so the app turns dark when it gets dark outside','Optionally use your location for exact sunrise and sunset times','Settings now shows what light/dark mode is doing right now, including whether your phone is in light or dark mode']},
   {v:'1.9.0',items:['Ruhi and Dori are now in 3D, with real lighting, soft shadows and fur sheen','Ruhi gallops with flapping ears and a wagging tail; Dori turns her head to watch her and blinks','Eight mountain ranges from around the world: Swiss Alps, Himalaya, Patagonia, Mount Fuji, Dolomites, Canadian Rockies, Iceland (with aurora at night) and Kilimanjaro','Or let the mountains change every day']},
@@ -946,22 +966,23 @@ function streaks(M){
 /* ---------- remember where she was ---------- */
 try{if('scrollRestoration' in history)history.scrollRestoration='manual'}catch(e){}
 const VIEWS=['library','calendar','stats','quotes','settings'];
+var setPage='';
 const ss={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}},del(k){try{sessionStorage.removeItem(k)}catch(e){}}};
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-function startView(){const h=(location.hash||'').slice(1);if(VIEWS.includes(h))return h;const v=ls.get('pp-view');return VIEWS.includes(v)?v:'library'}
+function startView(){const h=(location.hash||'').slice(1);if(h.startsWith('settings-')){const p=h.slice(9);if(SET_PAGES[p]){setPage=p;return'settings'}}if(h==='settings'){const p=ss.get('pp-setpage')||'';setPage=SET_PAGES[p]?p:'';return'settings'}if(VIEWS.includes(h))return h;const v=ls.get('pp-view');return VIEWS.includes(v)?v:'library'}
 function setView(v,keepScroll){
   if(!VIEWS.includes(v))v='library';
-  saveScroll();view=v;ls.set('pp-view',v);
+  saveScroll();if(v!=='settings'){setPage='';ss.del('pp-setpage')}view=v;ls.set('pp-view',v);
   try{history.replaceState(null,'','#'+v)}catch(e){}
   render();
   const y=keepScroll?+(ss.get('pp-scroll-'+v)||0):0;
   window.scrollTo(0,y);
 }
 let scrollT=0;
-function saveScroll(){if(typeof view==='string')ss.set('pp-scroll-'+view,String(Math.round(window.scrollY)))}
+function saveScroll(){if(typeof view==='string')ss.set('pp-scroll-'+view+(view==='settings'&&setPage?'-'+setPage:''),String(Math.round(window.scrollY)))}
 window.addEventListener('scroll',()=>{clearTimeout(scrollT);scrollT=setTimeout(saveScroll,150)},{passive:true});
 window.addEventListener('pagehide',saveScroll);
-window.addEventListener('hashchange',()=>{const h=(location.hash||'').slice(1);if(VIEWS.includes(h)&&h!==view)setView(h,true)});
+window.addEventListener('hashchange',()=>{const h=(location.hash||'').slice(1);if(h.startsWith('settings-')&&SET_PAGES[h.slice(9)]){setPage=h.slice(9);view='settings';render();return}if(VIEWS.includes(h)&&h!==view)setView(h,true)});
 let view='library',filter='all',query='',qquery='',calMonth=new Date(),selDay=today();
 calMonth.setDate(1);
 const TABS=[['library','Library',I.book],['calendar','Calendar',I.cal],['stats','Stats',I.stats],['quotes','Quotes',I.quote],['settings','Settings',I.gear]];
@@ -969,6 +990,7 @@ function render(){
   if(!S)return;
   shownGreet=greetKey();shownDay=today();
   $('#tabs').innerHTML=TABS.map(([k,l,i])=>`<button data-act="tab" data-v="${k}" ${view===k?'aria-current="page"':''}>${i}<span>${l}</span></button>`).join('');
+  $('#app').classList.remove('view-in','view-back');
   $('#app').innerHTML=view==='library'?libraryHTML():view==='calendar'?calendarHTML():view==='stats'?statsHTML():view==='quotes'?quotesHTML():settingsHTML();
   if(view==='library'){renderList();wireHero()}
   wireStage();
@@ -1169,60 +1191,79 @@ function ensurePreviewFonts(){
   const text=encodeURIComponent([...new Set([...FONTS_D,...FONTS_B].map(f=>f.n).join('')+'AaBbGgPp&')].join(''));
   l.href='https://fonts.googleapis.com/css2?'+parts.join('&')+'&text='+text+'&display=swap';l.disabled=false;l.dataset.ok=1;
 }
-function settingsHTML(){
+const SET_ICONS={
+  background:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 19 9 9l4 6 3-4 5 8z"/><circle cx="17" cy="6" r="2"/></svg>',
+  theme:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.4-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/></svg>',
+  mode:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
+  fonts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19 9.5 5h1L16 19M6.5 14h7M17 19v-6.5a2.5 2.5 0 0 1 5 0V19"/></svg>',
+  style:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="3.5"/><rect x="3.5" y="13.5" width="7" height="7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>',
+  goal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+  backup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4 15v3.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V15"/></svg>',
+  offline:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/></svg>',
+  sample:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 4h4v16H5zM10 4h4v16h-4zM15.5 5l3.5-1 2.5 15.5-3.5 1z"/></svg>',
+  about:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.1" fill="currentColor"/></svg>'
+};
+const SET_PAGES={
+  background:{t:'Background',c:'#5E8FD6'},theme:{t:'Colour theme',c:'#D9668E'},mode:{t:'Light & dark',c:'#6E6A9E'},fonts:{t:'Fonts',c:'#B9874A'},style:{t:'Layout & style',c:'#7B8C9A'},
+  goal:{t:'Daily reading goal',c:'#E07A5F'},backup:{t:'Backup & restore',c:'#4F9D78'},offline:{t:'Offline',c:'#5C8F9E'},sample:{t:'Sample library',c:'#A47BC4'},about:{t:'About',c:'#8A8F98'}
+};
+function setVal(k){
+  const st=S.settings;
+  switch(k){
+    case'background':return st.bg==='mountains'?(st.land==='daily'?'Changes daily':(LANDS[st.land]||LANDS.alps).n):st.bg==='photo'?'My photo':'Plain';
+    case'theme':return st.palette==='custom'?'Your own':(PALETTES[st.palette]||PALETTES.rosegold).name;
+    case'mode':return{clock:'Follow the clock',system:'Match my phone',light:'Always light',dark:'Always dark'}[st.mode]||'';
+    case'fonts':return st.fontD.split(' ')[0]+' · '+st.fontB.split(' ')[0];
+    case'style':return(st.layout==='list'?'Classic list':'Cinema')+' · '+({rounded:'Rounded',soft:'Soft',square:'Square'}[st.corners]||'');
+    case'goal':return st.goal.value+' '+(st.goal.type==='pages'?'pages':'min')+' a day';
+    case'backup':{const d=ls.get('pp-last-backup');return d?'Saved '+fmt(d):'Not saved yet'}
+    case'offline':return readerReady()?'Ready':'Almost ready';
+    case'sample':return S.books.some(b=>b.example)?'Loaded':'Off';
+    case'about':return'Version '+APP_VERSION;
+  }return'';
+}
+function setRow(k){const P=SET_PAGES[k];return`<button class="srow" data-act="setpage" data-v="${k}"><span class="sic" style="background:${P.c}">${SET_ICONS[k]}</span><span class="stx">${P.t}</span><span class="sval">${esc(setVal(k))}</span><span class="chev">›</span></button>`}
+function setGroup(title,keys){return`<div class="sgroup"><div class="lbl">${title}</div><div class="slist">${keys.map(setRow).join('')}</div></div>`}
+function settingsPageBody(k){
   const st=S.settings,G=st.goal;
-  setTimeout(ensurePreviewFonts,0);
-  return`${header(`<h1>Settings &amp; <em>style</em></h1>`)}
-  <div class="section"><div class="card">
-    <h3>Background</h3>
+  switch(k){
+    case'background':return`
     ${chipset('bg',st.bg,[['mountains','Mountains with Ruhi & Dori'],['photo','My photo'],['none','Plain']])}
     ${st.bg==='photo'?`<div class="row">${st.bgImage?`<img class="bgthumb" src="${st.bgImage}" alt="Your background">`:''}<label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" id="bgIn" class="vh">${st.bgImage?'Change photo':'Choose a photo'}</label></div>`:''}
     ${st.bg==='mountains'?`<span class="lbl">Mountains</span><div class="lands">${Object.entries(LANDS).map(([k,L])=>`<button class="landopt" data-act="land" data-v="${k}" aria-pressed="${st.land===k}"><div class="pv">${sceneSVG(themePhase(),k,'_'+k)}</div><span>${L.n}</span><small>${L.d}</small></button>`).join('')}</div>${chipset('land',st.land,[['daily','A different range every day']])}`:''}
     ${st.bg!=='none'?`<span class="lbl">Cards</span>${chipset('glass',st.glass,[['clear','Clear glass'],['frosted','Frosted'],['solid','Solid']])}`:''}
-    <p class="hint">${st.bg==='mountains'?'The mountains change with the time of day. Ruhi plays in the meadow on your Library while Dori keeps watch.':st.bg==='photo'?'Any photo works: a favourite trip, Ruhi, or Dori.':'A calm plain background.'}</p>
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Colour theme</h3>
+    <p class="hint">${st.bg==='mountains'?'The mountains change with the time of day. Ruhi plays in the meadow on your Library while Dori keeps watch.':st.bg==='photo'?'Any photo works: a favourite trip, Ruhi, or Dori.':'A calm plain background.'}</p>`;
+    case'theme':return`
     <span class="lbl">Pinks</span>
     <div class="swatches">${Object.entries(PALETTES).filter(([k])=>!OTHER.includes(k)).map(([k,P])=>swatch(k,P,st.palette)).join('')}</div>
     <span class="lbl" style="margin-top:4px">More colours</span>
     <div class="swatches">${OTHER.map(k=>swatch(k,PALETTES[k],st.palette)).join('')}</div>
     <span class="lbl" style="margin-top:4px">Your own</span>
     <div class="swatches">${swatch('custom',customPalette(st.customColor),st.palette)}</div>
-    ${st.palette==='custom'?`<div class="colorpick"><input type="color" id="customColor" value="${esc(st.customColor)}" aria-label="Pick your colour"><span class="hint">Pick any colour. Backgrounds, buttons and the dark version are made to match.</span></div>`:''}
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Light &amp; dark</h3>
+    ${st.palette==='custom'?`<div class="colorpick"><input type="color" id="customColor" value="${esc(st.customColor)}" aria-label="Pick your colour"><span class="hint">Pick any colour. Backgrounds, buttons and the dark version are made to match.</span></div>`:''}`;
+    case'mode':return`
     ${chipset('mode',st.mode,[['clock','Follow the clock'],['system','Match my phone'],['light','Always light'],['dark','Always dark']])}
     <p class="hint" id="modeStatus">${modeStatus()}</p>
     ${st.mode==='clock'?(guessGeo().est?`<button class="link" data-act="geo" style="align-self:flex-start">Use my location for exact sunrise and sunset</button>`:`<span class="hint">Using your location. <button class="link" data-act="geoclear">Forget it</button></span>`):''}
-    <label class="toggle"><span>Warm tint at sunrise and sunset</span><input type="checkbox" id="tintToggle" ${st.tint!==false?'checked':''}></label>
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Fonts</h3>
+    <label class="toggle"><span>Warm tint at sunrise and sunset</span><input type="checkbox" id="tintToggle" ${st.tint!==false?'checked':''}></label>`;
+    case'fonts':return`
     <div class="preview"><span style="font-family:var(--display);font-size:calc(1.9rem*var(--ds));font-weight:var(--dw);line-height:1.1">Good evening, <em style="color:var(--accent);font-weight:var(--dwi)">what are we reading?</em></span><span>Page 142 of 331 · 43%. The robin chapters are lovely.</span></div>
     <span class="lbl">Headings</span>
     <div class="opt-grid">${FONTS_D.map(f=>`<button class="fontopt" data-act="fontD" data-v="${f.n}" aria-pressed="${st.fontD===f.n}"><span class="nm" style="font-family:${f.spec===null?'':`'${f.n}',`}${f.fb};font-weight:400">${f.n}</span><small>${f.d}</small></button>`).join('')}</div>
     <span class="lbl" style="margin-top:6px">Text</span>
     <div class="opt-grid">${FONTS_B.map(f=>`<button class="fontopt" data-act="fontB" data-v="${f.n}" aria-pressed="${st.fontB===f.n}"><span class="nm" style="font-family:${f.spec===null?'':`'${f.n}',`}${f.fb};font-size:1.05rem">${f.n}</span><small>${f.d}</small></button>`).join('')}</div>
-    <p class="hint">A new font downloads once, then works offline.</p>
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Style</h3>
+    <p class="hint">A new font downloads once, then works offline.</p>`;
+    case'style':return`
     <span class="lbl">Library layout</span>${chipset('layout',st.layout,[['tv','Cinema shelves'],['list','Classic list']])}
     <span class="lbl">Corners</span>${chipset('corners',st.corners,[['rounded','Rounded'],['soft','Soft'],['square','Square']])}
     <span class="lbl">Cards</span>${chipset('cards',st.cards,[['outlined','Outlined'],['shadow','Shadow'],['flat','Flat']])}
     <span class="lbl">Text size</span>${chipset('size',st.size,[['small','Small'],['default','Default'],['large','Large'],['xl','Extra large']])}
-    <button class="link" data-act="resetlook" style="align-self:flex-start">Reset look to default</button>
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Daily reading goal</h3>
+    <button class="link" data-act="resetlook" style="align-self:flex-start">Reset look to default</button>`;
+    case'goal':return`
     <div class="chips"><button class="chip" data-act="goaltype" data-v="minutes" aria-pressed="${G.type==='minutes'}">Minutes</button><button class="chip" data-act="goaltype" data-v="pages" aria-pressed="${G.type==='pages'}">Pages</button></div>
     <div class="stepper"><button data-act="dgoal" data-v="-5" aria-label="Lower">−</button><span class="tnum" style="min-width:110px;text-align:center"><b>${G.value}</b> ${G.type==='pages'?'pages':'minutes'} a day</span><button data-act="dgoal" data-v="5" aria-label="Raise">+</button></div>
-    <p class="hint">The calendar fills a day in when the goal is met, and half-fills it at half the goal.</p>
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Backup</h3>
+    <p class="hint">The calendar fills a day in when the goal is met, and half-fills it at half the goal.</p>`;
+    case'backup':return`
     <p class="hint">${persistOK?'Everything is saved only on this phone. Nothing is uploaded.':'This browser is not keeping data right now (private mode or blocked storage). Make a backup before closing.'} Deleting the app or clearing website data erases it, so save a backup every few weeks.</p>
     ${framed?'':`<button class="btn" data-act="export">Save backup file</button>`}
     <button class="btn ${framed?'':'ghost'}" data-act="copybackup">Copy backup text</button>
@@ -1230,24 +1271,33 @@ function settingsHTML(){
     <span class="lbl" style="margin-top:6px">Restore (replaces the library on this phone)</span>
     <label class="btn soft" style="cursor:pointer"><input type="file" id="restoreFile" accept=".json,application/json,text/plain" class="vh">Choose backup file</label>
     <textarea id="restoreText" placeholder="…or paste backup text here"></textarea>
-    <button class="btn ghost" data-act="restore">Restore from pasted text</button>
-  </div></div>
-  <div class="section"><div class="card">
-    <h3>Offline</h3>
+    <button class="btn ghost" data-act="restore">Restore from pasted text</button>`;
+    case'offline':return`
     <p class="hint">${'serviceWorker' in navigator&&navigator.serviceWorker.controller?'The app is saved for offline use.':'The app saves itself for offline use after its first open with internet.'} ${readerReady()?'The text reader is ready offline too.':'The text reader still needs a one-time download (about 5 MB).'}</p>
-    ${readerReady()?'':`<button class="btn soft" data-act="prepocr">Prepare text reader for offline</button>`}
-  </div></div>
-  <div class="section"><div class="card"><h3>About</h3>
+    ${readerReady()?'':`<button class="btn soft" data-act="prepocr">Prepare text reader for offline</button>`}`;
+    case'about':return`
     <p class="hint">Petal &amp; Page <b class="tnum" style="color:var(--ink)">version ${APP_VERSION}</b>${APP_BUILD.startsWith('__')?'':` · build ${APP_BUILD}`}</p>
-    <div class="row"><button class="btn soft" data-act="checkupd">Check for updates</button><button class="link" data-act="whatsnew">What’s new</button></div>
-  </div></div>
-  <div class="section"><div class="card"><h3>Sample library</h3>
+    <div class="row"><button class="btn soft" data-act="checkupd">Check for updates</button><button class="link" data-act="whatsnew">What’s new</button></div>`;
+    case'sample':return`
     <p class="hint">Classic books with a year of reading sessions, notes, quotes and check-ins, so every screen has something to show. Her own books and check-ins are never changed.</p>
-    ${S.books.some(b=>b.example)?`<button class="btn ghost" data-act="clearex">Remove the sample books</button>`:`<button class="btn soft" data-act="loadex">Load sample library</button>`}
-  </div></div>
-  <p class="ver">Petal &amp; Page ${APP_VERSION}</p>`;
+    ${S.books.some(b=>b.example)?`<button class="btn ghost" data-act="clearex">Remove the sample books</button>`:`<button class="btn soft" data-act="loadex">Load sample library</button>`}`;
+  }return'';
 }
-
+function settingsHTML(){
+  if(setPage&&SET_PAGES[setPage]){
+    if(setPage==='fonts')setTimeout(ensurePreviewFonts,0);
+    const P=SET_PAGES[setPage];
+    return`<div class="subhead"><button class="back" data-act="setback">‹ Settings</button></div>
+    <header class="hdr"><div class="row" style="gap:12px;flex-wrap:nowrap"><span class="sic big" style="background:${P.c}">${SET_ICONS[setPage]}</span><h1 style="font-size:calc(2rem*var(--ds))">${P.t}</h1></div></header>
+    <div class="section"><div class="card">${settingsPageBody(setPage)}</div></div>`;
+  }
+  return`${header(`<h1>Settings</h1>`)}
+  ${setGroup('Appearance',['background','theme','mode','fonts','style'])}
+  ${setGroup('Reading',['goal'])}
+  ${setGroup('Your data',['backup','offline','sample'])}
+  ${setGroup('About',['about'])}
+  <p class="ver">Petal &amp; Page ${APP_VERSION}<br>Made with love, for Ruhi and Dori’s favourite reader</p>`;
+}
 /* ---------- sheets ---------- */
 let sheetFor=null;
 function openSheet(html,key){
@@ -1348,7 +1398,9 @@ document.addEventListener('click',async e=>{
   if(a.startsWith('t')&&await timerAct(a,t))return;
   if(a==='opentimer'){await timerAct(a,t);return}
   switch(a){
-    case'tab':if(t.dataset.v===view){window.scrollTo({top:0,behavior:'smooth'});break}setView(t.dataset.v,true);break;
+    case'setpage':saveScroll();setPage=t.dataset.v;ss.set('pp-setpage',setPage);try{history.replaceState(null,'','#settings-'+setPage)}catch(e){}render();$('#app').classList.add('view-in');window.scrollTo(0,0);break;
+    case'setback':setPage='';ss.del('pp-setpage');try{history.replaceState(null,'','#settings')}catch(e){}render();$('#app').classList.add('view-back');window.scrollTo(0,+(ss.get('pp-scroll-settings')||0));break;
+    case'tab':if(t.dataset.v==='settings'&&view==='settings'&&setPage){setPage='';ss.del('pp-setpage');try{history.replaceState(null,'','#settings')}catch(e){}render();window.scrollTo(0,0);break}if(t.dataset.v===view){window.scrollTo({top:0,behavior:'smooth'});break}setView(t.dataset.v,true);break;
     case'filter':filter=t.dataset.v;document.querySelectorAll('[data-act=filter]').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===filter));renderList();break;
     case'add':openAdd();break;
     case'upnow':applyUpdate();break;
@@ -1423,8 +1475,8 @@ document.addEventListener('click',async e=>{
       if(id){bk=find(id);Object.assign(bk,data);delete bk.example;if(bk.status!==st)setStatus(bk,st)}
       else{bk={id:uid(),...data,status:'want',start:'',finish:'',page:0,hue:HUES[Math.floor(Math.random()*HUES.length)],sessions:[],notes:[],quotes:[]};setStatus(bk,st);S.books.push(bk)}
       await save();openDetail(bk.id);toast(id?'Saved':'Added to your shelf');break}
-    case'export':{try{const blob=new Blob([backupText()],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='petal-and-page-backup-'+today()+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('Backup saved')}catch(err){toast('Couldn’t save a file here. Use Copy backup text.')}break}
-    case'copybackup':{const s=backupText();try{await navigator.clipboard.writeText(s);toast('Backup copied. Paste it into a note or email to yourself.')}catch(err){const o=$('#bkout');o.hidden=false;o.textContent=s;const r=document.createRange();r.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast('Selected. Use your phone’s Copy.')}break}
+    case'export':{try{const blob=new Blob([backupText()],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='petal-and-page-backup-'+today()+'.json';ls.set('pp-last-backup',today());document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('Backup saved')}catch(err){toast('Couldn’t save a file here. Use Copy backup text.')}break}
+    case'copybackup':{const s=backupText();try{await navigator.clipboard.writeText(s);ls.set('pp-last-backup',today());toast('Backup copied. Paste it into a note or email to yourself.')}catch(err){const o=$('#bkout');o.hidden=false;o.textContent=s;const r=document.createRange();r.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast('Selected. Use your phone’s Copy.')}break}
     case'restore':{const v=$('#restoreText').value.trim();if(!v){toast('Paste backup text first');break}
       if(!t.dataset.armed){t.dataset.armed=1;t.textContent='Tap again to replace this library';break}
       if(await doRestore(v))$('#restoreText').value='';break}
@@ -2050,9 +2102,9 @@ function showWhatsNew(justUpdated){
 
 /* ---------- boot ---------- */
 (async()=>{
-  view=startView();try{history.replaceState(null,'','#'+view)}catch(e){}
+  view=startView();try{history.replaceState(null,'','#'+view+(view==='settings'&&setPage?'-'+setPage:''))}catch(e){}
   await load();applyStyle();applyTheme(true);render();
-  {const y=+(ss.get('pp-scroll-'+view)||0);const restore=()=>window.scrollTo(0,y);restore();requestAnimationFrame(restore);
+  {const y=+(ss.get('pp-scroll-'+view+(view==='settings'&&setPage?'-'+setPage:''))||0);const restore=()=>window.scrollTo(0,y);restore();requestAnimationFrame(restore);
    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(Math.abs(window.scrollY-y)>2)restore()});
    const bk=ss.get('pp-book');if(bk&&find(bk))setTimeout(()=>openDetail(bk),50)}
   if(darkMQ){const onMQ=()=>{curTheme='';applyTheme();if(!sheetFor)render()};if(darkMQ.addEventListener)darkMQ.addEventListener('change',onMQ);else if(darkMQ.addListener)darkMQ.addListener(onMQ)}
