@@ -215,6 +215,19 @@ nav.tabs button[aria-current="page"] svg{color:var(--accent)}
 .words{display:flex;flex-wrap:wrap;gap:4px 3px;background:var(--raised);border-radius:var(--ri);padding:12px;max-height:260px;overflow:auto;font-family:var(--display);font-size:1.15rem;line-height:1.5}
 .words button{border:0;background:none;padding:0 2px;border-radius:4px;font:inherit}
 .words button.hl{background:var(--soft);box-shadow:0 2px 0 var(--accent)}
+.crop-stage{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:var(--ri);overflow:hidden;background:#000}
+.crop-stage img{display:block;width:100%;height:auto;max-height:none;pointer-events:none}
+.crop-sel{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.5);border-radius:4px;cursor:move}
+.crop-sel i{position:absolute;width:26px;height:26px;border:3px solid #fff;border-radius:3px}
+.crop-sel i[data-h=nw]{left:-5px;top:-5px;border-right:0;border-bottom:0}.crop-sel i[data-h=ne]{right:-5px;top:-5px;border-left:0;border-bottom:0}
+.crop-sel i[data-h=sw]{left:-5px;bottom:-5px;border-right:0;border-top:0}.crop-sel i[data-h=se]{right:-5px;bottom:-5px;border-left:0;border-top:0}
+.dup{gap:12px;flex-wrap:nowrap;background:color-mix(in srgb,var(--accent) 16%,var(--surface))!important;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent)}
+.dup .cover.s{width:34px;height:50px;font-size:1.1rem}
+.shelfbox{display:flex;flex-direction:column;gap:8px}
+.shelfchip{border-style:dashed}
+.shelfrow{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.shelfrow:last-child{border-bottom:0}
+.shelfrow input{flex:1;min-width:0}
 .qimg{border-radius:var(--ri);max-height:240px;object-fit:contain;width:100%;background:var(--raised)}
 .toast{position:fixed;left:50%;bottom:calc(144px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(10px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:var(--rp);font-size:.9rem;z-index:80;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%)}
@@ -503,9 +516,10 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.11.4';
+const APP_VERSION='1.12.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.12.0',items:['Your own shelves: make shelves like Favourites or Book club, put books on several, and see each shelf on your Library','Scanning or typing a book you already own now tells you it’s in your library','Recognise text works now, and reads crisper','Crop a quote photo to just the passage before saving','A gentle reminder to save a backup (Settings → Backup reminder)','Dori is now white with her black tail, and gives you a proper judgy look','New: the Matterhorn climb, with the two of you on the Hörnli ridge and the Hörnlihütte']},
   {v:'1.11.4',items:['Your piglet is now reading The Little Prince by Antoine de Saint-Exupéry']},
   {v:'1.11.3',items:['Fixed the custom colour theme freezing the app while picking a colour','Quick colour dots for your own theme','Any colour now stays readable: very light or bright colours are softened automatically']},
   {v:'1.11.2',items:['Removed the shops from the meadow, back to just the mountains with Ruhi and Dori']},
@@ -578,9 +592,10 @@ function normalize(s){
   if(!s.settings.mode){const p=s.settings.phase;s.settings.mode=!p||p==='auto'?'clock':p==='night'?'dark':'light'}
   for(const [k,v] of Object.entries(DEFAULT_LOOK))if(s.settings[k]===undefined)s.settings[k]=v;
   s.settings.customColor=validHex(s.settings.customColor);
+  s.shelves=Array.isArray(s.shelves)?s.shelves:[];
   s.timer=s.timer&&s.timer.state?s.timer:{state:'idle',bookId:null,startedAt:0,accMs:0};
   s.checkins=s.checkins||{};s.exCheckins=s.exCheckins||{};
-  s.books.forEach(b=>{b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
+  s.books.forEach(b=>{b.shelves=Array.isArray(b.shelves)?b.shelves:[];b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
   return s;
 }
 async function save(){try{if(!DB.db)throw 0;await DB.set('state',S)}catch(e){if(persistOK){persistOK=false;toast('This browser isn’t keeping data. Make a backup.')}}}
@@ -748,7 +763,7 @@ const FONTS_B=[
   {n:'Lora',spec:'wght@400;500',fb:'Georgia,serif',d:'Serif text'},
   {n:'System',spec:null,fb:'-apple-system,"Segoe UI",Roboto,system-ui,sans-serif',d:'Your phone’s font'}
 ];
-const DEFAULT_LOOK={land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
+const DEFAULT_LOOK={backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
 function fontUrl(list){const fam=list.filter(f=>f.spec!==null).map(f=>'family='+f.n.replace(/ /g,'+')+(f.spec?':'+f.spec:''));return fam.length?'https://fonts.googleapis.com/css2?'+fam.join('&')+'&display=swap':''}
 function applyStyle(){
   const st=S.settings,r=document.documentElement.style;
@@ -945,20 +960,33 @@ async function lookupIsbn(isbn){
   if(found&&!found.cover)found.cover='https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg?default=false';
   return found;
 }
+const normT=t=>(t||'').toLowerCase().replace(/^(the|a|an)\s+/,'').replace(/[^a-z0-9]+/g,' ').trim();
+function findDup(isbn,title,except){
+  const i13=isbn?toIsbn13(isbn):null,nt=normT(title);
+  return S.books.find(b=>b.id!==except&&!b.example&&((i13&&b.isbn&&toIsbn13(b.isbn)===i13)||(nt.length>2&&normT(b.title)===nt)));
+}
+function showDup(){
+  const el=$('#dupMsg');if(!el)return null;const ex=window._editId||null;
+  const d=findDup($('#fIsbn').value,$('#fTitle').value,ex);
+  if(d){el.hidden=false;el.innerHTML=`<span>${cover(d,'s')}</span><span style="flex:1;min-width:0"><b>Already in your library</b><br><span class="small">${esc(d.title)} · ${STATUS[d.status]}${d.page?` · page ${d.page}`:''}</span></span><button class="btn soft" data-act="open" data-id="${d.id}" style="flex:none">Open</button>`}
+  else{el.hidden=true;el.innerHTML=''}
+  const btn=document.querySelector('[data-act=savebook]');if(btn&&!ex){btn.dataset.armed='';btn.textContent='Add to shelf'}
+  return d;
+}
 async function fillFromIsbn(isbn){
   const m=$('#scanMsg');m.className='hint';m.textContent='Looking up ISBN '+isbn+'…';
   try{
     const r=await lookupIsbn(isbn);
     if(!r){m.textContent='No book found for ISBN '+isbn+'. It’s saved; type the title below.';return}
     if(r.title)$('#fTitle').value=r.title;if(r.author)$('#fAuthor').value=r.author;if(r.pages)$('#fPages').value=r.pages;
-    m.className='hint ok';m.textContent='Found it. Check the details, then add to your shelf.';
+    m.className='hint ok';m.textContent='Found it. Check the details, then add to your shelf.';showDup();
     if(r.cover&&!window._cover){const c=await coverData(r.cover);if(c&&$('#covPrev')){window._cover=c;$('#covPrev').innerHTML=`<img class="cover s" src="${c}" alt="">`}}
   }catch(e){m.className='hint';m.textContent=e.message==='offline'?'You’re offline. The ISBN is saved; type the title below, or tap Look up later.':'Couldn’t reach the book catalogues. Check the connection and tap Look up again.'}
 }
 async function handleCode(code){
   const m=$('#scanMsg');if(!m)return;
   const isbn=toIsbn13(code);
-  if(isbn){$('#fIsbn').value=isbn;await fillFromIsbn(isbn)}
+  if(isbn){$('#fIsbn').value=isbn;if(showDup()){$('#scanMsg').className='hint';$('#scanMsg').textContent='Scanned ISBN '+isbn+'.'}await fillFromIsbn(isbn);showDup()}
   else if(/^\d{12}$/.test(code)){$('#fIsbn').value=code;m.className='hint';m.textContent='That’s a store barcode (UPC), not the ISBN. Look for the barcode starting 978 or 979, often on the back cover or inside.'}
   else{if(!$('#fTitle').value)$('#fTitle').value=code.slice(0,200);m.className='hint ok';m.textContent='Scanned a code. Its text was added as the title; edit as needed.'}
 }
@@ -968,13 +996,21 @@ let ocrWorker=null;
 async function getWorker(){
   if(ocrWorker)return ocrWorker;
   if(!window.Tesseract)await loadScript('vendor/tesseract/tesseract.min.js');
-  ocrWorker=await Tesseract.createWorker('eng',1,{workerPath:'vendor/tesseract/worker.min.js',corePath:'vendor/core',langPath:'vendor/lang',workerBlobURL:false});
+  const base=new URL('.',location.href).href;
+  ocrWorker=await Tesseract.createWorker('eng',1,{workerPath:base+'vendor/tesseract/worker.min.js',corePath:base+'vendor/core',langPath:base+'vendor/lang',workerBlobURL:false,errorHandler:e=>console.warn('ocr',e)});
   return ocrWorker;
 }
 async function prepareReader(){const w=await getWorker();try{localStorage.setItem('pp-ocr-ready','1')}catch(e){}return w}
 function readerReady(){try{return localStorage.getItem('pp-ocr-ready')==='1'}catch(e){return false}}
+async function ocrPrep(dataUrl){
+  const im=await loadImg(dataUrl);const k=Math.max(1,Math.min(2.2,1400/Math.max(im.width,im.height)));
+  const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const g=c.getContext('2d');
+  g.filter='grayscale(1) contrast(1.35)';g.drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.92);
+}
 async function recognize(dataUrl){
-  const job=prepareReader().then(w=>w.recognize(dataUrl));
+  if(!navigator.onLine&&!readerReady())throw new Error('offline');
+  const prepped=await ocrPrep(dataUrl).catch(()=>dataUrl);
+  const job=prepareReader().then(w=>w.recognize(prepped));
   const r=await Promise.race([job,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),90000))]);
   return r.data.text||'';
 }
@@ -1052,6 +1088,15 @@ function heroSlide(b,kicker){
 }
 function shelf(title,items,act){if(!items.length)return'';return`<section class="shelf"><div class="shelf-h"><h2>${title}</h2>${act||''}</div><div class="row-x">${items.join('')}</div></section>`}
 function pcard(b,sub){return`<button class="pcard" data-act="open" data-id="${b.id}">${poster(b)}<span class="pt">${esc(b.title)}</span>${sub}</button>`}
+function backupDue(){
+  const every=+S.settings.backupEvery||0;if(!every)return 0;
+  const real=S.books.filter(b=>!b.example);if(!real.length)return 0;
+  const snooze=ls.get('pp-backup-snooze');if(snooze&&snooze>=today())return 0;
+  const last=ls.get('pp-last-backup');
+  if(!last){const first=real.map(b=>b.addedAt||b.start||today()).sort()[0]||today();const age=Math.round((pd(today())-pd(first))/864e5);return age>=Math.min(every,7)?-1:0}
+  const age=Math.round((pd(today())-pd(last))/864e5);return age>=every?age:0;
+}
+function backupBanner(){const d=backupDue();if(!d)return'';return`<div class="banner bkrem" style="margin-top:14px"><span><b>Time for a backup.</b> ${d<0?'You haven’t saved one yet.':`It’s been ${d} days since your last one.`} Your books live only on this phone.</span><span class="row" style="gap:14px"><button class="btn" data-act="export" style="min-height:38px;padding:8px 16px">Save backup</button><button class="link" data-act="bksnooze" style="color:var(--muted)">Later</button></span></div>`}
 function tvLibraryHTML(){
   const B=S.books,yr=new Date().getFullYear();
   const reading=B.filter(b=>b.status==='reading').sort((a,c)=>lastRead(c).localeCompare(lastRead(a)));
@@ -1067,16 +1112,18 @@ function tvLibraryHTML(){
     <div class="tvhead"><h1>${GREET[greetKey()].greet}</h1><div class="acts"><button class="circ pig-c" data-act="opentimer" aria-label="Reading timer">${pigFace()}</button><button class="circ" data-act="add" aria-label="Add book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
     <p class="muted small tnum" style="margin:0">${B.length} book${B.length===1?'':'s'} · ${fin.length} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p></header>
   ${stageHTML()}
+  ${backupBanner()}
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:14px"><span>These are sample books so you can see how it works.</span><button class="link" data-act="clearex">Remove samples</button></div>`:''}
   ${slides.length?`<section class="hero"><div class="hero-x" id="heroX">${slides.join('')}</div>${slides.length>1?`<div class="dots-h" id="heroDots">${slides.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>`:''}</section>`:`<div class="empty" style="margin-top:20px"><h3>Your shelf is empty</h3>Tap <b>+</b> to scan a barcode or type a title.</div>`}
   ${shelf('Up Next',reading.map(b=>pcard(b,`<div class="bar"><i style="width:${pct(b)}%"></i></div><span class="ps tnum">${b.page||0}${b.pages?' / '+b.pages:''} pages</span>`)))}
+  ${S.shelves.map(sh=>shelf(esc(sh.name),B.filter(b=>b.shelves.includes(sh.id)).map(b=>pcard(b,`<span class="ps">${esc((b.author||'').split(',')[0])}</span>`)))).join('')}
   ${shelf('Want to Read',want.map(b=>pcard(b,`<span class="ps">${esc((b.author||'').split(',')[0])}</span>`)))}
   ${shelf(`Finished in ${yr}`,fin.map(b=>pcard(b,`<span class="ps">${fmt(b.finish)}</span>`)))}
   ${shelf('Saved Quotes',quotes.slice(0,12).map(({q,b})=>`<button class="qcard" data-act="open" data-id="${b.id}" style="--h:${b.hue}"><q>${esc(q.text)}</q><span>${esc(b.title)}${q.page?' · p. '+q.page:''}</span></button>`),`<button class="link" data-act="tab" data-v="quotes">See all</button>`)}
   ${fav&&fav[1].length>1?shelf('More by '+esc(fav[0]),fav[1].map(b=>pcard(b,`<span class="ps">${STATUS[b.status]}</span>`))):''}
   ${shelf('Read Before',older.map(b=>pcard(b,`<span class="ps">${esc((b.author||'').split(',')[0])}</span>`)))}
   <section class="shelf"><div class="shelf-h"><h2>All Books</h2></div>
-    <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}</div>
+    <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}${S.shelves.map(sh=>`<button class="chip shelfchip" data-act="filter" data-v="sh:${sh.id}" aria-pressed="${filter==='sh:'+sh.id}">${esc(sh.name)}</button>`).join('')}</div>
     <input type="search" id="search" placeholder="Search title, author or ISBN" value="${esc(query)}" aria-label="Search books">
     <div class="list" id="booklist"></div></section>`;
 }
@@ -1101,6 +1148,7 @@ function libraryHTML(){
   <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${doneYr} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p>
   <button class="tbtn" data-act="opentimer" style="margin-top:14px"><span class="pf">${pigFace()}</span>Start reading timer</button>
   ${stageHTML()}
+  ${backupBanner()}
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
   ${reading.length?`<div class="section"><div class="eyebrow">On the nightstand</div>${reading.map(b=>`
     <button class="now" data-act="open" data-id="${b.id}" data-focus="1">${cover(b,'m')}<div class="meta">
@@ -1109,7 +1157,7 @@ function libraryHTML(){
       <span class="small tnum">Page ${b.page||0}${b.pages?` of ${b.pages} · ${pct(b)}%`:''}</span>
       <span class="small" style="color:var(--primary);font-weight:500">Update bookmark →</span></div></button>`).join('')}</div>`:''}
   <div class="section"><div class="section-h"><h2>The shelf</h2></div>
-    <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}</div>
+    <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}${S.shelves.map(sh=>`<button class="chip shelfchip" data-act="filter" data-v="sh:${sh.id}" aria-pressed="${filter==='sh:'+sh.id}">${esc(sh.name)}</button>`).join('')}</div>
     <input type="search" id="search" placeholder="Search title, author or ISBN" value="${esc(query)}" aria-label="Search books">
     <div class="list" id="booklist" style="margin-bottom:56px"></div>
   </div>
@@ -1117,7 +1165,8 @@ function libraryHTML(){
 }
 function renderList(){
   const el=$('#booklist');if(!el)return;const ord={reading:0,want:1,done:2};
-  let L=S.books.filter(b=>filter==='all'||b.status===filter);
+  if(filter.startsWith('sh:')&&!S.shelves.some(x=>'sh:'+x.id===filter))filter='all';
+  let L=S.books.filter(b=>filter==='all'||b.status===filter||(filter.startsWith('sh:')&&b.shelves.includes(filter.slice(3))));
   if(query){const t=query.toLowerCase();L=L.filter(b=>((b.title||'')+' '+(b.author||'')+' '+(b.isbn||'')).toLowerCase().includes(t))}
   L.sort((a,b)=>ord[a.status]-ord[b.status]||a.title.localeCompare(b.title));
   if(!L.length){el.innerHTML=S.books.length?`<div class="empty">No books match.</div>`:`<div class="empty"><h3>Your shelf is empty</h3>Tap <b>Add book</b> to scan a barcode or type a title.</div>`;return}
@@ -1237,6 +1286,8 @@ const SET_ICONS={
   mode:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
   fonts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19 9.5 5h1L16 19M6.5 14h7M17 19v-6.5a2.5 2.5 0 0 1 5 0V19"/></svg>',
   style:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="3.5"/><rect x="3.5" y="13.5" width="7" height="7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>',
+  shelves:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 20h18M5 20V8h3v12M10 20V5h3v15M15.5 20l-1-11 3-.4 1.4 11.4"/></svg>',
+  reminders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>',
   goal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
   backup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4 15v3.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V15"/></svg>',
   offline:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/></svg>',
@@ -1245,7 +1296,7 @@ const SET_ICONS={
 };
 const SET_PAGES={
   background:{t:'Background',c:'#5E8FD6'},theme:{t:'Colour theme',c:'#D9668E'},mode:{t:'Light & dark',c:'#6E6A9E'},fonts:{t:'Fonts',c:'#B9874A'},style:{t:'Layout & style',c:'#7B8C9A'},
-  goal:{t:'Daily reading goal',c:'#E07A5F'},backup:{t:'Backup & restore',c:'#4F9D78'},offline:{t:'Offline',c:'#5C8F9E'},sample:{t:'Sample library',c:'#A47BC4'},about:{t:'About',c:'#8A8F98'}
+  goal:{t:'Daily reading goal',c:'#E07A5F'},shelves:{t:'My shelves',c:'#C08A3E'},reminders:{t:'Backup reminder',c:'#3E8E7E'},backup:{t:'Backup & restore',c:'#4F9D78'},offline:{t:'Offline',c:'#5C8F9E'},sample:{t:'Sample library',c:'#A47BC4'},about:{t:'About',c:'#8A8F98'}
 };
 function setVal(k){
   const st=S.settings;
@@ -1255,6 +1306,8 @@ function setVal(k){
     case'mode':return{clock:'Follow the clock',system:'Match my phone',light:'Always light',dark:'Always dark'}[st.mode]||'';
     case'fonts':return st.fontD.split(' ')[0]+' · '+st.fontB.split(' ')[0];
     case'style':return(st.layout==='list'?'Classic list':'Cinema')+' · '+({rounded:'Rounded',soft:'Soft',square:'Square'}[st.corners]||'');
+    case'shelves':return S.shelves.length?S.shelves.length+' shelf'+(S.shelves.length===1?'':'s'):'None yet';
+    case'reminders':return st.backupEvery?'Every '+st.backupEvery+' days':'Off';
     case'goal':return st.goal.value+' '+(st.goal.type==='pages'?'pages':'min')+' a day';
     case'backup':{const d=ls.get('pp-last-backup');return d?'Saved '+fmt(d):'Not saved yet'}
     case'offline':return readerReady()?'Ready':'Almost ready';
@@ -1267,6 +1320,12 @@ function setGroup(title,keys){return`<div class="sgroup"><div class="lbl">${titl
 function settingsPageBody(k){
   const st=S.settings,G=st.goal;
   switch(k){
+    case'shelves':return`<p class="hint">Make your own shelves, like Favourites, Book club or Gifts. A book can be on several shelves. Add books from a book's page.</p>
+      <div>${S.shelves.map(sh=>`<div class="shelfrow"><input type="text" id="shn-${sh.id}" value="${esc(sh.name)}" maxlength="40" aria-label="Shelf name"><button class="btn soft" data-act="shelfren" data-v="${sh.id}">Rename</button><button class="link" data-act="shelfdel" data-v="${sh.id}" style="color:var(--muted)">Delete</button></div>`).join('')||'<p class="hint">No shelves yet.</p>'}</div>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" id="shelfNewName" placeholder="New shelf name" maxlength="40"><button class="btn" data-act="shelfadd" style="flex:none">Add shelf</button></div>`;
+    case'reminders':return`<p class="hint">Your books live only on this phone. A reminder appears on your Library when it's time to save a backup.</p>
+      ${chipset('backupEvery',String(st.backupEvery||0),[['7','Weekly'],['14','Every 2 weeks'],['30','Monthly'],['0','Off']])}
+      <p class="hint">${(()=>{const d=ls.get('pp-last-backup');return d?'Last backup: '+fmt(d)+'.':'You haven’t saved a backup yet.'})()}</p>`;
     case'background':return`
     ${chipset('bg',st.bg,[['mountains','Mountains with Ruhi & Dori'],['photo','My photo'],['none','Plain']])}
     ${st.bg==='photo'?`<div class="row">${st.bgImage?`<img class="bgthumb" src="${st.bgImage}" alt="Your background">`:''}<label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" id="bgIn" class="vh">${st.bgImage?'Change photo':'Choose a photo'}</label></div>`:''}
@@ -1334,8 +1393,8 @@ function settingsHTML(){
   }
   return`${header(`<h1>Settings</h1>`)}
   ${setGroup('Appearance',['background','theme','mode','fonts','style'])}
-  ${setGroup('Reading',['goal'])}
-  ${setGroup('Your data',['backup','offline','sample'])}
+  ${setGroup('Reading',['goal','shelves'])}
+  ${setGroup('Your data',['backup','reminders','offline','sample'])}
   ${setGroup('About',['about'])}
   <p class="ver">Petal &amp; Page ${APP_VERSION}<br>Made with love, for Ruhi and Dori’s favourite reader</p>`;
 }
@@ -1358,7 +1417,7 @@ function openSheet(html,key){
 function closeSheet(){stopLive();ss.del('pp-book');const p=$('#panel'),sc=$('#scrim');p.classList.remove('on');sc.classList.remove('on');sheetFor=null;setTimeout(()=>{if(!sheetFor){p.hidden=true;sc.hidden=true;p.innerHTML=''}},300);render()}
 
 function openAdd(id){
-  const b=id?find(id):null;window._cover=b?b.cover:null;
+  const b=id?find(id):null;window._editId=id||null;window._cover=b?b.cover:null;
   openSheet(`<div class="sheet-h"><h2>${b?'Edit book':'Add a book'}</h2><button class="x" data-act="close" aria-label="Close">✕</button></div>
   <div class="stack">
     <div class="scan-opts" id="scanOpts">
@@ -1368,6 +1427,7 @@ function openAdd(id){
     <div id="liveBox" hidden class="stack"><div class="live"><video id="liveV" playsinline muted autoplay></video><div class="guide"></div><p>Fill the frame with the barcode</p></div><button class="btn soft" data-act="stoplive">Stop camera</button></div>
     <p class="hint" id="scanMsg" aria-live="polite">Scan the barcode starting 978 or 979, usually on the back cover.</p>
     <div class="field"><label for="fIsbn">ISBN</label><div class="row" style="flex-wrap:nowrap"><input type="text" inputmode="numeric" id="fIsbn" value="${esc(b?b.isbn:'')}" placeholder="978…"><button class="btn soft" data-act="lookup" style="flex:none">Look up</button></div></div>
+    <div class="dup banner" id="dupMsg" hidden></div>
     <div class="field"><label for="fTitle">Title</label><input type="text" id="fTitle" value="${esc(b?b.title:'')}" placeholder="Book title"></div>
     <div class="field"><label for="fAuthor">Author</label><input type="text" id="fAuthor" value="${esc(b?b.author:'')}"></div>
     <div class="grid2"><div class="field"><label for="fPages">Total pages</label><input type="number" inputmode="numeric" id="fPages" min="0" value="${b&&b.pages?b.pages:''}"></div>
@@ -1391,6 +1451,10 @@ function detailHTML(b){
       <div class="grid2"><button class="btn" data-act="savepage" data-id="${b.id}">Save bookmark</button><button class="btn ghost" data-act="opentimer" data-id="${b.id}">Start timer</button></div>
       ${S2.length?`<div><div class="lbl" style="margin:4px 0">Reading log</div>${S2.slice(0,8).map(s=>`<div class="lg tnum"><span>${fmt(s.date)}</span><span>page ${s.page}${s.min?` · ${s.min} min`:''}</span><button class="x" data-act="delsess" data-id="${b.id}" data-s="${s.id}" aria-label="Remove entry">✕</button></div>`).join('')}${S2.length>8?`<p class="hint">+ ${S2.length-8} earlier entries in the calendar</p>`:''}</div>`:''}
     </div>
+    <div class="shelfbox"><div class="lbl">Shelves</div>
+      <div class="chips" id="bkShelves">${S.shelves.map(sh=>`<button class="chip" data-act="bshelf" data-id="${b.id}" data-v="${sh.id}" aria-pressed="${b.shelves.includes(sh.id)}">${b.shelves.includes(sh.id)?'✓ ':''}${esc(sh.name)}</button>`).join('')}<button class="chip" data-act="newshelf" data-id="${b.id}">+ New shelf</button></div>
+      <div class="row" id="newShelfRow" hidden style="flex-wrap:nowrap"><input type="text" id="newShelfName" placeholder="e.g. Favourites, Book club, Signed copies" maxlength="40"><button class="btn soft" data-act="addshelf" data-id="${b.id}" style="flex:none">Add</button></div>
+    </div>
     <div class="section" style="margin-top:12px"><div class="section-h"><h3>Quotes</h3><span class="small muted">${b.quotes.length}</span></div>
       <button class="btn ghost" data-act="addquote" data-id="${b.id}">${I.cam} Capture a quote</button>
       ${[...b.quotes].sort((a,c)=>c.date.localeCompare(a.date)).map(q=>quoteCard(q,b,false)).join('')}
@@ -1407,12 +1471,15 @@ function openDetail(id,focus){const b=find(id);if(!b){ss.del('pp-book');return c
 
 let Q=null;
 function openQuote(id){
-  const b=find(id);Q={id,img:null,words:[],a:null,b:null};
+  const b=find(id);Q={id,img:null,orig:null,words:[],a:null,b:null};CR=null;setTimeout(wireCrop,50);
   openSheet(`<div class="sheet-h"><h2>Capture a quote</h2><button class="link" data-act="back" data-id="${id}">Back</button></div>
   <div class="stack">
     <p class="hint">From <b>${esc(b.title)}</b>. Photograph the page, tap Recognise text, then tap the first and last word of the passage.</p>
     <label class="scan"><input type="file" accept="image/*" capture="environment" id="qPhoto" class="vh">${I.cam}<span><b>Photograph the page</b><span class="hint">Or choose a photo you already took</span></span></label>
-    <img id="qImg" class="qimg" alt="Photo of the page" hidden>
+    <div id="cropBox" class="crop" hidden><div class="crop-stage" id="cropStage"><img id="cropImg" alt="Photo of the page"><div class="crop-sel" id="cropSel"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div>
+      <p class="hint">Drag the box over just the quote. Drag the corners to resize.</p>
+      <div class="grid2"><button class="btn" data-act="cropdo">Crop to the quote</button><button class="btn ghost" data-act="cropall">Use whole photo</button></div></div>
+    <div id="qPrev" class="stack" hidden><img id="qImg" class="qimg" alt="Your quote photo"><button class="link" data-act="cropagain" style="align-self:flex-start">Crop again</button></div>
     <button class="btn soft" data-act="ocr" id="ocrBtn" disabled>Recognise text</button>
     <p class="hint" id="ocrMsg" aria-live="polite"></p>
     <div class="words" id="words" hidden></div>
@@ -1421,6 +1488,38 @@ function openQuote(id){
     <label class="row small" style="align-self:end;min-height:44px"><input type="checkbox" id="qKeep" checked style="width:20px;height:20px;accent-color:var(--accent)"> Keep the photo</label></div>
     <button class="btn wide" data-act="saveq" data-id="${id}">Save quote</button>
   </div>`,'q'+id);
+}
+let CR=null;
+function startCrop(){
+  const box=$('#cropBox'),img=$('#cropImg');if(!box||!Q.orig)return;
+  $('#qPrev').hidden=true;box.hidden=false;img.src=Q.orig;
+  CR=CR&&CR.keep?CR:{x:.08,y:.25,w:.84,h:.32};drawCrop();
+}
+function drawCrop(){const sel=$('#cropSel');if(!sel||!CR)return;Object.assign(sel.style,{left:CR.x*100+'%',top:CR.y*100+'%',width:CR.w*100+'%',height:CR.h*100+'%'})}
+function wireCrop(){
+  const stage=$('#cropStage');if(!stage||stage.dataset.wired)return;stage.dataset.wired=1;
+  let drag=null;
+  stage.addEventListener('pointerdown',e=>{
+    const r=stage.getBoundingClientRect(),h=e.target.dataset.h,px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+    const inside=px>=CR.x&&px<=CR.x+CR.w&&py>=CR.y&&py<=CR.y+CR.h;
+    if(!h&&!inside){CR={x:Math.min(px,.9),y:Math.min(py,.9),w:.05,h:.05};drag={mode:'se',r,start:{...CR},px,py}}
+    else drag={mode:h||'move',r,start:{...CR},px,py};
+    stage.setPointerCapture(e.pointerId);e.preventDefault();drawCrop();
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(!drag)return;const {r,start}=drag,dx=(e.clientX-r.left)/r.width-drag.px,dy=(e.clientY-r.top)/r.height-drag.py,m=.04;
+    let {x,y,w,h}=start;
+    if(drag.mode==='move'){x=Math.min(Math.max(0,x+dx),1-w);y=Math.min(Math.max(0,y+dy),1-h)}
+    else{if(drag.mode.includes('w')){const nx=Math.min(Math.max(0,x+dx),x+w-m);w+=x-nx;x=nx}if(drag.mode.includes('e'))w=Math.min(Math.max(m,w+dx),1-x);
+      if(drag.mode.includes('n')){const ny=Math.min(Math.max(0,y+dy),y+h-m);h+=y-ny;y=ny}if(drag.mode.includes('s'))h=Math.min(Math.max(m,h+dy),1-y)}
+    CR={x,y,w,h};drawCrop();e.preventDefault();
+  });
+  const end=()=>{drag=null};stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
+}
+async function applyCrop(whole){
+  const im=await loadImg(Q.orig);let out=Q.orig;
+  if(!whole){const c=document.createElement('canvas'),sx=CR.x*im.width,sy=CR.y*im.height,sw=CR.w*im.width,sh=CR.h*im.height;c.width=Math.round(sw);c.height=Math.round(sh);c.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,c.width,c.height);out=c.toDataURL('image/jpeg',.9);CR.keep=true}
+  Q.img=out;$('#cropBox').hidden=true;$('#qPrev').hidden=false;$('#qImg').src=out;$('#ocrBtn').disabled=false;$('#words').hidden=true;$('#ocrMsg').className='hint';$('#ocrMsg').textContent='Now tap Recognise text.';
 }
 function renderWords(){
   const el=$('#words');if(!el)return;const lo=Q.a==null?-1:Math.min(Q.a,Q.b??Q.a),hi=Q.a==null?-1:Math.max(Q.a,Q.b??Q.a);
@@ -1471,6 +1570,14 @@ document.addEventListener('click',async e=>{
     case'checkin':{const d=t.dataset.d;if(d>today())break;S.checkins[d]=+t.dataset.v;await save();render();toast(d===today()?'Marked today as read':'Marked '+fmt(d)+' as read');break}
     case'uncheck':delete S.checkins[t.dataset.v];delete S.exCheckins[t.dataset.v];await save();render();break;
     case'cdot':liveTint(t.dataset.v,true);{const i=$('#customColor');if(i)i.value=t.dataset.v}break;
+    case'bshelf':{const v=t.dataset.v,i=b.shelves.indexOf(v);if(i>=0)b.shelves.splice(i,1);else b.shelves.push(v);await save();openDetail(id);break}
+    case'newshelf':{const r=$('#newShelfRow');r.hidden=false;$('#newShelfName').focus();break}
+    case'addshelf':{const n=($('#newShelfName').value||'').trim();if(!n){toast('Name the shelf first');break}
+      let sh=S.shelves.find(x=>x.name.toLowerCase()===n.toLowerCase());if(!sh){sh={id:uid(),name:n};S.shelves.push(sh)}
+      if(b&&!b.shelves.includes(sh.id))b.shelves.push(sh.id);await save();openDetail(id);toast('Added to '+sh.name);break}
+    case'shelfren':{const inp=document.getElementById('shn-'+t.dataset.v);const n=(inp&&inp.value||'').trim();const sh=S.shelves.find(x=>x.id===t.dataset.v);if(sh&&n){sh.name=n;await save();toast('Renamed');render()}break}
+    case'shelfdel':{if(!t.dataset.armed){t.dataset.armed=1;t.textContent='Tap again';break}S.shelves=S.shelves.filter(x=>x.id!==t.dataset.v);S.books.forEach(x=>x.shelves=x.shelves.filter(y=>y!==t.dataset.v));await save();render();toast('Shelf removed. Books stay in your library.');break}
+    case'shelfadd':{const n=($('#shelfNewName').value||'').trim();if(!n)break;S.shelves.push({id:uid(),name:n});await save();render();break}
     case'palette':S.settings.palette=t.dataset.v;await save();applyTheme();render();break;
     case'mode':S.settings.mode=t.dataset.v;await save();applyTheme();render();toast({clock:'Following sunrise and sunset',system:'Matching your phone',light:'Always light',dark:'Always dark'}[t.dataset.v]);break;
     case'geo':{if(!navigator.geolocation){toast('Location isn’t available on this phone');break}t.textContent='Finding you…';
@@ -1479,6 +1586,8 @@ document.addEventListener('click',async e=>{
     case'fontD':S.settings.fontD=t.dataset.v;await save();applyStyle();render();break;
     case'fontB':S.settings.fontB=t.dataset.v;await save();applyStyle();render();break;
     case'layout':S.settings.layout=t.dataset.v;await save();render();break;
+    case'bksnooze':{const d=new Date();d.setDate(d.getDate()+3);ls.set('pp-backup-snooze',ds(d));render();toast('I’ll remind you in 3 days');break}
+    case'backupEvery':S.settings.backupEvery=+t.dataset.v;await save();render();break;
     case'land':S.settings.land=t.dataset.v;await save();applyStyle();render();break;
     case'bg':case'glass':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
     case'corners':case'cards':case'size':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
@@ -1503,12 +1612,15 @@ document.addEventListener('click',async e=>{
     case'delbook':if(t.dataset.armed){S.books=S.books.filter(x=>x.id!==id);await save();closeSheet();toast('Book deleted')}else{t.dataset.armed=1;t.textContent='Tap again to delete for good'}break;
     case'addquote':openQuote(id);break;
     case'w':{const i=+t.dataset.i;if(Q.a==null||Q.b!=null){Q.a=i;Q.b=null}else Q.b=i;renderWords();break}
+    case'cropdo':await applyCrop(false);break;
+    case'cropall':await applyCrop(true);break;
+    case'cropagain':startCrop();break;
     case'ocr':{
       const m=$('#ocrMsg');t.disabled=true;m.className='hint';m.textContent='Reading the page… this can take up to a minute.';
       try{const txt=await recognize(Q.img);Q.words=txt.split(/\s+/).filter(Boolean);Q.a=Q.b=null;
         if(!Q.words.length){m.textContent='No words found. Try a sharper, well-lit photo taken straight on.'}
         else{$('#words').hidden=false;renderWords();m.className='hint ok';m.textContent='Tap the first word of the passage, then the last.'}}
-      catch(err){m.textContent='The text reader isn’t set up yet. Open the app once with internet (or tap Prepare in Settings). Meanwhile you can type the quote, or paste it from Live Text or Google Lens.'}
+      catch(err){console.warn(err);ocrWorker=null;m.textContent=(err&&err.message==='timeout')?'Reading took too long. Crop to just the passage and try again.':'The text reader couldn’t start. Connect to the internet once so it can download (Settings → Offline), then try again. Meanwhile you can type the quote, or paste it from Live Text or Google Lens.'}
       t.disabled=false;break}
     case'saveq':{
       const txt=$('#qText').value.trim();if(!txt){toast('Add the quote text first');break}
@@ -1520,13 +1632,14 @@ document.addEventListener('click',async e=>{
       $('#fIsbn').value=isbn;await fillFromIsbn(isbn);break}
     case'savebook':{
       const title=$('#fTitle').value.trim();if(!title){toast('Add a title');$('#fTitle').focus();break}
+      if(!id){const d=findDup($('#fIsbn').value,title);if(d&&!t.dataset.armed){showDup();t.dataset.armed=1;t.textContent='Add a second copy anyway';toast('This book is already in your library');break}}
       stopLive();
       const data={title,author:$('#fAuthor').value.trim(),isbn:$('#fIsbn').value.trim(),pages:parseInt($('#fPages').value,10)||0,cover:window._cover||null};
       const st=$('#fStatus').value;let bk;
       if(id){bk=find(id);Object.assign(bk,data);delete bk.example;if(bk.status!==st)setStatus(bk,st)}
-      else{bk={id:uid(),...data,status:'want',start:'',finish:'',page:0,hue:HUES[Math.floor(Math.random()*HUES.length)],sessions:[],notes:[],quotes:[]};setStatus(bk,st);S.books.push(bk)}
+      else{bk={id:uid(),addedAt:today(),shelves:[],...data,status:'want',start:'',finish:'',page:0,hue:HUES[Math.floor(Math.random()*HUES.length)],sessions:[],notes:[],quotes:[]};setStatus(bk,st);S.books.push(bk)}
       await save();openDetail(bk.id);toast(id?'Saved':'Added to your shelf');break}
-    case'export':{try{const blob=new Blob([backupText()],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='petal-and-page-backup-'+today()+'.json';ls.set('pp-last-backup',today());document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('Backup saved')}catch(err){toast('Couldn’t save a file here. Use Copy backup text.')}break}
+    case'export':{try{const blob=new Blob([backupText()],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='petal-and-page-backup-'+today()+'.json';ls.set('pp-last-backup',today());setTimeout(()=>{if(view==='library')render()},400);document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('Backup saved')}catch(err){toast('Couldn’t save a file here. Use Copy backup text.')}break}
     case'copybackup':{const s=backupText();try{await navigator.clipboard.writeText(s);ls.set('pp-last-backup',today());toast('Backup copied. Paste it into a note or email to yourself.')}catch(err){const o=$('#bkout');o.hidden=false;o.textContent=s;const r=document.createRange();r.selectNodeContents(o);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast('Selected. Use your phone’s Copy.')}break}
     case'restore':{const v=$('#restoreText').value.trim();if(!v){toast('Paste backup text first');break}
       if(!t.dataset.armed){t.dataset.armed=1;t.textContent='Tap again to replace this library';break}
@@ -1534,7 +1647,9 @@ document.addEventListener('click',async e=>{
   }
 });
 $('#scrim').addEventListener('click',closeSheet);
+let dupT=0;
 document.addEventListener('input',e=>{
+  if(e.target.id==='fTitle'||e.target.id==='fIsbn'){clearTimeout(dupT);dupT=setTimeout(showDup,300)}
   if(e.target.id==='customColor'){liveTint(e.target.value);return}
   if(e.target.id==='search'){query=e.target.value;renderList()}
   if(e.target.id==='qsearch'){qquery=e.target.value;renderQuoteList()}
@@ -1553,7 +1668,7 @@ document.addEventListener('change',async e=>{
     el.value='';
   }
   if(el.id==='covIn'){try{window._cover=await compress(f,360,.78);$('#covPrev').innerHTML=`<img class="cover s" src="${window._cover}" alt="">`}catch(err){toast('That photo couldn’t be opened')}}
-  if(el.id==='qPhoto'){try{Q.img=await compress(f,1800,.85);const im=$('#qImg');im.src=Q.img;im.hidden=false;$('#ocrBtn').disabled=false;$('#words').hidden=true;$('#ocrMsg').textContent=''}catch(err){toast('That photo couldn’t be opened')}}
+  if(el.id==='qPhoto'){try{Q.orig=await compress(f,2200,.9);Q.img=null;startCrop();$('#ocrBtn').disabled=true;$('#words').hidden=true;$('#ocrMsg').textContent=''}catch(err){toast('That photo couldn’t be opened')}el.value=''}
   if(el.id==='restoreFile'){const txt=await f.text();await doRestore(txt);el.value=''}
 });
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#timer').hidden)closeTimer();else if(sheetFor)closeSheet()});
@@ -1570,6 +1685,7 @@ const SKY={
 };
 const LANDS={
   alps:{n:'Swiss Alps',d:'Matterhorn, Switzerland'},
+  matterhorn:{n:'Matterhorn climb',d:'You two on the Hörnli ridge'},
   himalaya:{n:'Himalaya',d:'Ama Dablam, Nepal'},
   patagonia:{n:'Patagonia',d:'Fitz Roy, Argentina'},
   fuji:{n:'Mount Fuji',d:'Japan'},
@@ -1590,6 +1706,15 @@ function landC(c0,land,ph){
 }
 function pines(x0,x1,y,h,col,step){let p='';for(let x=x0;x<x1;x+=step){const hh=h*(.7+((x*7919)%13)/26);p+=`M${x} ${y} L${x+step*.5} ${y-hh} L${x+step} ${y}Z`}return`<path d="${p}" fill="${col}"/>`}
 function acacias(xs,y,col){return xs.map(([x,s])=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0 L2 -22 M2 -18 L-6 -26 M2 -16 L10 -27" stroke="${col}" stroke-width="2.2" fill="none"/><ellipse cx="2" cy="-28" rx="22" ry="5.5" fill="${col}"/></g>`).join('')}
+
+function climberSVG(jacket,helmet,night,lamp){return`<g transform="rotate(18)">
+  <path d="M-1 0 L-.7 -3.5 M1.1 0 L.7 -3.5" stroke="#2E2A33" stroke-width="1.1" stroke-linecap="round"/>
+  <rect x=".9" y="-7.4" width="2.2" height="3.4" rx=".6" fill="#55505E"/>
+  <rect x="-1.7" y="-7.6" width="3.4" height="4.4" rx="1" fill="${jacket}"/>
+  <path d="M-1.5 -6.6 L-3.2 -4.4 M-3.2 -4.4 L-3.6 -1.4" stroke="${jacket}" stroke-width="1" stroke-linecap="round"/><path d="M-3.9 -6 L-3.3 -1.2" stroke="#9AA0A8" stroke-width=".6"/>
+  <circle cx="0" cy="-9" r="1.25" fill="#E8B996"/><path d="M-1.4 -9.2 A1.45 1.45 0 0 1 1.4 -9.2Z" fill="${helmet}"/>
+  ${night&&lamp?`<circle cx="-1.3" cy="-9.4" r="3.4" fill="#FFF3B0" opacity=".3"/><circle cx="-1.3" cy="-9.4" r=".7" fill="#FFF8D6"/>`:''}
+</g>`}
 function landSVG(land,c,night,x){
   const snow=c.snow,lake=`<rect y="500" width="400" height="62" fill="url(#lakeG${x})"/>`,shim=`<path d="M40 520 h60 M180 532 h80 M300 516 h50 M90 546 h40" stroke="${night?'#9AA6D8':'#FFFFFF'}" stroke-opacity=".45" stroke-width="1.4" stroke-linecap="round"/>`;
   const mist=`<rect y="440" width="400" height="80" fill="url(#mistG${x})"/>`,meadow=`<path d="M0 800 L0 556 Q80 534 170 548 Q260 562 400 540 L400 800Z" fill="url(#meadowG${x})"/>`;
@@ -1597,6 +1722,29 @@ function landSVG(land,c,night,x){
   const farR=`<path d="M0 420 L0 352 L28 330 L52 352 L86 296 L112 326 L146 276 L168 302 L198 254 L222 292 L248 268 L278 312 L306 280 L340 322 L368 292 L400 318 L400 420Z" fill="${c.far}"/><path d="M86 296 L98 316 L92 314 L80 306Z M146 276 L158 296 L150 292 L138 290Z M198 254 L212 278 L204 274 L190 270Z M306 280 L318 298 L310 296 L298 292Z" fill="${snow}" opacity=".8"/>`;
   const sidePines=`${pines(-10,150,520,34,c.forest,13)}${pines(250,410,520,30,c.forest,12)}`,frontPines=`${pines(-6,60,566,48,c.forest,18)}${pines(352,420,562,44,c.forest,17)}`;
   switch(land){
+  case'matterhorn':{
+    const ridge='M184 320 L192 302 L201 282 L210 262 L219 242 L227 222 L233 207 L237 198';
+    return`<path d="M0 440 L0 380 L40 360 L70 372 L100 350 L120 366 L150 430Z M300 430 L330 360 L360 346 L400 360 L400 440Z" fill="${c.far}"/>
+    <path d="M330 360 L346 352 L360 346 L372 356 L352 358Z" fill="${snow}" opacity=".85"/>
+    <path d="M70 480 L140 380 L168 352 L190 306 L214 254 L232 210 L240 194 L248 190 L256 200 L266 228 L284 270 L304 318 L330 370 L382 480Z" fill="${c.peak}"/>
+    <path d="M248 190 L256 200 L266 228 L284 270 L304 318 L330 370 L382 480 L262 480 L250 340 L246 230Z" fill="${c.shade}"/>
+    <path d="M240 194 L248 190 L256 200 L252 214 L246 206 L242 216 L236 210Z M212 262 L220 252 L222 270 L214 280Z M196 300 L204 288 L206 306 L198 312Z M258 236 L268 252 L262 266 L256 252Z M276 286 L290 304 L282 314 L272 300Z M296 334 L312 352 L302 360Z M180 330 L186 322 L188 338Z" fill="${snow}" opacity=".9"/>
+    <path d="M226 236 L236 260 M218 276 L232 300 M206 318 L222 344 M262 262 L256 300 M280 318 L270 360" stroke="${c.shade}" stroke-width="1.4" opacity=".55" fill="none" stroke-linecap="round"/>
+    <path d="M256 196 Q290 186 318 196 Q296 202 272 204Z" fill="${c.cloud}" opacity="${night?.2:.75}"/>
+    <path d="M110 430 L150 372 L168 352 L190 366 L200 430Z" fill="${c.mid}"/>
+    <g transform="translate(140 336) scale(1.35)">
+      <path d="M-2 14 L26 14 L28 18 L-4 18Z" fill="${c.mid}"/>
+      <rect x="0" y="2" width="24" height="12" fill="${night?'#7B7680':'#B9B2A8'}"/><rect x="24" y="4" width="5" height="10" fill="${night?'#5E5966':'#958D82'}"/>
+      <path d="M-1 2.4 L12 -2 L25 2.4Z" fill="${night?'#3E3A44':'#5E5A60'}"/><path d="M25 2.4 L12 -2 L16 -3 L29 4Z" fill="${night?'#2E2B33':'#4A4650'}"/>
+      ${[2.5,6.5,10.5,14.5,18.5].map(xx=>`<rect x="${xx}" y="5" width="2.2" height="2.2" fill="${night?'#FFE7A3':'#5D6F86'}"/><rect x="${xx}" y="9.2" width="2.2" height="2.2" fill="${night?'#FFE7A3':'#5D6F86'}"/>`).join('')}
+      <rect x="19" y="-6" width=".7" height="8" fill="#8A8F98"/><rect x="19.7" y="-6" width="4" height="4" fill="#D6262E"/><path d="M21.3 -5.4 h.8 v2.8 h-.8z M20.3 -4.4 h2.8 v.8 h-2.8z" fill="#fff"/>
+    </g>
+    <g class="climbers" data-path="${ridge}" transform="translate(184 320)">
+      <g transform="scale(1.7)"><path d="M0 -4.6 Q-3 1 -4.6 4.6" stroke="#E2B13C" stroke-width=".55" fill="none"/>
+      <g transform="translate(-4.8 9.4)">${climberSVG('#3A6FC4','#F08A24',night,true)}</g>
+      ${climberSVG('#E26D96','#FFFFFF',night,true)}</g>
+    </g>
+    ${midR}${mist}${lake}${shim}${sidePines}${meadow}${frontPines}`;}
   case'himalaya':{
     const flags=[],cols=['#2F6FD0','#FFFFFF','#D33A31','#2E9B57','#F2C230'];
     for(let i=0;i<22;i++){const t=i/21,xx=10+t*390,yy=(1-t)*(1-t)*548+2*(1-t)*t*496+t*t*506;flags.push(`<rect x="${xx.toFixed(1)}" y="${(yy+1).toFixed(1)}" width="9" height="11" fill="${cols[i%5]}" opacity="${night?.45:.9}" transform="rotate(${(Math.sin(i)*8).toFixed(1)} ${xx.toFixed(1)} ${yy.toFixed(1)})"/>`)}
@@ -1707,12 +1855,25 @@ function stageSVG(ph){
   ${night?'<circle class="fly" cx="150" cy="80" r="1.8" fill="#FFF3B0"/><circle class="fly" cx="210" cy="64" r="1.6" fill="#FFF3B0"/><circle class="fly" cx="330" cy="76" r="1.8" fill="#FFF3B0"/>':''}
   </g></svg>`;
 }
+const CLIMB_MS=180000;
+function climbTick(){
+  const gs=document.querySelectorAll('.climbers');if(!gs.length)return;
+  const u=(Date.now()%CLIMB_MS)/CLIMB_MS,f=Math.min(1,u/.9);
+  gs.forEach(g=>{
+    if(!g._pts)g._pts=g.dataset.path.match(/-?[\d.]+/g).map(Number).reduce((a,v,i)=>(i%2?a[a.length-1].push(v):a.push([v]),a),[]);
+    const P=g._pts;let L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));
+    const d=f*L[L.length-1];let i=1;while(i<P.length-1&&L[i]<d)i++;const k=(d-L[i-1])/((L[i]-L[i-1])||1);
+    g.setAttribute('transform',`translate(${(P[i-1][0]+(P[i][0]-P[i-1][0])*k).toFixed(2)} ${(P[i-1][1]+(P[i][1]-P[i-1][1])*k).toFixed(2)})`);
+  });
+}
+setInterval(()=>{if(!document.hidden)climbTick()},1000);
 let sceneKey='';
 function renderScene(){
   const el=$('#scene');if(!el||!S)return;const st=S.settings,ph=themePhase(),key=st.bg+ph+landKey()+(st.bg==='photo'?(st.bgImage||'').length:'');
   document.documentElement.classList.toggle('has-scene',st.bg!=='none');
   if(key===sceneKey)return;sceneKey=key;
   if(st.bg==='none'){el.innerHTML='';return}
+  setTimeout(climbTick,0);
   el.innerHTML=(st.bg==='photo'&&st.bgImage?`<img src="${st.bgImage}" alt="">`:sceneSVG(ph))+'<div class="veil"></div>';
 }
 function stageHTML(){if(S.settings.bg!=='mountains')return'';return`<div class="stage">${stageSVG(themePhase())}</div>`}
@@ -1761,10 +1922,11 @@ function doriSVG(){return`
 <g class="dori">
   <ellipse cx="30" cy="80" rx="24" ry="3.4" fill="#000" opacity=".18" filter="url(#softBlur)"/>
   <g class="dtail2"><path d="M44 77 C56 78 62 70 59 61 C58 57 55 56 53 58" stroke="url(#dBlackG)" stroke-width="6.5" fill="none" stroke-linecap="round"/></g>
-  <path d="M13 79 C7 66 9 48 17 40 C21 35.5 39 35.5 43 40 C51 48 53 66 47 79Z" fill="url(#dBlackG)"/>
-  <ellipse cx="41" cy="67" rx="11" ry="11.5" fill="url(#dBlackG)"/>
-  <path d="M47.5 48 C51 56 51.5 66 48 76" stroke="#8C8395" stroke-width="1.2" fill="none" opacity=".45" stroke-linecap="round"/>
-  <path d="M21.5 39 C25.5 45 34.5 45 38.5 39 C41 50 39 63 30 72 C21 63 19 50 21.5 39Z" fill="url(#dWhiteG)"/>
+  <path d="M13 79 C7 66 9 48 17 40 C21 35.5 39 35.5 43 40 C51 48 53 66 47 79Z" fill="url(#dBodyWG)"/>
+  <ellipse cx="41" cy="67" rx="11" ry="11.5" fill="url(#dBodyWG)"/>
+  <path d="M41 56 C46 58 50 63 50 70" stroke="#C9C5D0" stroke-width="1" fill="none" opacity=".7" stroke-linecap="round"/>
+  <path d="M47.5 48 C51 56 51.5 66 48 76" stroke="#B9B4C2" stroke-width="1.2" fill="none" opacity=".6" stroke-linecap="round"/>
+  <path d="M17 41 C22 38 38 38 43 41" stroke="#D2CED9" stroke-width="1.6" fill="none" opacity=".8" stroke-linecap="round"/>
   <path d="M26 50 q1.5 4 0 8 M34 50 q-1.5 4 0 8" stroke="#D9D7DE" stroke-width=".8" fill="none" stroke-linecap="round"/>
   <ellipse cx="24" cy="78.5" rx="5.6" ry="3.2" fill="url(#dWhiteG)"/><ellipse cx="36" cy="78.5" rx="5.6" ry="3.2" fill="url(#dWhiteG)"/>
   <path d="M22 79.5 v-1.6 M24.4 79.8 v-1.8 M34 79.5 v-1.6 M36.4 79.8 v-1.8" stroke="#C9C6CF" stroke-width=".6"/>
@@ -1773,15 +1935,16 @@ function doriSVG(){return`
     <path d="M15.2 15.5 L14 4 L23.5 10.5Z" fill="#E7A5B3"/><path d="M44.8 15.5 L46 4 L36.5 10.5Z" fill="#E7A5B3"/>
     <path d="M11.5 26 C11.5 14 19.5 8 30 8 C40.5 8 48.5 14 48.5 26 C48.5 36.5 40.5 42.5 30 42.5 C19.5 42.5 11.5 36.5 11.5 26Z" fill="url(#dHeadG)"/>
     <path d="M30 8.6 C28.4 14 25.4 19.5 24.3 27 C22.6 34 24 40.5 30 42 C36 40.5 37.4 34 35.7 27 C34.6 19.5 31.6 14 30 8.6Z" fill="url(#dWhiteG)"/>
-    <path d="M18 13 C22 10 26 9.5 29 10" stroke="#6E6577" stroke-width="1.2" fill="none" opacity=".6" stroke-linecap="round"/>
+    <path d="M18 13 C22 10 26 9.5 29 10" stroke="#6E6577" stroke-width="1.2" fill="none" opacity=".6" stroke-linecap="round"/><path d="M35.4 17.6 Q39.6 15 44 17.4" stroke="#5E5666" stroke-width="1" fill="none" opacity=".7" stroke-linecap="round"/>
     <g class="dblink2">
       <ellipse cx="20.8" cy="25.4" rx="4.3" ry="4.6" fill="url(#dEyeG)"/><ellipse cx="39.2" cy="25.4" rx="4.3" ry="4.6" fill="url(#dEyeG)"/>
-      <ellipse class="dpup" cx="21.2" cy="25.6" rx="1.15" ry="3.7" fill="#14100F"/><ellipse class="dpup" cx="39.6" cy="25.6" rx="1.15" ry="3.7" fill="#14100F"/>
-      <circle cx="22.4" cy="23.6" r="1.1" fill="#fff"/><circle cx="40.8" cy="23.6" r="1.1" fill="#fff"/>
-      <path d="M16.4 22.2 Q20.8 19.6 25.2 22.2 M34.8 22.2 Q39.2 19.6 43.6 22.2" stroke="#0E0C0F" stroke-width=".8" fill="none" opacity=".8"/>
+      <ellipse class="dpup" cx="21.4" cy="26.6" rx=".9" ry="3" fill="#14100F"/><ellipse class="dpup" cx="39.8" cy="26.6" rx=".9" ry="3" fill="#14100F"/>
+      <circle cx="22.6" cy="26.8" r=".9" fill="#fff"/><circle cx="41" cy="26.8" r=".9" fill="#fff"/>
+      <path d="M15.8 20 L26 20 L26 25.6 Q20.8 23.4 15.8 25.9Z" fill="#17131A"/><path d="M34 20 L44.2 20 L44.2 26.3 Q39.2 23.2 34 25.4Z" fill="#17131A"/>
+      <path d="M16.2 25.9 Q20.8 23.4 25.6 25.5 M34.4 25.4 Q39.2 23.2 43.8 26.2" stroke="#0A080B" stroke-width="1.1" fill="none" stroke-linecap="round"/>
     </g>
     <path d="M28.2 31.6 h3.6 l-1.8 2.3z" fill="url(#dNoseG)"/>
-    <path d="M30 33.9 v1.3 M27.2 36 Q30 37.6 32.8 36" stroke="#8C6E76" stroke-width=".8" fill="none" stroke-linecap="round"/>
+    <path d="M30 33.9 v1.4 M27.4 36.4 Q30 35.4 32.6 36.6" stroke="#8C6E76" stroke-width=".8" fill="none" stroke-linecap="round"/>
     <g stroke="#FFFFFF" stroke-width=".55" stroke-linecap="round" opacity=".85" fill="none"><path d="M25 34 Q16 32 8 33.5 M25 35.5 Q16 36 9 38.5 M25 36.5 Q18 39 12 43"/><path d="M35 34 Q44 32 52 33.5 M35 35.5 Q44 36 51 38.5 M35 36.5 Q42 39 48 43"/></g>
   </g>
 </g>`}
@@ -1798,6 +1961,7 @@ const PET_DEFS=`<defs>
   <radialGradient id="rTagG" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFE9A3"/><stop offset="1" stop-color="#C8962E"/></radialGradient>
   <radialGradient id="dBlackG" cx="62%" cy="22%" r="90%"><stop offset="0" stop-color="#4A4450"/><stop offset=".45" stop-color="#211D24"/><stop offset="1" stop-color="#0D0B0E"/></radialGradient>
   <radialGradient id="dHeadG" cx="60%" cy="25%" r="80%"><stop offset="0" stop-color="#4E4854"/><stop offset=".5" stop-color="#231F26"/><stop offset="1" stop-color="#0F0D10"/></radialGradient>
+  <radialGradient id="dBodyWG" cx="40%" cy="25%" r="85%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".65" stop-color="#F2F0F5"/><stop offset="1" stop-color="#D3CFDA"/></radialGradient>
   <radialGradient id="dWhiteG" cx="55%" cy="25%" r="85%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".7" stop-color="#F1F0F4"/><stop offset="1" stop-color="#D7D5DD"/></radialGradient>
   <radialGradient id="dEyeG" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#E9E6A0"/><stop offset=".7" stop-color="#B9BC5E"/><stop offset="1" stop-color="#7E8A3B"/></radialGradient>
   <linearGradient id="dNoseG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7C2CC"/><stop offset="1" stop-color="#E496A4"/></linearGradient>
@@ -2004,6 +2168,7 @@ function showWhatsNew(justUpdated){
    const bk=ss.get('pp-book');if(bk&&find(bk))setTimeout(()=>openDetail(bk),50)}
   if(darkMQ){const onMQ=()=>{curTheme='';applyTheme();if(!sheetFor)render()};if(darkMQ.addEventListener)darkMQ.addEventListener('change',onMQ);else if(darkMQ.addListener)darkMQ.addListener(onMQ)}
   setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()},60*1000);
+  window.__pp={recognize,readerReady};
   setupSW();
   checkLevelUp();updatePill();if(T().state==='running')startTick();
   try{const seen=localStorage.getItem('pp-version');if(seen&&seen!==APP_VERSION)setTimeout(()=>showWhatsNew(true),600);localStorage.setItem('pp-version',APP_VERSION)}catch(e){}
