@@ -503,9 +503,10 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.11.3';
+const APP_VERSION='1.11.4';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.11.4',items:['Your piglet is now reading The Little Prince by Antoine de Saint-Exupéry']},
   {v:'1.11.3',items:['Fixed the custom colour theme freezing the app while picking a colour','Quick colour dots for your own theme','Any colour now stays readable: very light or bright colours are softened automatically']},
   {v:'1.11.2',items:['Removed the shops from the meadow, back to just the mountains with Ruhi and Dori']},
   {v:'1.10.4',items:['Ruhi is back as the storybook runner, now in her true colours: dark brown with golden highlights']},
@@ -1817,12 +1818,13 @@ function pigProgress(min){const m=min??lifeMinutes(),i=pigLevel(m),cur=PIG[i],nx
 function pigSVG(lv,mode,crop){
   // Baby proportions at every level: big head, low big eyes, tiny body. Wisdom shows only in accessories.
   const sc=lv===0?.9:lv===1?.95:1;
-  const bookCol=['#7CC6C1','#F4B860','#B66E7B','#5D6FA8','#6E5A8A','#4B3A7A'][lv];
+  const bookCol='#2F5AA8';
   const book=`<g transform="translate(100 166) scale(.78) translate(-100 -148)"><g class="book">
     <path d="M100 136 L62 128 L62 162 L100 170 L138 162 L138 128 Z" fill="${bookCol}"/>
     <path d="M100 134 L66 127 L66 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
     <path d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
-    ${lv===0?'<circle cx="83" cy="146" r="7" fill="#F4B860"/><path d="M110 152 l7 -10 l7 10z" fill="#7CC6C1"/>':'<path d="M72 138 L94 142 M72 145 L94 149 M72 152 L90 155 M106 142 L128 138 M106 149 L128 145 M106 155 L124 152" stroke="#D9C3BC" stroke-width="1.8" stroke-linecap="round"/>'}
+    <g transform="rotate(11.6 83 146.5)"><text x="83" y="140.4" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-weight="700" font-size="6.4" fill="#2F5AA8">The Little</text><text x="83" y="147.8" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-weight="700" font-size="6.4" fill="#2F5AA8">Prince</text><path d="M75 151 h16" stroke="#C9A15E" stroke-width=".7"/><text x="83" y="155.6" text-anchor="middle" font-family="Georgia,serif" font-size="2.9" fill="#7A6A70">Antoine de</text><text x="83" y="159" text-anchor="middle" font-family="Georgia,serif" font-size="2.9" fill="#7A6A70">Saint-Exupéry</text></g>
+    <g transform="rotate(-11.6 117 146.5)"><circle cx="117" cy="150" r="7.5" fill="#F2C46A"/><path d="M110.6 147.6 Q117 150.6 123.4 147.6" stroke="#D9A04A" stroke-width=".8" fill="none"/><circle cx="114.6" cy="152.4" r="1.1" fill="#D9A04A"/><circle cx="119.6" cy="153.6" r=".8" fill="#D9A04A"/><path d="M117 142.5 v-4 M117 138.5 q2.6 -.6 3 -3" stroke="#3E8A3E" stroke-width=".9" fill="none" stroke-linecap="round"/><circle cx="120.2" cy="135.2" r="1.4" fill="#E2483A"/><path d="M125 135.6 l.9 1.9 2 .3 -1.5 1.4 .4 2 -1.8 -1 -1.8 1 .4 -2 -1.5 -1.4 2 -.3z" fill="#F2C230"/><circle cx="109" cy="138" r=".7" fill="#F2C230"/></g>
     <path class="flip" d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFF8F2" stroke="#E7CFC6" stroke-width="1.2"/>
     <ellipse cx="63" cy="152" rx="10" ry="9" fill="#F7BCCA"/><ellipse cx="137" cy="152" rx="10" ry="9" fill="#F7BCCA"/>
   </g></g>`;
@@ -1862,7 +1864,7 @@ function pigSVG(lv,mode,crop){
 function pigFace(){return pigSVG(pigLevel(),'idle',true)}
 function companionCard(){
   const p=pigProgress();
-  return`<div class="card"><div class="companion"><div class="pv">${pigSVG(p.i,'idle')}</div><div class="meta"><div class="eyebrow">Reading companion</div><h3>${p.cur.n}</h3><span class="small muted">${p.cur.d}. ${Math.floor(p.hours)} hours read in all.</span>
+  return`<div class="card"><div class="companion"><div class="pv">${pigSVG(p.i,'idle')}</div><div class="meta"><div class="eyebrow">Reading companion</div><h3>${p.cur.n}</h3><span class="small muted">${p.cur.d}. ${Math.floor(p.hours)} hours read in all.</span><span class="small" style="color:var(--primary)">Reading <i>The Little Prince</i> by Antoine de Saint-Exupéry</span>
     ${p.nx?`<div class="bar"><i style="width:${(p.frac*100).toFixed(1)}%"></i></div><span class="small muted tnum">${Math.max(1,Math.ceil(p.nx.h-p.hours))} more hour${Math.ceil(p.nx.h-p.hours)===1?'':'s'} to become a ${p.nx.n}</span>`:'<span class="small muted">The wisest pig of all.</span>'}
   </div></div><button class="btn" data-act="opentimer">Start reading timer</button></div>`;
 }
@@ -1928,7 +1930,7 @@ function renderTimer(){
       ${t.state==='idle'?`<div class="tbooks" role="group" aria-label="What are you reading?">${reading.map(b=>`<button class="chip" data-act="tbook" data-v="${b.id}" aria-pressed="${t.bookId===b.id}">${esc(b.title.length>24?b.title.slice(0,22)+'…':b.title)}</button>`).join('')}<button class="chip" data-act="tbook" data-v="" aria-pressed="${!t.bookId}">Something else</button></div>`:`<div class="tsub">${t.state==='paused'?'Paused':'Reading'}${bk?` <i>${esc(bk.title)}</i>`:''}</div>`}
       <div class="tctl">${t.state==='idle'?`<button class="btn big-btn" data-act="tstart">Start reading</button>`:t.state==='running'?`<button class="btn big-btn gbtn" data-act="tpause">Pause</button><button class="btn big-btn" data-act="tfinish">Finish</button>`:`<button class="btn big-btn" data-act="tresume">Resume</button><button class="btn big-btn gbtn" data-act="tfinish">Finish</button>`}</div>
     </div>
-    <div class="glass tcard" style="padding:16px"><div class="lvl"><span class="eyebrow">Your reading companion</span><b>${p.cur.n}</b><span class="small muted">${p.cur.d}</span>${p.nx?`<div class="bar"><i style="width:${(p.frac*100).toFixed(1)}%"></i></div><span class="small muted tnum">${Math.floor(p.hours)} h read · ${p.nx.n} at ${p.nx.h} h</span>`:`<span class="small muted tnum">${Math.floor(p.hours)} hours read</span>`}</div></div>`;
+    <div class="glass tcard" style="padding:16px"><div class="lvl"><span class="eyebrow">Your reading companion</span><b>${p.cur.n}</b><span class="small muted">${p.cur.d}</span><span class="small">Reading <i>The Little Prince</i> by Antoine de Saint-Exupéry</span>${p.nx?`<div class="bar"><i style="width:${(p.frac*100).toFixed(1)}%"></i></div><span class="small muted tnum">${Math.floor(p.hours)} h read · ${p.nx.n} at ${p.nx.h} h</span>`:`<span class="small muted tnum">${Math.floor(p.hours)} hours read</span>`}</div></div>`;
   }
   el.innerHTML=`<div class="blob b1"></div><div class="blob b2"></div><div class="wrap">
     <div class="top"><button class="iconbtn gbtn" data-act="tclose" aria-label="Close timer" style="border-radius:50%">${I.prev.replace('m14.5 6-6 6 6 6','M6 9.5l6 6 6-6')}</button><span class="eyebrow">Reading timer</span><span style="width:40px"></span></div>
