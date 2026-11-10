@@ -78,7 +78,7 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.cover{flex:none;border-radius:3px 8px 8px 3px;object-fit:cover;background:hsl(var(--h,340) var(--covS) var(--covL));color:var(--covInk);display:grid;place-items:center;font-family:var(--display);font-style:italic;box-shadow:inset 3px 0 0 rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.1)}
+.cover{flex:none;border-radius:3px 8px 8px 3px;object-fit:cover;background:hsl(calc(var(--th,340) + var(--h,340) - 340) var(--covS) var(--covL));color:var(--covInk);display:grid;place-items:center;font-family:var(--display);font-style:italic;box-shadow:inset 3px 0 0 rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.1)}
 .cover.s{width:44px;height:64px;font-size:1.5rem}
 .cover.m{width:72px;height:106px;font-size:2.2rem}
 .cover.l{width:96px;height:140px;font-size:3rem}
@@ -144,7 +144,7 @@ nav.tabs button[aria-current="page"] svg{color:var(--accent)}
 .day.sel{outline:2px solid var(--ink);outline-offset:1px}
 .day.future{opacity:.45}
 .dots{display:flex;gap:2px;height:5px}
-.dots i{width:5px;height:5px;border-radius:50%;background:hsl(var(--h) 55% 55%)}
+.dots i{width:5px;height:5px;border-radius:50%;background:hsl(calc(var(--th,340) + var(--h) - 340) 50% 55%)}
 .day.l3 .dots i{background:var(--on-accent)}
 .legend{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--muted);flex-wrap:wrap}
 .legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
@@ -153,7 +153,7 @@ nav.tabs button[aria-current="page"] svg{color:var(--accent)}
 .stat span{font-size:.74rem;color:var(--muted)}
 .ev{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .ev:last-child{border-bottom:0}
-.ev .sw{width:10px;height:10px;border-radius:50%;background:hsl(var(--h) 55% 55%);flex:none}
+.ev .sw{width:10px;height:10px;border-radius:50%;background:hsl(calc(var(--th,340) + var(--h) - 340) 50% 55%);flex:none}
 .ev .sw.ck{background:var(--gold)}
 
 /* stats */
@@ -337,9 +337,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.5.1';
+const APP_VERSION='1.6.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.6.0',items:['Eight new colour themes beyond pink: Evergreen, Matcha, Deep Sea, Lavender Fields, Honey, Mocha, Midnight & Gold and Slate','Book covers now take on your theme’s colour']},
   {v:'1.5.1',items:['Your piglet is now a true baby: bigger head, big sparkly eyes, and it stays little as it grows wiser']},
   {v:'1.5.0',items:['Reading timer with a glassy, calm design','Meet your piglet: it reads along, naps when you pause, and grows wiser with every hour you read','Six levels from Piglet to Grand Sage, with a celebration at each one','The timer keeps going even if you close the app']},
   {v:'1.4.1',items:['The greeting now always matches the time of day, even when the app was left open']},
@@ -498,8 +499,34 @@ const PALETTES={
     dark:{bg:'#0F1616',surface:'#172121',raised:'#1E2A2A',ink:'#E8F2F1',muted:'#9AB0AE',accent:'#8FCBC7','on-accent':'#0F2121',primary:'#9AD3CF','on-primary':'#0F2121',soft:'#22393A',line:'#213030',gold:'#D3B98A'}},
   ivory:{name:'Ivory & Ink',
     light:{bg:'#FAF8F3',surface:'#FFFFFF',raised:'#F4F1EA',ink:'#2B2722',muted:'#7A746B',accent:'#B07D84','on-accent':'#FFFFFF',primary:'#2B2722','on-primary':'#FAF8F3',soft:'#F0E4E2',line:'#E8E2D7',gold:'#B89B64'},
-    dark:{bg:'#151311',surface:'#1F1C19',raised:'#27231F',ink:'#F2EEE6',muted:'#ABA398',accent:'#DDAFB4','on-accent':'#241619',primary:'#E8DCC8','on-primary':'#221C14',soft:'#332A27',line:'#2D2823',gold:'#CCB382'}}
+    dark:{bg:'#151311',surface:'#1F1C19',raised:'#27231F',ink:'#F2EEE6',muted:'#ABA398',accent:'#DDAFB4','on-accent':'#241619',primary:'#E8DCC8','on-primary':'#221C14',soft:'#332A27',line:'#2D2823',gold:'#CCB382'}},
+  forest:{name:'Evergreen',th:135,
+    light:{bg:'#F4F6F1',surface:'#FFFFFF',raised:'#ECF0E8',ink:'#1F2A22',muted:'#66736A',accent:'#4F7A5A','on-accent':'#FFFFFF',primary:'#24402E','on-primary':'#F1F7F0',soft:'#DCE8DA',line:'#DFE5DA',gold:'#B9975B'},
+    dark:{bg:'#0E1410',surface:'#161E18',raised:'#1D2720',ink:'#E6EFE7',muted:'#98A89C',accent:'#8DC29A','on-accent':'#0F1F14',primary:'#A5D4B0','on-primary':'#0F1F14',soft:'#22342A',line:'#1F2B23',gold:'#CDB27A'}},
+  matcha:{name:'Matcha',th:85,
+    light:{bg:'#F6F8F0',surface:'#FFFFFC',raised:'#EEF2E3',ink:'#262B1D',muted:'#6E7562',accent:'#7E9B4E','on-accent':'#FFFFFF',primary:'#3D4A26','on-primary':'#F7FAEF',soft:'#E2EBCD',line:'#E3E8D6',gold:'#BFA463'},
+    dark:{bg:'#11140C',surface:'#191D12',raised:'#20251A',ink:'#EDF2E2',muted:'#A3AA92',accent:'#B5CF86','on-accent':'#1A220C',primary:'#C5DB9C','on-primary':'#1A220C',soft:'#2A331C',line:'#252B1B',gold:'#D1BA7C'}},
+  ocean:{name:'Deep Sea',th:215,
+    light:{bg:'#F3F6FA',surface:'#FFFFFF',raised:'#EBF0F6',ink:'#1A2433',muted:'#647083',accent:'#3E6FA8','on-accent':'#FFFFFF',primary:'#1E3557','on-primary':'#EFF4FB',soft:'#DCE6F3',line:'#DDE4EE',gold:'#C2A06A'},
+    dark:{bg:'#0C111A',surface:'#141B27',raised:'#1B2331',ink:'#E6EDF7',muted:'#97A3B6',accent:'#8EB4E6','on-accent':'#0D1A2C',primary:'#A9C7F0','on-primary':'#0D1A2C',soft:'#1F2D44',line:'#1E2737',gold:'#D2B47F'}},
+  violet:{name:'Lavender Fields',th:265,
+    light:{bg:'#F7F5FB',surface:'#FFFFFF',raised:'#EFEBF6',ink:'#2A2338',muted:'#736C82',accent:'#7B5FB5','on-accent':'#FFFFFF',primary:'#3E2F66','on-primary':'#F5F1FC',soft:'#E6DDF5',line:'#E6E1EF',gold:'#C2A26F'},
+    dark:{bg:'#13101A',surface:'#1C1726',raised:'#241E31',ink:'#EEE9F7',muted:'#A79FB6',accent:'#B9A0EA','on-accent':'#1C1430',primary:'#C9B5F2','on-primary':'#1C1430',soft:'#2E2542',line:'#282135',gold:'#D3B784'}},
+  honey:{name:'Honey',th:42,
+    light:{bg:'#FBF7EC',surface:'#FFFDF7',raised:'#F5EFDD',ink:'#2E271A',muted:'#7A705C',accent:'#C08B2C','on-accent':'#2E1F05',primary:'#5A4316','on-primary':'#FFF8E8',soft:'#F3E5BF',line:'#EBE3CC',gold:'#B5862E'},
+    dark:{bg:'#15120B',surface:'#1F1A10',raised:'#272116',ink:'#F5EEDC',muted:'#B0A68E',accent:'#E6BE6A','on-accent':'#241A06',primary:'#EED08D','on-primary':'#241A06',soft:'#3A2F18',line:'#2E2717',gold:'#E2C27C'}},
+  mocha:{name:'Mocha',th:25,
+    light:{bg:'#F7F2EE',surface:'#FFFDFB',raised:'#EFE7E0',ink:'#2D221D',muted:'#7B6C64',accent:'#8F6449','on-accent':'#FFFFFF',primary:'#3E2B22','on-primary':'#F8F1EC',soft:'#EADCD1',line:'#E6DBD2',gold:'#B8925E'},
+    dark:{bg:'#14100E',surface:'#1E1815',raised:'#26201C',ink:'#F2E9E3',muted:'#AE9F96',accent:'#D1A587','on-accent':'#261A12',primary:'#DFC0A8','on-primary':'#261A12',soft:'#352A23',line:'#2D2420',gold:'#CFB083'}},
+  midnight:{name:'Midnight & Gold',th:230,
+    light:{bg:'#F2F3F7',surface:'#FFFFFF',raised:'#E9EBF2',ink:'#141827',muted:'#5E6378',accent:'#C49A4A','on-accent':'#1A1406',primary:'#141827','on-primary':'#F2F3F7',soft:'#E1E4EE',line:'#DCDFE8',gold:'#C49A4A'},
+    dark:{bg:'#0A0C14',surface:'#11141F',raised:'#171B29',ink:'#ECEEF6',muted:'#959AB0',accent:'#E3C27A','on-accent':'#1A1405',primary:'#E3C27A','on-primary':'#1A1405',soft:'#1E2335',line:'#1A1E2C',gold:'#E3C27A'}},
+  slate:{name:'Slate',th:210,
+    light:{bg:'#F5F6F7',surface:'#FFFFFF',raised:'#EDEFF1',ink:'#1E2226',muted:'#6B7178',accent:'#5B6B7A','on-accent':'#FFFFFF',primary:'#1E2226','on-primary':'#F5F6F7',soft:'#E2E6EA',line:'#E1E4E8',gold:'#B3A17E'},
+    dark:{bg:'#101214',surface:'#181B1E',raised:'#1F2326',ink:'#ECEEF0',muted:'#9AA1A8',accent:'#A9B8C6','on-accent':'#14191E',primary:'#C9D3DC','on-primary':'#14191E',soft:'#262B30',line:'#22272B',gold:'#C7B794'}}
 };
+const OTHER=['seaglass','ivory','forest','matcha','ocean','violet','honey','mocha','midnight','slate'];
+PALETTES.seaglass.th=180;PALETTES.ivory.th=40;
 function hslHex(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return'#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('')}
 function hexHsl(hex){let [r,g,b]=hx(hex).map(v=>v/255);const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0,l=(mx+mn)/2;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return[h,s*100,l*100]}
 function lum(hex){const c=hx(hex).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
@@ -509,6 +536,7 @@ function customPalette(hex){
     light:{bg:hslHex(H,Math.min(S,40)*.4,97.5),surface:'#FFFFFF',raised:hslHex(H,Math.min(S,40)*.35,94.8),ink:hslHex(H,25,17),muted:hslHex(H,9,45),accent:hex,'on-accent':lum(hex)>.35?hslHex(H,40,14):'#FFFFFF',primary:hslHex(H,Math.min(S,45),26),'on-primary':hslHex(H,40,97),soft:hslHex(H,Math.min(S,60)*.7,91),line:hslHex(H,Math.min(S,40)*.3,88),gold:'#C2A07A'},
     dark:{bg:hslHex(H,18,9),surface:hslHex(H,15,13),raised:hslHex(H,14,16),ink:hslHex(H,25,93),muted:hslHex(H,10,66),accent:hslHex(H,Math.min(80,S+10),76),'on-accent':hslHex(H,40,12),primary:hslHex(H,Math.min(80,S+10),80),'on-primary':hslHex(H,40,12),soft:hslHex(H,20,22),line:hslHex(H,14,20),gold:'#D4B590'}};
 }
+function paletteHue(k){if(k==='custom')return Math.round(hexHsl((S&&S.settings.customColor)||'#B66E7B')[0]);return(PALETTES[k]&&PALETTES[k].th)??340}
 function getPalette(k){return k==='custom'?customPalette((S&&S.settings.customColor)||'#B66E7B'):(PALETTES[k]||PALETTES.rosegold)}
 const FONTS_D=[
   {n:'Cormorant Garamond',spec:'ital,wght@0,500;0,600;1,500;1,600',w:600,wi:500,ds:1,fb:'Georgia,serif',d:'Classic, airy'},
@@ -580,6 +608,7 @@ function applyTheme(force){
   if(key===curTheme&&!force)return;curTheme=key;
   const t=tokens(pk,ph),r=document.documentElement;
   for(const [k,v] of Object.entries(t)){if(k==='scheme')r.style.colorScheme=v;else r.style.setProperty('--'+k,v)}
+  r.style.setProperty('--th',paletteHue(pk));
   r.dataset.phase=ph;
   const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t.bg;
 }
@@ -904,7 +933,12 @@ function settingsHTML(){
   return`${header(`<h1>Settings &amp; <em>style</em></h1>`)}
   <div class="section"><div class="card">
     <h3>Colour theme</h3>
-    <div class="swatches">${Object.entries(PALETTES).map(([k,P])=>swatch(k,P,st.palette)).join('')}${swatch('custom',customPalette(st.customColor),st.palette)}</div>
+    <span class="lbl">Pinks</span>
+    <div class="swatches">${Object.entries(PALETTES).filter(([k])=>!OTHER.includes(k)).map(([k,P])=>swatch(k,P,st.palette)).join('')}</div>
+    <span class="lbl" style="margin-top:4px">More colours</span>
+    <div class="swatches">${OTHER.map(k=>swatch(k,PALETTES[k],st.palette)).join('')}</div>
+    <span class="lbl" style="margin-top:4px">Your own</span>
+    <div class="swatches">${swatch('custom',customPalette(st.customColor),st.palette)}</div>
     ${st.palette==='custom'?`<div class="colorpick"><input type="color" id="customColor" value="${esc(st.customColor)}" aria-label="Pick your colour"><span class="hint">Pick any colour. Backgrounds, buttons and the dark version are made to match.</span></div>`:''}
   </div></div>
   <div class="section"><div class="card">
