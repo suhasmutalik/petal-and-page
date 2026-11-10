@@ -279,7 +279,7 @@ function normalize(s){
   s=s||{};s.books=Array.isArray(s.books)?s.books:[];
   s.settings=Object.assign({phase:'auto',palette:'peony',goal:{type:'minutes',value:20},yearGoal:12},s.settings||{});
   if(!s.settings.goal||!s.settings.goal.type)s.settings.goal={type:'minutes',value:20};
-  s.checkins=s.checkins||{};
+  s.checkins=s.checkins||{};s.exCheckins=s.exCheckins||{};
   s.books.forEach(b=>{b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
   return s;
 }
@@ -289,19 +289,62 @@ async function load(){
   catch(e){persistOK=false;S=normalize(seed())}
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 }
-function seed(){
-  const ck={};[2,5,6,8,11].forEach(n=>ck[daysAgo(n)]=15);
-  return{checkins:ck,books:[
-  {id:uid(),example:true,title:'The Secret Garden',author:'Frances Hodgson Burnett',isbn:'',pages:331,status:'reading',start:daysAgo(13),finish:'',page:142,hue:340,cover:null,
-   sessions:[{id:uid(),date:daysAgo(13),page:21,min:30},{id:uid(),date:daysAgo(10),page:52,min:35},{id:uid(),date:daysAgo(7),page:88,min:40},{id:uid(),date:daysAgo(4),page:117,min:25},{id:uid(),date:daysAgo(3),page:124,min:12},{id:uid(),date:daysAgo(1),page:142,min:20}],
-   notes:[{id:uid(),date:daysAgo(7),text:'Mary is softening. The robin chapters are lovely.'}],
-   quotes:[{id:uid(),date:daysAgo(4),page:112,text:'If you look the right way, you can see that the whole world is a garden.',img:null}]},
-  {id:uid(),example:true,title:'Pride and Prejudice',author:'Jane Austen',isbn:'',pages:432,status:'done',start:daysAgo(52),finish:daysAgo(19),page:432,hue:8,cover:null,
-   sessions:[{id:uid(),date:daysAgo(52),page:40,min:45},{id:uid(),date:daysAgo(44),page:130,min:60},{id:uid(),date:daysAgo(33),page:255,min:70},{id:uid(),date:daysAgo(25),page:360,min:55},{id:uid(),date:daysAgo(19),page:432,min:40}],
-   notes:[{id:uid(),date:daysAgo(19),text:'Reread of a favourite. Elizabeth’s letter scene still lands.'}],
-   quotes:[{id:uid(),date:daysAgo(52),page:1,text:'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.',img:null}]},
-  {id:uid(),example:true,title:'Middlemarch',author:'George Eliot',isbn:'',pages:880,status:'want',start:'',finish:'',page:0,hue:322,cover:null,sessions:[],notes:[],quotes:[]}
-]}}
+function seed(){const x=sampleLibrary();return{books:x.books,exCheckins:x.checkins}}
+function sampleLibrary(){
+  // Deterministic sample: classics read through the current year, with sessions, notes, quotes and check-ins.
+  let a=20261109;const rnd=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+  const ri=(lo,hi)=>lo+Math.floor(rnd()*(hi-lo+1));
+  const yr=new Date().getFullYear(),td=today(),limit=addDays(td,-22);
+  const NOTES=['Couldn’t put it down after the halfway point.','Slow start, but the ending made it worth it.','Lovely writing. Want to reread this one someday.','Recommended by Mum. She was right.','Read most of this in the garden on Sunday.','The letters chapter made me cry.','Book club pick for this month.','Annotated a lot of pages in this one.','The heroine is wonderful. Such a sharp voice.','Bought a second-hand copy with someone’s old notes in it.'];
+  const F=[
+    ['Pride and Prejudice','Jane Austen',432,8,['It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.','I declare after all there is no enjoyment like reading!']],
+    ['Jane Eyre','Charlotte Brontë',532,352,['I am no bird; and no net ensnares me: I am a free human being with an independent will.']],
+    ['Persuasion','Jane Austen',249,340,['You pierce my soul. I am half agony, half hope.']],
+    ['The Great Gatsby','F. Scott Fitzgerald',180,20,['So we beat on, boats against the current, borne back ceaselessly into the past.']],
+    ['Anne of Green Gables','L. M. Montgomery',320,332,['Isn’t it nice to think that tomorrow is a new day with no mistakes in it yet?']],
+    ['Wuthering Heights','Emily Brontë',416,300,['Whatever our souls are made of, his and mine are the same.']],
+    ['Little Women','Louisa May Alcott',459,346,['I’m not afraid of storms, for I’m learning how to sail my ship.']],
+    ['A Room with a View','E. M. Forster',240,10,[]],
+    ['The Age of Innocence','Edith Wharton',352,322,[]],
+    ['Emma','Jane Austen',474,338,['One half of the world cannot understand the pleasures of the other.']],
+    ['Sense and Sensibility','Jane Austen',409,355,[]],
+    ['Mansfield Park','Jane Austen',507,342,[]],
+    ['The House of Mirth','Edith Wharton',329,318,[]],
+    ['Villette','Charlotte Brontë',573,6,[]]
+  ];
+  const ck={},books=[];let cur=yr+'-01-03';
+  const readDays=(b,start,target,stopAt,force,maxPer)=>{
+    let d=start,page=b.page||0;
+    while(page<target&&d<=stopAt){
+      const recent=d>=addDays(td,-10);
+      if(force||recent||rnd()<.7){const p=Math.min(target-page,ri(9,maxPer||46));page+=p;b.sessions.push({id:uid(),date:d,page,min:Math.max(5,Math.round(p*(1.2+rnd()*.9)))})}
+      else if(rnd()<.25)ck[d]=ri(1,3)*10;
+      d=addDays(d,1);
+    }
+    b.page=page;return addDays(d,-1);
+  };
+  for(const [title,author,pages,hue,qs] of F){
+    if(cur>limit)break;
+    const b={id:uid(),example:true,title,author,isbn:'',pages,status:'done',start:cur,finish:'',page:0,hue,cover:null,sessions:[],notes:[],quotes:[]};
+    const fin=readDays(b,cur,pages,limit,false);
+    if(b.page<pages){b.notes.push({id:uid(),date:addDays(limit,-3),text:'Set this aside for a while. Will come back to it.'});books.push(b);b.status='reading';break}
+    b.finish=fin;
+    const n=ri(1,2);for(let i=0;i<n;i++)b.notes.push({id:uid(),date:addDays(b.start,ri(0,Math.max(0,Math.round((pd(fin)-pd(b.start))/864e5)))),text:NOTES[ri(0,NOTES.length-1)]});
+    qs.forEach(q=>b.quotes.push({id:uid(),date:addDays(b.start,ri(1,8)),page:ri(5,pages-5),text:q,img:null}));
+    books.push(b);cur=addDays(fin,ri(1,4));
+  }
+  // in progress
+  const sg={id:uid(),example:true,title:'The Secret Garden',author:'Frances Hodgson Burnett',isbn:'',pages:331,status:'reading',start:addDays(td,-14),finish:'',page:0,hue:345,cover:null,sessions:[],notes:[{id:uid(),date:addDays(td,-6),text:'Mary is softening. The robin chapters are lovely.'}],quotes:[{id:uid(),date:addDays(td,-4),page:112,text:'If you look the right way, you can see that the whole world is a garden.',img:null}]};
+  readDays(sg,sg.start,240,addDays(td,-1),false,30);books.push(sg);
+  const ns={id:uid(),example:true,title:'North and South',author:'Elizabeth Gaskell',isbn:'',pages:521,status:'reading',start:addDays(limit,1),finish:'',page:0,hue:5,cover:null,sessions:[],notes:[{id:uid(),date:addDays(td,-30),text:'Reading this one slowly, a chapter at a time.'}],quotes:[]};
+  readDays(ns,addDays(limit,1),380,addDays(td,-15),true,24);ns.start=ns.sessions.length?ns.sessions[0].date:ns.start;books.push(ns);
+  // wishlist
+  [['Middlemarch','George Eliot',880,322],['The Enchanted April','Elizabeth von Arnim',247,336],['Mrs Dalloway','Virginia Woolf',194,312],['Cranford','Elizabeth Gaskell',230,350]].forEach(([title,author,pages,hue])=>books.push({id:uid(),example:true,title,author,isbn:'',pages,status:'want',start:'',finish:'',page:0,hue,cover:null,sessions:[],notes:[],quotes:[]}));
+  // keep the recent streak unbroken
+  for(let i=1;i<=9;i++){const d=addDays(td,-i);if(!books.some(b=>b.sessions.some(x=>x.date===d)))ck[d]=ri(1,3)*10}
+  books.forEach(b=>{if(b.sessions.length)b.page=b.sessions[b.sessions.length-1].page});
+  return{books,checkins:ck};
+}
 const find=id=>S.books.find(b=>b.id===id);
 const pct=b=>b.pages?Math.min(100,Math.round((b.page||0)/b.pages*100)):0;
 
@@ -484,7 +527,7 @@ function dayStats(){
       x.pages+=delta;x.min+=(+s.min||0);x.books.add(b.id);x.ev.push({t:'read',b,page:s.page,delta,min:+s.min||0})});
     if(b.start)g(b.start).ev.push({t:'start',b});if(b.finish)g(b.finish).ev.push({t:'finish',b});
   });
-  Object.entries(S.checkins).forEach(([d,min])=>{const x=g(d);x.min+=(+min||0);x.check=true;x.ckMin=+min||0});
+  Object.entries(Object.assign({},S.exCheckins,S.checkins)).forEach(([d,min])=>{const x=g(d);x.min+=(+min||0);x.check=true;x.ckMin=+min||0});
   Object.values(m).forEach(x=>x.read=x.books.size>0||x.check);
   return m;
 }
@@ -671,7 +714,10 @@ function settingsHTML(){
     <p class="hint">${'serviceWorker' in navigator&&navigator.serviceWorker.controller?'The app is saved for offline use.':'The app saves itself for offline use after its first open with internet.'} ${readerReady()?'The text reader is ready offline too.':'The text reader still needs a one-time download (about 5 MB).'}</p>
     ${readerReady()?'':`<button class="btn soft" data-act="prepocr">Prepare text reader for offline</button>`}
   </div></div>
-  ${S.books.some(b=>b.example)?`<div class="section"><button class="btn danger" data-act="clearex">Remove the example books</button></div>`:''}`;
+  <div class="section"><div class="card"><h3>Sample library</h3>
+    <p class="hint">Classic books with a year of reading sessions, notes, quotes and check-ins, so every screen has something to show. Her own books and check-ins are never changed.</p>
+    ${S.books.some(b=>b.example)?`<button class="btn ghost" data-act="clearex">Remove the sample books</button>`:`<button class="btn soft" data-act="loadex">Load sample library</button>`}
+  </div></div>`;
 }
 
 /* ---------- sheets ---------- */
@@ -765,7 +811,7 @@ function backupText(){return JSON.stringify({app:'petal-page',version:2,saved:ne
 async function doRestore(text){
   let d;try{d=JSON.parse(text)}catch(e){toast('That isn’t a valid backup. Check you copied all of it.');return false}
   if(!d||!Array.isArray(d.books)){toast('No books found in that backup.');return false}
-  S=normalize({books:d.books,settings:d.settings,checkins:d.checkins});await save();applyTheme(true);render();toast('Restored '+S.books.length+' books');return true;
+  S=normalize({books:d.books,settings:d.settings,checkins:d.checkins,exCheckins:d.exCheckins});await save();applyTheme(true);render();toast('Restored '+S.books.length+' books');return true;
 }
 
 document.addEventListener('click',async e=>{
@@ -781,12 +827,13 @@ document.addEventListener('click',async e=>{
     case'close':closeSheet();break;
     case'back':openDetail(id);break;
     case'edit':openAdd(id);break;
-    case'clearex':S.books=S.books.filter(x=>!x.example);S.checkins={};await save();render();toast('Examples removed');break;
+    case'clearex':S.books=S.books.filter(x=>!x.example);S.exCheckins={};await save();render();toast('Examples removed');break;
+    case'loadex':{const x=sampleLibrary();S.books=S.books.filter(b=>!b.example).concat(x.books);S.exCheckins=x.checkins;await save();view='library';render();window.scrollTo(0,0);toast('Sample library added ('+x.books.length+' books)');break}
     case'calprev':calMonth.setMonth(calMonth.getMonth()-1);render();break;
     case'calnext':calMonth.setMonth(calMonth.getMonth()+1);render();break;
     case'day':selDay=t.dataset.v;render();break;
     case'checkin':{const d=t.dataset.d;if(d>today())break;S.checkins[d]=+t.dataset.v;await save();render();toast(d===today()?'Marked today as read':'Marked '+fmt(d)+' as read');break}
-    case'uncheck':delete S.checkins[t.dataset.v];await save();render();break;
+    case'uncheck':delete S.checkins[t.dataset.v];delete S.exCheckins[t.dataset.v];await save();render();break;
     case'phase':S.settings.phase=t.dataset.v;await save();applyTheme();render();break;
     case'palette':S.settings.palette=t.dataset.v;await save();applyTheme();render();break;
     case'goaltype':{const G=S.settings.goal;if(G.type!==t.dataset.v){G.type=t.dataset.v;G.value=G.type==='pages'?20:20}await save();render();break}
