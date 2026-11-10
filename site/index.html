@@ -499,11 +499,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.11.1';
+const APP_VERSION='1.11.2';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
-  {v:'1.11.1',items:['Landmarks now sit naturally in the landscape: real depth, distance haze, shadows, and nestled behind the hill among the pines']},
-  {v:'1.11.0',items:['Each mountain now has a local landmark in the meadow: a konbini by Fuji, a pizzeria in the Dolomites, a chalet with a cow in the Alps, a momo tea house in the Himalaya, a refugio and guanaco in Patagonia, a log cabin and canoe in the Rockies, a hot dog stand in Iceland, and a coffee hut with a giraffe by Kilimanjaro','Windows glow warmly at night']},
+  {v:'1.11.2',items:['Removed the shops from the meadow, back to just the mountains with Ruhi and Dori']},
   {v:'1.10.4',items:['Ruhi is back as the storybook runner, now in her true colours: dark brown with golden highlights']},
   {v:'1.10.3',items:['Ruhi is fuzzier, warmer and happier: big shiny eyes, a happy smile, curly ears and soft little legs','She trots and bounces after the butterfly instead of stiffly galloping']},
   {v:'1.10.2',items:['Updates now install by themselves when you open the app, so you always have the latest version']},
@@ -1546,14 +1545,14 @@ const SKY={
   night:{s:['#0B1230','#1C2350','#3A3366'],far:'#2C3359',peak:'#3A416C',shade:'#262B4B',snow:'#C7D0EE',mid:'#1E2A3B',forest:'#111B22',m1:'#22402F',m2:'#152A20',lake:'#2C3866',sun:'#F3EFD8',cloud:'#5C6290'}
 };
 const LANDS={
-  alps:{n:'Swiss Alps',d:'Matterhorn · chalet and cow'},
-  himalaya:{n:'Himalaya',d:'Ama Dablam · momo tea house'},
-  patagonia:{n:'Patagonia',d:'Fitz Roy · refugio and guanaco'},
-  fuji:{n:'Mount Fuji',d:'Japan · corner konbini'},
-  dolomites:{n:'Dolomites',d:'Tre Cime · pizzeria'},
-  rockies:{n:'Canadian Rockies',d:'Moraine Lake · log cabin and canoe'},
-  iceland:{n:'Iceland',d:'Kirkjufell · hot dog stand, aurora'},
-  kilimanjaro:{n:'Kilimanjaro',d:'Tanzania · coffee hut and giraffe'}
+  alps:{n:'Swiss Alps',d:'Matterhorn, Switzerland'},
+  himalaya:{n:'Himalaya',d:'Ama Dablam, Nepal'},
+  patagonia:{n:'Patagonia',d:'Fitz Roy, Argentina'},
+  fuji:{n:'Mount Fuji',d:'Japan'},
+  dolomites:{n:'Dolomites',d:'Tre Cime, Italy'},
+  rockies:{n:'Canadian Rockies',d:'Moraine Lake, Canada'},
+  iceland:{n:'Iceland',d:'Kirkjufell, aurora at night'},
+  kilimanjaro:{n:'Kilimanjaro',d:'Tanzania'}
 };
 function landKey(){const l=(S&&S.settings.land)||'alps';if(l!=='daily')return LANDS[l]?l:'alps';const k=Object.keys(LANDS),d=new Date(),doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);return k[doy%k.length]}
 function landC(c0,land,ph){
@@ -1667,13 +1666,9 @@ function stageSVG(ph){
   const fl=['#F7B6C8','#FFFFFF','#F4D27A','#C9B4F0'];let flowers='';for(let i=0;i<26;i++){const x=(i*61)%400,y=128+((i*37)%50);flowers+=`<circle cx="${x}" cy="${y}" r="${1.6+(i%3)*.6}" fill="${fl[i%4]}" opacity="${night?.5:.95}"/>`}
   return`<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ruhi playing in the mountains while Dori watches">
   <defs><linearGradient id="knollG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.m1}"/><stop offset=".55" stop-color="${c.m2}" stop-opacity=".9"/><stop offset="1" stop-color="${c.m2}" stop-opacity="0"/></linearGradient></defs>
-  <defs>${hazeDefs(ph)}<filter id="softBlur2" x="-30%" y="-200%" width="160%" height="500%"><feGaussianBlur stdDeviation="1.8"/></filter></defs>
-  <g filter="url(#hazeF)" opacity=".9">${pines(314,330,112,16,c.forest,7)}${pines(384,404,111,18,c.forest,8)}</g>
-  <g transform="translate(336 76.5) scale(.6)">${landmarkDeep(landKey(),night,ph)}</g>
   <path d="M-10 136 Q90 104 200 114 Q300 124 410 104 L410 200 L-10 200Z" fill="url(#knollG)"/>
   <path d="M-10 136 Q90 104 200 114 Q300 124 410 104" stroke="#FFFFFF" stroke-opacity="${night?.08:.35}" stroke-width="2" fill="none"/>
   ${flowers}
-  <g fill="${c.m1}" stroke="${c.m2}" stroke-width=".4">${[332,340,349,361,370,379,390].map((x,i)=>`<path d="M${x} ${112-(x-332)*.1} q1.5 -${5+i%3*2} 3 0 q1.4 -${4+i%2*3} 2.8 0 q1.6 -${5+i%3} 3 0z"/>`).join('')}</g>
   <g style="${dim}">
   <!-- Dori on her rock -->
   <ellipse cx="78" cy="127" rx="34" ry="7" fill="#000" opacity=".14"/>
@@ -1698,139 +1693,6 @@ function renderScene(){
 }
 function stageHTML(){if(S.settings.bg!=='mountains')return'';return`<div class="stage">${stageSVG(themePhase())}</div>`}
 
-/* ---------- local landmarks (one per mountain range) ---------- */
-function landmarkSVG(land,night){
-  const win=night?'#FFE7A3':'#BFDDF0',winS=night?'#FFF6D2':'#E7F4FC',glow=night?`<ellipse cx="34" cy="60" rx="40" ry="8" fill="#FFE7A3" opacity=".25"/>`:'';
-  const smoke=(x,y)=>`<g class="smoke" fill="#FFFFFF" opacity="${night?.25:.6}"><circle cx="${x}" cy="${y}" r="2.4"/><circle cx="${x+2}" cy="${y-5}" r="3"/><circle cx="${x+5}" cy="${y-11}" r="3.6"/></g>`;
-  switch(land){
-  case'fuji':return`${glow}
-    <rect x="2" y="27" width="56" height="33" fill="#F7F8FA"/>
-    <rect x="0" y="22" width="60" height="9" fill="#2F6FC4"/><rect x="0" y="31" width="60" height="2" fill="#E6EDF7"/>
-    <text x="30" y="29" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="5.6" font-weight="700" fill="#FFFFFF" letter-spacing=".6">24 HOURS</text>
-    <rect x="5" y="36" width="20" height="18" fill="${win}"/><rect x="35" y="36" width="20" height="18" fill="${win}"/>
-    <path d="M7 38 l7 0 -4 14 -7 0z M37 38 l7 0 -4 14 -7 0z" fill="${winS}" opacity=".7"/>
-    <g fill="${night?'#C6A86A':'#9AB3C6'}"><rect x="7" y="47" width="16" height="2"/><rect x="37" y="47" width="16" height="2"/></g>
-    <rect x="26.5" y="36" width="7" height="24" fill="${night?'#FFF0BE':'#D7EAF5'}"/><path d="M30 36 v24" stroke="#9AB3C6" stroke-width=".6"/>
-    <rect x="0" y="58.5" width="60" height="1.5" fill="#B9C2CE"/>
-    <rect x="44" y="14" width="2.2" height="8" fill="#8D96A3"/>
-    <g transform="translate(62 0)"><rect x="0" y="34" width="10" height="26" rx="1.5" fill="#C9302C"/><rect x="10" y="35" width="3" height="25" fill="#9E2320"/><rect x="1.6" y="37" width="6.8" height="9" rx=".8" fill="${night?'#FFF2C6':'#F4F4F4'}"/><g fill="#2D6CC0"><rect x="2.3" y="38" width="1.6" height="3"/><rect x="4.4" y="38" width="1.6" height="3"/><rect x="6.5" y="38" width="1.6" height="3"/></g><rect x="1.6" y="49" width="6.8" height="3" rx=".6" fill="#2A2A2A"/></g>`;
-  case'dolomites':return`${glow}
-    ${smoke(50,6)}<rect x="47" y="8" width="6" height="12" fill="#A85A3A"/>
-    <path d="M-2 22 L32 8 L66 22Z" fill="#C8693F"/><path d="M-2 22 L66 22 L66 24 L-2 24Z" fill="#A85232"/>
-    <rect x="2" y="24" width="60" height="36" fill="#F1D9A8"/>
-    <rect x="9" y="27" width="46" height="9" rx="1.5" fill="#FFFDF6" stroke="#2E7D46" stroke-width="1"/>
-    <text x="32" y="33.8" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="6.4" font-weight="700" fill="#C2342C">Pizzeria</text>
-    <g><path d="M4 38 h56 v5 h-56z" fill="#FFFFFF"/>${[0,1,2,3,4,5,6].map(i=>`<rect x="${4+i*8}" y="38" width="4" height="5" fill="#D93A30"/>`).join('')}
-      <path d="M4 43 ${[0,1,2,3,4,5,6].map(i=>`q2 3 4 0 q2 3 4 0`).join(' ')}" fill="#D93A30"/></g>
-    <rect x="8" y="46" width="16" height="12" fill="${win}"/><path d="M8 52 h16 M16 46 v12" stroke="#E7CFA0" stroke-width=".8"/>
-    <path d="M34 60 v-11 a7 7 0 0 1 14 0 v11z" fill="#6E3B24"/><circle cx="45" cy="54" r=".9" fill="#E8C35A"/>
-    <g transform="translate(55 47)"><circle r="5.4" fill="#F4C46A"/><circle r="4.4" fill="#E2483A"/><circle cx="-1.6" cy="-1.2" r=".9" fill="#FFF3D6"/><circle cx="1.6" cy=".6" r=".9" fill="#FFF3D6"/><circle cx="-.4" cy="2" r=".7" fill="#3E8A3E"/></g>
-    <rect x="0" y="58.5" width="64" height="1.5" fill="#C7B38C"/>`;
-  case'himalaya':return`${glow}
-    ${smoke(46,8)}<rect x="44" y="10" width="4" height="10" fill="#6E6A66"/>
-    <path d="M-2 24 L10 14 L56 14 L66 24Z" fill="#2E86A8"/><path d="M-2 24 h68 v2 h-68z" fill="#246B87"/>
-    <rect x="2" y="26" width="60" height="34" fill="#CFC6B8"/>
-    <g stroke="#B5AB9B" stroke-width=".7" fill="none"><path d="M2 34 h60 M2 42 h60 M2 50 h60 M14 26 v8 M36 26 v8 M24 34 v8 M48 34 v8 M12 42 v8 M40 42 v8 M26 50 v10 M52 50 v10"/></g>
-    <rect x="12" y="28" width="40" height="7" rx="1" fill="#FFF8E8" stroke="#8B2E2A" stroke-width=".8"/>
-    <text x="32" y="33.4" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="4.6" font-weight="700" fill="#8B2E2A" letter-spacing=".3">TEA · MOMO</text>
-    <rect x="8" y="40" width="14" height="11" fill="${win}" stroke="#8B5A2B" stroke-width="1.4"/><rect x="42" y="40" width="14" height="11" fill="${win}" stroke="#8B5A2B" stroke-width="1.4"/>
-    <rect x="27" y="42" width="10" height="18" fill="#8B5A2B"/><rect x="27" y="42" width="10" height="2" fill="#C9302C"/>
-    <path d="M-6 14 Q30 4 70 14" stroke="#7A6A5A" stroke-width=".5" fill="none"/>
-    ${['#2F6FD0','#FFFFFF','#D33A31','#2E9B57','#F2C230','#2F6FD0','#FFFFFF','#D33A31'].map((c,i)=>`<rect x="${-3+i*9}" y="${11-Math.sin((i+.5)/8*Math.PI)*6}" width="5" height="6" fill="${c}" opacity="${night?.5:.95}"/>`).join('')}
-    <rect x="0" y="58.5" width="64" height="1.5" fill="#A89C88"/>`;
-  case'alps':return`${glow}
-    <path d="M-4 26 L32 6 L68 26 L64 28 L32 10 L0 28Z" fill="#6E3F22"/><path d="M0 28 L32 10 L64 28Z" fill="#9C6034"/>
-    <rect x="4" y="27" width="56" height="33" fill="#B9773F"/>
-    <g stroke="#9A5E2E" stroke-width=".8"><path d="M4 33 h56 M4 39 h56 M4 45 h56 M4 51 h56"/></g>
-    <rect x="2" y="40" width="60" height="2.4" fill="#6E3F22"/>${[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>`<rect x="${3+i*5}" y="42" width="1.4" height="5" fill="#6E3F22"/>`).join('')}<rect x="2" y="47" width="60" height="1.6" fill="#6E3F22"/>
-    <rect x="12" y="30" width="10" height="8" fill="${win}" stroke="#F4EBDD" stroke-width="1.2"/><rect x="42" y="30" width="10" height="8" fill="${win}" stroke="#F4EBDD" stroke-width="1.2"/>
-    <rect x="11" y="37.6" width="12" height="2.4" fill="#5E8A3A"/><rect x="41" y="37.6" width="12" height="2.4" fill="#5E8A3A"/>
-    ${[12,15,18,21,42,45,48,51].map(x=>`<circle cx="${x+.6}" cy="37.4" r="1.3" fill="#E23B4A"/>`).join('')}
-    <rect x="27" y="49" width="10" height="11" fill="#5A321A"/><circle cx="35" cy="55" r=".8" fill="#E8C35A"/>
-    <rect x="13" y="51" width="8" height="6" fill="${win}" stroke="#F4EBDD" stroke-width="1"/>
-    <path d="M30 18 h4 v4 h-4z" fill="#D6262E"/><path d="M31.4 18.6 h1.2 v2.8 h-1.2z M30.6 19.4 h2.8 v1.2 h-2.8z" fill="#FFFFFF"/>
-    <g transform="translate(66 44)"><ellipse cx="0" cy="8" rx="9" ry="5.6" fill="#FFFFFF"/><ellipse cx="-3" cy="7" rx="3.2" ry="2.4" fill="#2B2420"/><ellipse cx="4" cy="9" rx="2.6" ry="2" fill="#2B2420"/>
-      <rect x="-7" y="11.6" width="2" height="5.4" fill="#F4F0EA"/><rect x="-3" y="12" width="2" height="5" fill="#F4F0EA"/><rect x="2" y="12" width="2" height="5" fill="#F4F0EA"/><rect x="6" y="11.6" width="2" height="5.4" fill="#F4F0EA"/>
-      <ellipse cx="-10.5" cy="4.6" rx="4" ry="3.4" fill="#FFFFFF"/><ellipse cx="-12.6" cy="6.2" rx="2.6" ry="1.9" fill="#F2B9B6"/><circle cx="-10" cy="3.6" r=".7" fill="#2B2420"/>
-      <path d="M-11.8 1.6 l-1.8 -2.4 M-9 1.4 l1.4 -2.4" stroke="#D9CFC0" stroke-width=".9" stroke-linecap="round"/>
-      <circle cx="-9.4" cy="8.6" r="1.5" fill="#E5B530"/><path d="M9 7 q3 3 1 7" stroke="#2B2420" stroke-width=".8" fill="none"/></g>
-    <rect x="0" y="58.5" width="64" height="1.5" fill="#8A7A62"/>`;
-  case'patagonia':return`${glow}
-    <path d="M-2 24 L32 10 L66 24Z" fill="#C7372F"/><path d="M-2 24 L66 24 L66 26.4 L-2 26.4Z" fill="#9C2A24"/>
-    <g stroke="#A82E28" stroke-width=".6"><path d="M8 20.4 L32 10.8 M18 22.2 L32 13.6 M46 22.2 L32 13.6 M56 20.4 L32 10.8"/></g>
-    <rect x="4" y="26" width="56" height="34" fill="#E9E1D2"/>
-    <g stroke="#CFC5B2" stroke-width=".6">${[0,1,2,3,4,5,6,7,8,9,10].map(i=>`<path d="M${7+i*5} 26 v34"/>`).join('')}</g>
-    <rect x="12" y="32" width="12" height="10" fill="${win}" stroke="#5A4A3A" stroke-width="1"/><rect x="40" y="32" width="12" height="10" fill="${win}" stroke="#5A4A3A" stroke-width="1"/>
-    <rect x="27" y="44" width="10" height="16" fill="#3E5A6E"/>
-    <rect x="18" y="47" width="6" height="2" fill="#7A5A3A"/>
-    <text x="32" y="23" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="4.2" font-weight="700" fill="#FFFFFF" letter-spacing=".4">REFUGIO</text>
-    <g transform="translate(64 28)" fill="#C9935A"><ellipse cx="2" cy="20" rx="8" ry="5"/><path d="M-4 18 C-6 12 -6 4 -4 0 C-3 -2 0 -2 0 0 C0 6 -1 12 0 18Z"/><ellipse cx="-3.2" cy="-1" rx="3.6" ry="2.4"/><path d="M-4.4 -3 l-.6 -2.4 M-2.4 -3.2 l.2 -2.4" stroke="#C9935A" stroke-width="1.2" stroke-linecap="round"/>
-      <rect x="-4" y="23" width="1.8" height="9"/><rect x="0" y="23.6" width="1.8" height="8.4"/><rect x="5" y="23.6" width="1.8" height="8.4"/><rect x="8" y="23" width="1.8" height="9"/>
-      <circle cx="-4.6" cy="-1.4" r=".55" fill="#2B2420"/><ellipse cx="2" cy="22" rx="6" ry="2.4" fill="#F1E1C6"/></g>
-    <rect x="0" y="58.5" width="64" height="1.5" fill="#8A8A72"/>`;
-  case'rockies':return`${glow}
-    ${smoke(48,6)}<rect x="45" y="8" width="6" height="12" fill="#7E7A74"/>
-    <path d="M-4 26 L30 8 L64 26Z" fill="#4A3426"/>
-    ${[0,1,2,3,4,5].map(i=>`<rect x="2" y="${26+i*5.6}" width="56" height="5" rx="2.5" fill="${i%2?'#9C6B44':'#A8774E'}"/>`).join('')}
-    ${[0,1,2,3,4,5].map(i=>`<circle cx="2" cy="${28.5+i*5.6}" r="2.4" fill="#C79A6E" stroke="#8C5E3A" stroke-width=".5"/><circle cx="58" cy="${28.5+i*5.6}" r="2.4" fill="#C79A6E" stroke="#8C5E3A" stroke-width=".5"/>`).join('')}
-    <rect x="10" y="33" width="12" height="10" fill="${win}" stroke="#4A3426" stroke-width="1.2"/><path d="M16 33 v10 M10 38 h12" stroke="#4A3426" stroke-width=".7"/>
-    <rect x="34" y="40" width="10" height="20" fill="#5A3A26"/><circle cx="42" cy="50" r=".8" fill="#E8C35A"/>
-    <path d="M60 58 Q76 52 92 58 Q76 61 60 58Z" fill="#D2342C"/><path d="M63 57.6 Q76 54 89 57.6" stroke="#9E231E" stroke-width=".7" fill="none"/>
-    <rect x="68" y="18" width="1.2" height="42" fill="#8A8F98"/><g transform="translate(69.2 18)"><rect width="16" height="9" fill="#FFFFFF"/><rect width="4" height="9" fill="#D52B1E"/><rect x="12" width="4" height="9" fill="#D52B1E"/><path d="M8 1.6 l.8 1.6 1.2 -.6 -.4 2.2 1.4 -.4 -.4 1 1.2 .8 -2.6 .6 .2 1.4 h-.8 l.2 -1.4 -2.6 -.6 1.2 -.8 -.4 -1 1.4 .4 -.4 -2.2 1.2 .6z" fill="#D52B1E"/></g>
-    <rect x="0" y="58.5" width="64" height="1.5" fill="#6E5A44"/>`;
-  case'iceland':return`${glow}
-    ${smoke(44,10)}
-    <path d="M6 26 Q32 14 58 26Z" fill="#FFFFFF"/>${[0,1,2,3,4,5].map(i=>`<path d="M${6+i*8.6} 26 Q${10.3+i*8.6} 30 ${14.6+i*8.6} 26Z" fill="${i%2?'#FFFFFF':'#D7262E'}"/>`).join('')}
-    <rect x="8" y="26" width="48" height="34" fill="#D7262E"/>
-    <rect x="12" y="29" width="40" height="8" rx="1.2" fill="#FFFFFF"/>
-    <text x="32" y="35" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="5.4" font-weight="800" fill="#D7262E" letter-spacing=".4">PYLSUR</text>
-    <rect x="12" y="40" width="40" height="11" fill="${win}"/><rect x="10" y="51" width="44" height="3" fill="#F4F0EA"/>
-    <g transform="translate(32 45.5)"><rect x="-9" y="-2.6" width="18" height="5.2" rx="2.6" fill="#E9B46A"/><rect x="-10" y="-1.4" width="20" height="2.8" rx="1.4" fill="#B5442E"/><path d="M-7 -.4 q1.75 1.4 3.5 0 t3.5 0 t3.5 0 t3.5 0" stroke="#F2C230" stroke-width=".8" fill="none"/></g>
-    <rect x="12" y="54" width="40" height="6" fill="#B71F26"/>
-    <rect x="0" y="58.5" width="64" height="1.5" fill="#6E7A6A"/>`;
-  case'kilimanjaro':return`${glow}
-    <g transform="translate(-8 0)"><path d="M14 60 l1.6 -18 h2 l.4 18z M22 60 l.4 -18 h2 l1.4 18z" fill="#D9A34E"/>
-      <path d="M12 44 C10 34 12 24 16 18 L19 0 C19 -3 25 -3 25 0 L22 20 C28 26 30 36 28 44Z" fill="#E7B65C"/>
-      <ellipse cx="22" cy="-1" rx="6.5" ry="3.6" fill="#E7B65C"/><path d="M19.4 -4 l-.4 -3 M22.8 -4.2 l.4 -3" stroke="#B9873C" stroke-width="1" stroke-linecap="round"/><circle cx="19.2" cy="-7.2" r=".9" fill="#7A4E22"/><circle cx="23.2" cy="-7.4" r=".9" fill="#7A4E22"/>
-      <circle cx="20.6" cy="-1.6" r=".7" fill="#2B2420"/>
-      ${[[15,30],[19,36],[23,30],[17,24],[22,24],[14,40],[20,42],[25,38],[20,10],[21,16],[19.5,4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.9" fill="#A8692E" opacity=".85"/>`).join('')}</g>
-    <path d="M18 34 L46 18 L74 34Z" fill="#C9A15A"/><g stroke="#A88440" stroke-width=".6"><path d="M24 31 L46 19 M32 33 L46 20 M60 33 L46 20 M68 31 L46 19"/></g>
-    <rect x="23" y="34" width="46" height="26" fill="#B8784A"/>
-    <rect x="26" y="37" width="40" height="7" rx="1" fill="#FFF6E6"/>
-    <text x="46" y="42.6" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="5" font-weight="800" fill="#6B3A1E" letter-spacing=".4">KAHAWA</text>
-    <rect x="28" y="47" width="14" height="13" fill="#5A3420"/><rect x="48" y="47" width="14" height="9" fill="${win}"/>
-    <g transform="translate(55 51.5)"><path d="M-3 -2 h6 l-.6 4 h-4.8z" fill="#FFFFFF"/><path d="M3 -1 q2 .4 0 2" stroke="#FFFFFF" stroke-width=".8" fill="none"/></g>
-    <rect x="20" y="58.5" width="52" height="1.5" fill="#A8894A"/>`;
-  }
-  return'';
-}
-
-const LM_VOL={ // facade edge, wall top, wall colour, roof eave+ridge (gables) or flat, side: -1 left / 1 right
-  fuji:{x:0,top:22,wall:'#D5DAE1',flat:[0,60],roof:'#B9C0CA',side:-1},
-  dolomites:{x:2,top:24,wall:'#D4B47E',eave:[-2,22],peak:[32,8],roof:'#9E4A2A',side:-1},
-  himalaya:{x:2,top:26,wall:'#ADA392',eave:[-2,24],peak:[10,14],roof:'#1F5C74',side:-1},
-  alps:{x:4,top:27,wall:'#8E5428',eave:[-4,26],peak:[32,6],roof:'#4E2B16',side:-1},
-  patagonia:{x:4,top:26,wall:'#CFC4AE',eave:[-2,24],peak:[32,10],roof:'#86221D',side:-1},
-  rockies:{x:2,top:26,wall:'#7E5232',eave:[-4,26],peak:[30,8],roof:'#2C1F16',side:-1},
-  iceland:{x:8,top:26,wall:'#9E1A20',flat:[8,56],roof:'#E9E4DE',side:-1},
-  kilimanjaro:{x:69,top:34,wall:'#8E5732',eave:[74,34],peak:[46,18],roof:'#9C7B3A',side:1}
-};
-function landmarkDeep(land,night,ph){
-  const V=LM_VOL[land];if(!V)return'';const c=landC(SKY[ph]||SKY.day,land,ph),d=11,r=5.5,sd=V.side;
-  const sx=V.x+sd*d;
-  let side=`<path d="M${V.x} ${V.top} L${sx} ${V.top-r} L${sx} ${60-r} L${V.x} 60Z" fill="${V.wall}"/>`;
-  side+=`<path d="M${V.x} ${V.top} L${sx} ${V.top-r} L${sx} ${60-r} L${V.x} 60Z" fill="#000" opacity=".16"/>`;
-  if(V.flat)side=`<path d="M${V.flat[0]} ${V.top} L${V.flat[0]+sd*d} ${V.top-r} L${V.flat[1]+sd*d} ${V.top-r} L${V.flat[1]} ${V.top}Z" fill="${V.roof}"/>`+side;
-  else{const E=V.eave,P=V.peak;side=`<path d="M${E[0]} ${E[1]} L${P[0]} ${P[1]} L${P[0]+sd*d} ${P[1]-r} L${E[0]+sd*d} ${E[1]-r}Z" fill="${V.roof}"/>`+side}
-  const winS=night?`<g fill="#FFE7A3" opacity=".7"><rect x="${Math.min(V.x,sx)+3}" y="${V.top+8}" width="4" height="6" transform="skewY(${-sd*26})" transform-origin="${V.x} ${V.top}"/></g>`:'';
-  const shadowDir=ph==='golden'?1:-1;
-  return`<g filter="url(#hazeF)">
-    <ellipse cx="${34+shadowDir*10}" cy="61" rx="48" ry="4.5" fill="#000" opacity="${night?.12:.2}" filter="url(#softBlur)"/>
-    ${side}${winS}${landmarkSVG(land,night)}
-    <path d="M${Math.min(V.x,sx)-2} 60.5 h${Math.abs(sx-V.x)+70}" stroke="#000" stroke-opacity=".18" stroke-width="2.2" filter="url(#softBlur)"/>
-  </g>`;
-}
-function hazeDefs(ph){const c=SKY[ph]||SKY.day,h=ph==='night'?c.s[1]:c.s[2];return`<filter id="hazeF" x="-20%" y="-30%" width="140%" height="160%"><feFlood flood-color="${h}" result="f"/><feComposite in="f" in2="SourceAlpha" operator="in" result="t"/><feComposite in="SourceGraphic" in2="t" operator="arithmetic" k2="${ph==='night'?.66:.8}" k3="${ph==='night'?.34:.2}"/></filter>`}
 /* ---------- illustrated Ruhi & Dori ---------- */
 function ruhiSVG(){return`
 <g class="ruhi-body">
