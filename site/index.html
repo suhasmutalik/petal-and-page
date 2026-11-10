@@ -499,9 +499,10 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.11.0';
+const APP_VERSION='1.11.1';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.11.1',items:['Landmarks now sit naturally in the landscape: real depth, distance haze, shadows, and nestled behind the hill among the pines']},
   {v:'1.11.0',items:['Each mountain now has a local landmark in the meadow: a konbini by Fuji, a pizzeria in the Dolomites, a chalet with a cow in the Alps, a momo tea house in the Himalaya, a refugio and guanaco in Patagonia, a log cabin and canoe in the Rockies, a hot dog stand in Iceland, and a coffee hut with a giraffe by Kilimanjaro','Windows glow warmly at night']},
   {v:'1.10.4',items:['Ruhi is back as the storybook runner, now in her true colours: dark brown with golden highlights']},
   {v:'1.10.3',items:['Ruhi is fuzzier, warmer and happier: big shiny eyes, a happy smile, curly ears and soft little legs','She trots and bounces after the butterfly instead of stiffly galloping']},
@@ -1666,16 +1667,19 @@ function stageSVG(ph){
   const fl=['#F7B6C8','#FFFFFF','#F4D27A','#C9B4F0'];let flowers='';for(let i=0;i<26;i++){const x=(i*61)%400,y=128+((i*37)%50);flowers+=`<circle cx="${x}" cy="${y}" r="${1.6+(i%3)*.6}" fill="${fl[i%4]}" opacity="${night?.5:.95}"/>`}
   return`<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ruhi playing in the mountains while Dori watches">
   <defs><linearGradient id="knollG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.m1}"/><stop offset=".55" stop-color="${c.m2}" stop-opacity=".9"/><stop offset="1" stop-color="${c.m2}" stop-opacity="0"/></linearGradient></defs>
+  <defs>${hazeDefs(ph)}<filter id="softBlur2" x="-30%" y="-200%" width="160%" height="500%"><feGaussianBlur stdDeviation="1.8"/></filter></defs>
+  <g filter="url(#hazeF)" opacity=".9">${pines(314,330,112,16,c.forest,7)}${pines(384,404,111,18,c.forest,8)}</g>
+  <g transform="translate(336 76.5) scale(.6)">${landmarkDeep(landKey(),night,ph)}</g>
   <path d="M-10 136 Q90 104 200 114 Q300 124 410 104 L410 200 L-10 200Z" fill="url(#knollG)"/>
   <path d="M-10 136 Q90 104 200 114 Q300 124 410 104" stroke="#FFFFFF" stroke-opacity="${night?.08:.35}" stroke-width="2" fill="none"/>
   ${flowers}
+  <g fill="${c.m1}" stroke="${c.m2}" stroke-width=".4">${[332,340,349,361,370,379,390].map((x,i)=>`<path d="M${x} ${112-(x-332)*.1} q1.5 -${5+i%3*2} 3 0 q1.4 -${4+i%2*3} 2.8 0 q1.6 -${5+i%3} 3 0z"/>`).join('')}</g>
   <g style="${dim}">
   <!-- Dori on her rock -->
   <ellipse cx="78" cy="127" rx="34" ry="7" fill="#000" opacity=".14"/>
   <path d="M46 126 C48 112 64 106 80 107 C96 108 110 114 110 126Z" fill="${night?'#4E5363':'#A9A7AE'}"/>
   <path d="M52 116 C60 110 74 108 86 109" stroke="#FFFFFF" stroke-opacity="${night?.12:.45}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
   <g transform="translate(55 45) scale(.82)">${doriSVG()}</g>
-  <g transform="translate(323 60.5) scale(.8)">${landmarkSVG(landKey(),night)}</g>
   <!-- Ruhi playing -->
   <g class="rrun"><g transform="translate(232 52) scale(.82)"><ellipse class="rshadow" cx="62" cy="80" rx="40" ry="4.5" fill="#000" opacity=".16" filter="url(#softBlur)"/><g class="rbounce">${ruhiSVG()}</g></g></g>
   ${PET_DEFS}
@@ -1700,7 +1704,6 @@ function landmarkSVG(land,night){
   const smoke=(x,y)=>`<g class="smoke" fill="#FFFFFF" opacity="${night?.25:.6}"><circle cx="${x}" cy="${y}" r="2.4"/><circle cx="${x+2}" cy="${y-5}" r="3"/><circle cx="${x+5}" cy="${y-11}" r="3.6"/></g>`;
   switch(land){
   case'fuji':return`${glow}
-    <rect x="58" y="34" width="10" height="26" rx="1.5" fill="#C9302C"/><rect x="59.6" y="37" width="6.8" height="9" rx=".8" fill="${night?'#FFF2C6':'#F4F4F4'}"/><g fill="#2D6CC0"><rect x="60.3" y="38" width="1.6" height="3"/><rect x="62.4" y="38" width="1.6" height="3"/><rect x="64.5" y="38" width="1.6" height="3"/></g><rect x="59.6" y="49" width="6.8" height="3" rx=".6" fill="#2A2A2A"/>
     <rect x="2" y="27" width="56" height="33" fill="#F7F8FA"/>
     <rect x="0" y="22" width="60" height="9" fill="#2F6FC4"/><rect x="0" y="31" width="60" height="2" fill="#E6EDF7"/>
     <text x="30" y="29" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="5.6" font-weight="700" fill="#FFFFFF" letter-spacing=".6">24 HOURS</text>
@@ -1709,7 +1712,8 @@ function landmarkSVG(land,night){
     <g fill="${night?'#C6A86A':'#9AB3C6'}"><rect x="7" y="47" width="16" height="2"/><rect x="37" y="47" width="16" height="2"/></g>
     <rect x="26.5" y="36" width="7" height="24" fill="${night?'#FFF0BE':'#D7EAF5'}"/><path d="M30 36 v24" stroke="#9AB3C6" stroke-width=".6"/>
     <rect x="0" y="58.5" width="60" height="1.5" fill="#B9C2CE"/>
-    <rect x="44" y="14" width="2.2" height="8" fill="#8D96A3"/>`;
+    <rect x="44" y="14" width="2.2" height="8" fill="#8D96A3"/>
+    <g transform="translate(62 0)"><rect x="0" y="34" width="10" height="26" rx="1.5" fill="#C9302C"/><rect x="10" y="35" width="3" height="25" fill="#9E2320"/><rect x="1.6" y="37" width="6.8" height="9" rx=".8" fill="${night?'#FFF2C6':'#F4F4F4'}"/><g fill="#2D6CC0"><rect x="2.3" y="38" width="1.6" height="3"/><rect x="4.4" y="38" width="1.6" height="3"/><rect x="6.5" y="38" width="1.6" height="3"/></g><rect x="1.6" y="49" width="6.8" height="3" rx=".6" fill="#2A2A2A"/></g>`;
   case'dolomites':return`${glow}
     ${smoke(50,6)}<rect x="47" y="8" width="6" height="12" fill="#A85A3A"/>
     <path d="M-2 22 L32 8 L66 22Z" fill="#C8693F"/><path d="M-2 22 L66 22 L66 24 L-2 24Z" fill="#A85232"/>
@@ -1801,6 +1805,32 @@ function landmarkSVG(land,night){
   return'';
 }
 
+const LM_VOL={ // facade edge, wall top, wall colour, roof eave+ridge (gables) or flat, side: -1 left / 1 right
+  fuji:{x:0,top:22,wall:'#D5DAE1',flat:[0,60],roof:'#B9C0CA',side:-1},
+  dolomites:{x:2,top:24,wall:'#D4B47E',eave:[-2,22],peak:[32,8],roof:'#9E4A2A',side:-1},
+  himalaya:{x:2,top:26,wall:'#ADA392',eave:[-2,24],peak:[10,14],roof:'#1F5C74',side:-1},
+  alps:{x:4,top:27,wall:'#8E5428',eave:[-4,26],peak:[32,6],roof:'#4E2B16',side:-1},
+  patagonia:{x:4,top:26,wall:'#CFC4AE',eave:[-2,24],peak:[32,10],roof:'#86221D',side:-1},
+  rockies:{x:2,top:26,wall:'#7E5232',eave:[-4,26],peak:[30,8],roof:'#2C1F16',side:-1},
+  iceland:{x:8,top:26,wall:'#9E1A20',flat:[8,56],roof:'#E9E4DE',side:-1},
+  kilimanjaro:{x:69,top:34,wall:'#8E5732',eave:[74,34],peak:[46,18],roof:'#9C7B3A',side:1}
+};
+function landmarkDeep(land,night,ph){
+  const V=LM_VOL[land];if(!V)return'';const c=landC(SKY[ph]||SKY.day,land,ph),d=11,r=5.5,sd=V.side;
+  const sx=V.x+sd*d;
+  let side=`<path d="M${V.x} ${V.top} L${sx} ${V.top-r} L${sx} ${60-r} L${V.x} 60Z" fill="${V.wall}"/>`;
+  side+=`<path d="M${V.x} ${V.top} L${sx} ${V.top-r} L${sx} ${60-r} L${V.x} 60Z" fill="#000" opacity=".16"/>`;
+  if(V.flat)side=`<path d="M${V.flat[0]} ${V.top} L${V.flat[0]+sd*d} ${V.top-r} L${V.flat[1]+sd*d} ${V.top-r} L${V.flat[1]} ${V.top}Z" fill="${V.roof}"/>`+side;
+  else{const E=V.eave,P=V.peak;side=`<path d="M${E[0]} ${E[1]} L${P[0]} ${P[1]} L${P[0]+sd*d} ${P[1]-r} L${E[0]+sd*d} ${E[1]-r}Z" fill="${V.roof}"/>`+side}
+  const winS=night?`<g fill="#FFE7A3" opacity=".7"><rect x="${Math.min(V.x,sx)+3}" y="${V.top+8}" width="4" height="6" transform="skewY(${-sd*26})" transform-origin="${V.x} ${V.top}"/></g>`:'';
+  const shadowDir=ph==='golden'?1:-1;
+  return`<g filter="url(#hazeF)">
+    <ellipse cx="${34+shadowDir*10}" cy="61" rx="48" ry="4.5" fill="#000" opacity="${night?.12:.2}" filter="url(#softBlur)"/>
+    ${side}${winS}${landmarkSVG(land,night)}
+    <path d="M${Math.min(V.x,sx)-2} 60.5 h${Math.abs(sx-V.x)+70}" stroke="#000" stroke-opacity=".18" stroke-width="2.2" filter="url(#softBlur)"/>
+  </g>`;
+}
+function hazeDefs(ph){const c=SKY[ph]||SKY.day,h=ph==='night'?c.s[1]:c.s[2];return`<filter id="hazeF" x="-20%" y="-30%" width="140%" height="160%"><feFlood flood-color="${h}" result="f"/><feComposite in="f" in2="SourceAlpha" operator="in" result="t"/><feComposite in="SourceGraphic" in2="t" operator="arithmetic" k2="${ph==='night'?.66:.8}" k3="${ph==='night'?.34:.2}"/></filter>`}
 /* ---------- illustrated Ruhi & Dori ---------- */
 function ruhiSVG(){return`
 <g class="ruhi-body">
