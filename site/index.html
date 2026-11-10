@@ -24,7 +24,7 @@
   --primary:#4A2E3B; --on-primary:#FBEFF1; --soft:#F3E0E1; --line:#ECDFDD; --gold:#C2A07A; --glow:rgba(243,224,225,.9); --scrim:rgba(40,22,30,.42);
   --covS:30%; --covL:85%; --covInk:#3F2A33;
   --display:"Cormorant Garamond","Iowan Old Style",Georgia,serif; --dw:600; --dwi:500; --ds:1;
-  --rc:18px; --ri:12px; --rp:999px; --cb:1px solid var(--line); --cs:none; --cardbg:var(--surface); --fs:16px;
+  --rc:18px; --ri:12px; --rp:999px; --cb:1px solid var(--line); --cs:none; --cardbg:var(--surface); --fs:16px; --glassline:rgba(255,255,255,.6);
   --body:"Jost","Avenir Next","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
   padding-top:env(safe-area-inset-top,0px);
@@ -246,6 +246,80 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 .toggle input{width:44px;height:26px;accent-color:var(--primary)}
 .colorpick{display:flex;align-items:center;gap:12px}
 .colorpick input{width:52px;height:40px;border:1px solid var(--line);border-radius:var(--ri);background:none;padding:2px}
+.tbtn{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;border:1px solid var(--glassline);background:color-mix(in srgb,var(--surface) 55%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:var(--rp);padding:6px 16px 6px 6px;min-height:46px;color:var(--ink);font-weight:500;box-shadow:0 8px 20px -14px color-mix(in srgb,var(--ink) 40%,transparent)}
+.tbtn .pf{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center;overflow:hidden}
+.tbtn .pf svg{width:34px;height:34px}
+/* timer overlay */
+.timer{position:fixed;inset:0;z-index:70;overflow:auto;background:color-mix(in srgb,var(--bg) 42%,transparent);backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%);opacity:0;transition:opacity .3s;padding-top:env(safe-area-inset-top,0px)}
+.timer.on{opacity:1}
+.timer .blob{position:fixed;border-radius:50%;filter:blur(50px);opacity:.55;pointer-events:none;animation:drift 18s ease-in-out infinite alternate}
+.timer .b1{width:300px;height:300px;background:var(--accent);top:-80px;left:-90px}
+.timer .b2{width:260px;height:260px;background:var(--gold);bottom:-60px;right:-80px;animation-delay:-9s;opacity:.4}
+@keyframes drift{to{transform:translate(40px,60px) scale(1.15)}}
+.timer .wrap{position:relative;max-width:460px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:16px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:14px calc(24px + env(safe-area-inset-bottom,0px))}
+.timer .top{display:flex;align-items:center;justify-content:space-between}
+.glass{background:color-mix(in srgb,var(--surface) 40%,transparent);border:1px solid var(--glassline);border-radius:calc(var(--rc) + 10px);box-shadow:0 20px 50px -30px color-mix(in srgb,var(--ink) 55%,transparent),inset 0 1px 0 var(--glassline);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.tcard{padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.ringbox{position:relative;width:min(270px,72vw);aspect-ratio:1;max-width:100%}
+.ringbox>svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ringbox .pigwrap{position:absolute;inset:11%;display:grid;place-items:center}
+.ringbox .pigwrap svg{width:100%;height:100%}
+.digits{font-family:var(--display);font-weight:var(--dwi);font-size:calc(3.8rem*var(--ds));line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.tsub{font-size:.85rem;color:var(--muted)}
+.lvl{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
+.lvl b{font-family:var(--display);font-size:calc(1.3rem*var(--ds));font-weight:var(--dw)}
+.lvl .bar{width:70%}
+.tctl{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;width:100%}
+.big-btn{min-width:150px;min-height:56px;font-size:1.05rem;border-radius:var(--rp)}
+.gbtn{background:color-mix(in srgb,var(--surface) 55%,transparent)!important;color:var(--ink)!important;border:1px solid var(--glassline)!important}
+.tbooks{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.tbooks .chip{background:color-mix(in srgb,var(--surface) 50%,transparent);border-color:var(--glassline)}
+.tbooks .chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tpill{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:var(--rp);background:color-mix(in srgb,var(--surface) 60%,transparent);border:1px solid var(--glassline);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 24px -14px color-mix(in srgb,var(--ink) 50%,transparent);font-variant-numeric:tabular-nums;font-weight:500;color:var(--ink)}
+.tpill .pf{width:28px;height:28px;border-radius:50%;background:var(--soft);overflow:hidden;display:grid;place-items:center}
+.tpill .pf svg{width:28px;height:28px}
+.tpill .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.6s ease-in-out infinite}
+.tpill.paused .dot{animation:none;background:var(--muted)}
+@keyframes pulse{50%{opacity:.3}}
+/* pig */
+.pig .all{transform-origin:100px 195px;animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.018,.988)}}
+.pig .blinker{transform-box:fill-box;transform-origin:center;animation:blink 5.2s infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}95.5%{transform:scaleY(.08)}}
+.pig .earl{transform-origin:76px 62px;animation:earL 7s ease-in-out infinite}
+.pig .earr{transform-origin:124px 62px;animation:earR 7s ease-in-out infinite 1.3s}
+@keyframes earL{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-9deg)}96%{transform:rotate(3deg)}}
+@keyframes earR{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(9deg)}96%{transform:rotate(-3deg)}}
+.pig .tassel{transform-origin:138px 46px;animation:swing 2.8s ease-in-out infinite}
+@keyframes swing{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(8deg)}}
+.pig .tail{transform-origin:150px 150px;animation:wag 1.8s ease-in-out infinite}
+@keyframes wag{50%{transform:rotate(14deg)}}
+.pig .closed,.pig .zzz{display:none}
+.pig.reading .head{transform-origin:100px 130px;animation:nod 3.4s ease-in-out infinite}
+@keyframes nod{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(1px)}}
+.pig.reading .scan{animation:scan 3.4s ease-in-out infinite}
+@keyframes scan{0%,100%{transform:translate(-2.2px,1.6px)}50%{transform:translate(2.2px,1.6px)}}
+.pig .flip{transform-origin:100px 146px;opacity:0}
+.pig.reading .flip{animation:flip 5s ease-in-out infinite}
+@keyframes flip{0%,58%{transform:scaleX(1);opacity:0}60%{opacity:1}84%{transform:scaleX(-1);opacity:1}90%,100%{transform:scaleX(-1);opacity:0}}
+.pig.sleep .open{display:none}.pig.sleep .closed{display:inline}
+.pig.sleep .zzz{display:inline}
+.pig.sleep .head{transform-origin:100px 130px;transform:rotate(-4deg) translateY(3px)}
+.pig .zzz text{animation:zz 3s ease-in infinite;opacity:0;font-family:var(--display);font-weight:600}
+.pig .zzz text:nth-child(2){animation-delay:1s}.pig .zzz text:nth-child(3){animation-delay:2s}
+@keyframes zz{0%{opacity:0;transform:translate(0,6px)}30%{opacity:1}100%{opacity:0;transform:translate(12px,-22px)}}
+.pig .spark{transform-box:fill-box;transform-origin:center;animation:twinkle 2.4s ease-in-out infinite}
+.pig .spark:nth-of-type(2){animation-delay:.8s}.pig .spark:nth-of-type(3){animation-delay:1.6s}
+@keyframes twinkle{0%,100%{transform:scale(.4);opacity:.3}50%{transform:scale(1);opacity:1}}
+.pig.party .all{animation:hop .7s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px) scale(1.02,.98)}}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:95;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:10px;border-radius:2px;animation:fall 2.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.8}}
+.companion{display:flex;gap:14px;align-items:center}
+.companion .pv{width:108px;height:108px;flex:none;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--surface),var(--soft));display:grid;place-items:center;overflow:hidden}
+.companion .pv svg{width:118px;height:118px;margin-top:10px}
+.companion .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -255,15 +329,18 @@ pre.bk{white-space:pre-wrap;word-break:break-all;font-size:.72rem;max-height:160
 <nav class="tabs" aria-label="Sections"><div class="in" id="tabs"></div></nav>
 <div class="scrim" id="scrim" hidden></div>
 <section class="panel" id="panel" hidden role="dialog" aria-modal="true"></section>
+<div class="timer" id="timer" hidden role="dialog" aria-modal="true" aria-label="Reading timer"></div>
+<button class="tpill" id="tpill" hidden data-act="opentimer"></button>
 <div class="toast" id="toast" role="status"></div>
 <div class="update" id="update" role="alert" aria-live="assertive"><div class="in"><div><b>A new version is ready</b>Update now to get the latest improvements. Your books stay safe.</div><button class="later" data-act="uplater">Later</button><button class="go" data-act="upnow">Update</button></div></div>
 
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.4.1';
+const APP_VERSION='1.5.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.5.0',items:['Reading timer with a glassy, calm design','Meet your piglet: it reads along, naps when you pause, and grows wiser with every hour you read','Six levels from Piglet to Grand Sage, with a celebration at each one','The timer keeps going even if you close the app']},
   {v:'1.4.1',items:['The greeting now always matches the time of day, even when the app was left open']},
   {v:'1.4.0',items:['Choose from 10 colour themes, or pick your own colour','Light, dark, follow the clock or match your phone','10 heading fonts and 10 text fonts to choose from','Corner style, card style and text size options']},
   {v:'1.3.0',items:['New elegant colour palettes: Rose Gold, Ballet Slipper, Champagne Rose and Peony','New app icon','No more accidental zooming when tapping twice','You’ll now be told when an update is ready, and can see the version in Settings']},
@@ -319,6 +396,7 @@ function normalize(s){
   if(s.settings.paletteV!==2){s.settings.palette='rosegold';s.settings.paletteV=2}
   if(!s.settings.mode){const p=s.settings.phase;s.settings.mode=!p||p==='auto'?'clock':p==='night'?'dark':'light'}
   for(const [k,v] of Object.entries(DEFAULT_LOOK))if(s.settings[k]===undefined)s.settings[k]=v;
+  s.timer=s.timer&&s.timer.state?s.timer:{state:'idle',bookId:null,startedAt:0,accMs:0};
   s.checkins=s.checkins||{};s.exCheckins=s.exCheckins||{};
   s.books.forEach(b=>{b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
   return s;
@@ -489,11 +567,11 @@ function themePhase(){
 }
 function tokens(pk,ph){
   const P=getPalette(pk);
-  if(ph==='night'){const d=P.dark;return Object.assign({},d,{glow:rgba(d.accent,.13),scrim:'rgba(6,2,4,.62)',covS:'20%',covL:'29%',covInk:d.ink,scheme:'dark'})}
+  if(ph==='night'){const d=P.dark;return Object.assign({},d,{glassline:'rgba(255,255,255,.12)',glow:rgba(d.accent,.13),scrim:'rgba(6,2,4,.62)',covS:'20%',covL:'29%',covInk:d.ink,scheme:'dark'})}
   const l=Object.assign({},P.light);
   const tint={dawn:['#FFE3D3',.2,.1],golden:['#F7CFB6',.3,.16]}[ph];
   if(tint&&S&&S.settings.tint!==false){for(const k of ['bg','raised'])l[k]=mix(l[k],tint[0],tint[1]);for(const k of ['surface','soft','line'])l[k]=mix(l[k],tint[0],tint[2])}
-  return Object.assign(l,{glow:ph==='dawn'?'rgba(255,216,198,.55)':ph==='golden'?'rgba(240,176,138,.4)':rgba(l.soft,.95),scrim:rgba(l.ink,.42),covS:'28%',covL:'85%',covInk:l.ink,scheme:'light'});
+  return Object.assign(l,{glassline:'rgba(255,255,255,.65)',glow:ph==='dawn'?'rgba(255,216,198,.55)':ph==='golden'?'rgba(240,176,138,.4)':rgba(l.soft,.95),scrim:rgba(l.ink,.42),covS:'28%',covL:'85%',covInk:l.ink,scheme:'light'});
 }
 let curTheme='';
 function applyTheme(force){
@@ -688,6 +766,7 @@ function libraryHTML(){
   const st=streaks(dayStats());
   return`${header(`<h1>${GREET[greetKey()].greet},<br><em>what are we reading?</em></h1>`)}
   <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${doneYr} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p>
+  <button class="tbtn" data-act="opentimer" style="margin-top:14px"><span class="pf">${pigFace()}</span>Start reading timer</button>
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
   ${reading.length?`<div class="section"><div class="eyebrow">On the nightstand</div>${reading.map(b=>`
     <button class="now" data-act="open" data-id="${b.id}" data-focus="1">${cover(b,'m')}<div class="meta">
@@ -722,6 +801,7 @@ function habitCard(M,st,dayKey){
     <div class="rule"></div>
     <div class="row" style="justify-content:space-between"><b style="font-weight:500">${isToday?'Today':fmt(dayKey)}: <span class="tnum">${v} of ${G.value} ${G.type==='pages'?'pages':'min'}</span></b>${x&&x.check?`<button class="link" data-act="uncheck" data-v="${dayKey}">Clear check-in</button>`:''}</div>
     <div class="bar"><i style="width:${Math.min(100,G.value?v/G.value*100:0)}%"></i></div>
+    ${isToday?`<button class="tbtn" data-act="opentimer"><span class="pf">${pigFace()}</span>Start reading timer</button>`:''}
     <span class="lbl">${x&&x.check?'Change the time read':'Mark as read'}${isToday?'':' on '+fmt(dayKey)}</span>
     <div class="chips">${chips.map(c=>`<button class="chip" data-act="checkin" data-d="${dayKey}" data-v="${c}" aria-pressed="${!!(x&&x.check&&x.ckMin===c)}">${c} min</button>`).join('')}<button class="chip" data-act="checkin" data-d="${dayKey}" data-v="0" aria-pressed="${!!(x&&x.check&&x.ckMin===0)}">Just read</button></div>
   </div>`;
@@ -768,6 +848,7 @@ function statsHTML(){
   let heat='';for(let i=0;i<weeks*7;i++){const d=new Date(startD);d.setDate(startD.getDate()+i);const k=ds(d);heat+=k>today()?'<i class="x"></i>':`<i class="l${level(M[k])}" title="${fmt(k)}"></i>`}
   const reading=S.books.filter(b=>b.status==='reading');
   return`${header(`<h1>Reading <em>stats</em></h1>`)}
+  <div class="section">${companionCard()}</div>
   <div class="section"><div class="goal">
     <svg viewBox="0 0 112 112" role="img" aria-label="${fin.length} of ${goal} books"><circle cx="56" cy="56" r="${R}" fill="none" stroke="var(--soft)" stroke-width="9"/><circle cx="56" cy="56" r="${R}" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 56 56)"/><text x="56" y="58" text-anchor="middle" font-family="Cormorant Garamond,Georgia,serif" font-size="32" font-weight="600" fill="var(--ink)">${fin.length}</text><text x="56" y="76" text-anchor="middle" font-size="11" fill="var(--muted)">of ${goal}</text></svg>
     <div class="meta"><div class="eyebrow">${yr} reading goal</div><h3>${fin.length>=goal?'Goal reached!':`${goal-fin.length} book${goal-fin.length===1?'':'s'} to go`}</h3>
@@ -920,7 +1001,7 @@ function detailHTML(b){
       ${b.pages?`<div class="bar"><i style="width:${pct(b)}%"></i></div>`:''}
       <div class="grid2"><div class="field"><label for="pgIn">Stopped at page</label><input type="number" inputmode="numeric" id="pgIn" min="0" placeholder="${(b.page||0)+1}"></div><div class="field"><label for="pgMin">Minutes read</label><input type="number" inputmode="numeric" id="pgMin" min="0" placeholder="optional"></div></div>
       <div class="field"><label for="pgDate">Date</label><input type="date" id="pgDate" value="${today()}"></div>
-      <button class="btn" data-act="savepage" data-id="${b.id}">Save bookmark</button>
+      <div class="grid2"><button class="btn" data-act="savepage" data-id="${b.id}">Save bookmark</button><button class="btn ghost" data-act="opentimer" data-id="${b.id}">Start timer</button></div>
       ${S2.length?`<div><div class="lbl" style="margin:4px 0">Reading log</div>${S2.slice(0,8).map(s=>`<div class="lg tnum"><span>${fmt(s.date)}</span><span>page ${s.page}${s.min?` · ${s.min} min`:''}</span><button class="x" data-act="delsess" data-id="${b.id}" data-s="${s.id}" aria-label="Remove entry">✕</button></div>`).join('')}${S2.length>8?`<p class="hint">+ ${S2.length-8} earlier entries in the calendar</p>`:''}</div>`:''}
     </div>
     <div class="section" style="margin-top:12px"><div class="section-h"><h3>Quotes</h3><span class="small muted">${b.quotes.length}</span></div>
@@ -977,6 +1058,8 @@ async function doRestore(text){
 document.addEventListener('click',async e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const a=t.dataset.act,id=t.dataset.id,b=id?find(id):null;
+  if(a.startsWith('t')&&await timerAct(a,t))return;
+  if(a==='opentimer'){await timerAct(a,t);return}
   switch(a){
     case'tab':view=t.dataset.v;render();window.scrollTo(0,0);break;
     case'filter':filter=t.dataset.v;document.querySelectorAll('[data-act=filter]').forEach(c=>c.setAttribute('aria-pressed',c.dataset.v===filter));renderList();break;
@@ -991,8 +1074,8 @@ document.addEventListener('click',async e=>{
     case'close':closeSheet();break;
     case'back':openDetail(id);break;
     case'edit':openAdd(id);break;
-    case'clearex':S.books=S.books.filter(x=>!x.example);S.exCheckins={};await save();render();toast('Examples removed');break;
-    case'loadex':{const x=sampleLibrary();S.books=S.books.filter(b=>!b.example).concat(x.books);S.exCheckins=x.checkins;await save();view='library';render();window.scrollTo(0,0);toast('Sample library added ('+x.books.length+' books)');break}
+    case'clearex':S.books=S.books.filter(x=>!x.example);S.exCheckins={};S.settings.pigSeen=pigLevel();await save();render();toast('Examples removed');break;
+    case'loadex':{const x=sampleLibrary();S.books=S.books.filter(b=>!b.example).concat(x.books);S.exCheckins=x.checkins;S.settings.pigSeen=pigLevel();await save();view='library';render();window.scrollTo(0,0);toast('Sample library added ('+x.books.length+' books)');break}
     case'calprev':calMonth.setMonth(calMonth.getMonth()-1);render();break;
     case'calnext':calMonth.setMonth(calMonth.getMonth()+1);render();break;
     case'day':selDay=t.dataset.v;render();break;
@@ -1076,10 +1159,169 @@ document.addEventListener('change',async e=>{
   if(el.id==='qPhoto'){try{Q.img=await compress(f,1800,.85);const im=$('#qImg');im.src=Q.img;im.hidden=false;$('#ocrBtn').disabled=false;$('#words').hidden=true;$('#ocrMsg').textContent=''}catch(err){toast('That photo couldn’t be opened')}}
   if(el.id==='restoreFile'){const txt=await f.text();await doRestore(txt);el.value=''}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetFor)closeSheet()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();else{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()}});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#timer').hidden)closeTimer();else if(sheetFor)closeSheet()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLive();else{if(S&&T().state==='running'){lockScreen(true);updateTimerFace();updatePill()}const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()}});
 window.addEventListener('focus',()=>{applyTheme();refreshIfStale()});
 window.addEventListener('pageshow',()=>{applyTheme();refreshIfStale()});
+
+/* ---------- pig companion ---------- */
+const PIG=[
+  {h:0,n:'Piglet',d:'Just discovering picture books'},
+  {h:3,n:'Curious Piglet',d:'Turning pages with wonder'},
+  {h:12,n:'Bookworm',d:'Found her reading glasses'},
+  {h:35,n:'Scholar',d:'Graduated with honours'},
+  {h:80,n:'Sage',d:'Wise beyond her years'},
+  {h:160,n:'Grand Sage',d:'Keeper of all the stories'}
+];
+function lifeMinutes(){return Object.values(dayStats()).reduce((s,x)=>s+(x.min||0),0)}
+function pigLevel(min){const h=(min??lifeMinutes())/60;let i=0;PIG.forEach((p,k)=>{if(h>=p.h)i=k});return i}
+function pigProgress(min){const m=min??lifeMinutes(),i=pigLevel(m),cur=PIG[i],nx=PIG[i+1];return{i,cur,nx,hours:m/60,frac:nx?Math.min(1,(m/60-cur.h)/(nx.h-cur.h)):1}}
+function pigSVG(lv,mode,crop){
+  const sc=lv===0?.86:lv===1?.93:1;
+  const bookCol=['#7CC6C1','#F4B860','#B66E7B','#5D6FA8','#6E5A8A','#4B3A7A'][lv];
+  const book=`<g class="book">
+    <path d="M100 136 L62 128 L62 162 L100 170 L138 162 L138 128 Z" fill="${bookCol}"/>
+    <path d="M100 134 L66 127 L66 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
+    <path d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
+    ${lv===0?'<circle cx="83" cy="146" r="6" fill="#F4B860"/><path d="M112 150 l6 -8 l6 8z" fill="#7CC6C1"/>':'<path d="M72 138 L94 142 M72 145 L94 149 M72 152 L90 155 M106 142 L128 138 M106 149 L128 145 M106 155 L124 152" stroke="#D9C3BC" stroke-width="1.6" stroke-linecap="round"/>'}
+    <path class="flip" d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFF8F2" stroke="#E7CFC6" stroke-width="1.2"/>
+    <ellipse cx="64" cy="152" rx="8" ry="7" fill="#F5B3C3"/><ellipse cx="136" cy="152" rx="8" ry="7" fill="#F5B3C3"/>
+  </g>`;
+  const glasses=lv>=2?`<g fill="rgba(255,255,255,.28)" stroke="#4A2E3B" stroke-width="2.6"><circle cx="83" cy="86" r="11"/><circle cx="117" cy="86" r="11"/></g><path d="M94 85 Q100 80 106 85" stroke="#4A2E3B" stroke-width="2.4" fill="none"/>`:'';
+  const bow=lv===1?`<g transform="translate(126 50) rotate(18)"><path d="M0 0 L-12 -8 L-12 8Z M0 0 L12 -8 L12 8Z" fill="#E36C8E"/><circle r="4" fill="#C94F74"/></g>`:'';
+  const cap=lv>=3&&lv<5?`<g><path d="M76 50 L76 60 Q100 69 124 60 L124 50 Z" fill="#2E1F29"/><path d="M100 30 L148 44 L100 58 L52 44 Z" fill="#3A2733"/><circle cx="100" cy="44" r="3" fill="#C9A15E"/><g class="tassel"><path d="M100 44 L138 46 L138 66" stroke="#C9A15E" stroke-width="2" fill="none"/><path d="M134 64 L142 64 L140 74 L136 74Z" fill="#C9A15E"/></g></g>`:'';
+  const hat=lv===5?`<g><path d="M58 56 Q100 66 142 56 L112 4 Q106 -4 100 6 Z" fill="#4B3A7A"/><path d="M54 56 Q100 70 146 56 Q100 62 54 56Z" fill="#3A2C63"/><path d="M96 26 l3 6 l6 1 l-4.5 4 l1 6 l-5.5 -3 l-5.5 3 l1 -6 l-4.5 -4 l6 -1z" fill="#F3D27A"/><circle cx="118" cy="44" r="2.4" fill="#F3D27A"/><circle cx="82" cy="40" r="1.8" fill="#F3D27A"/></g>`:'';
+  const brows=lv>=4?`<path d="M72 70 Q83 63 94 69 M106 69 Q117 63 128 70" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" fill="none"/>`:'';
+  const beard=lv>=4?`<path d="M84 116 Q86 140 100 146 Q114 140 116 116 Q108 124 100 123 Q92 124 84 116Z" fill="#FFFFFF" stroke="#EDE6EA" stroke-width="1"/>`:'';
+  const stack=lv>=4?`<g><rect x="150" y="168" width="40" height="10" rx="2" fill="#B66E7B"/><rect x="153" y="159" width="34" height="9" rx="2" fill="#5D6FA8"/><rect x="149" y="150" width="38" height="9" rx="2" fill="#C9A15E"/></g>`:'';
+  const sparks=lv>=5?`<g fill="#F3D27A"><path class="spark" d="M30 60 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2z"/><path class="spark" d="M172 40 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2z"/><path class="spark" d="M178 110 l1.5 4 l4 1.5 l-4 1.5 l-1.5 4 l-1.5 -4 l-4 -1.5 l4 -1.5z"/></g>`:'';
+  const eyeR=lv===0?6.5:5.4;
+  return`<svg class="pig ${mode||'idle'}" viewBox="${crop?(lv===5?'36 -6 128 128':lv>=3?'42 8 116 116':'44 30 112 112'):'0 0 200 210'}" role="img" aria-label="${PIG[lv].n}">
+  ${sparks}${stack}
+  <g class="all"><g transform="translate(${(100-100*sc).toFixed(1)} ${(198-198*sc).toFixed(1)}) scale(${sc})">
+    <path class="tail" d="M146 150 q16 -4 12 -15 q-4 -8 -11 -1 q-4 6 3 8" stroke="#E894A9" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="100" cy="155" rx="50" ry="38" fill="#F6B9C8"/>
+    <ellipse cx="76" cy="191" rx="12" ry="7" fill="#EFA2B6"/><ellipse cx="124" cy="191" rx="12" ry="7" fill="#EFA2B6"/>
+    <g class="head">
+      <path class="earl" d="M64 66 Q56 30 86 46 Q78 60 64 66Z" fill="#F2A1B5"/>
+      <path class="earr" d="M136 66 Q144 30 114 46 Q122 60 136 66Z" fill="#F2A1B5"/>
+      ${bow}
+      <circle cx="100" cy="90" r="44" fill="#F9C7D3"/>
+      <ellipse cx="70" cy="102" rx="9" ry="6" fill="#F395AE" opacity=".5"/><ellipse cx="130" cy="102" rx="9" ry="6" fill="#F395AE" opacity=".5"/>
+      <g class="open"><g class="scan"><g class="blinker"><ellipse cx="83" cy="86" rx="${eyeR*.85}" ry="${eyeR}" fill="#3B2430"/><ellipse cx="117" cy="86" rx="${eyeR*.85}" ry="${eyeR}" fill="#3B2430"/></g><circle cx="85" cy="83.5" r="1.7" fill="#fff"/><circle cx="119" cy="83.5" r="1.7" fill="#fff"/></g></g>
+      <g class="closed" stroke="#3B2430" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M76 88 Q83 93 90 88"/><path d="M110 88 Q117 93 124 88"/></g>
+      ${brows}
+      <ellipse cx="100" cy="106" rx="17" ry="12" fill="#F4A6B9" stroke="#EA90A7" stroke-width="1.4"/>
+      <ellipse cx="94" cy="106" rx="2.6" ry="3.6" fill="#B95F79"/><ellipse cx="106" cy="106" rx="2.6" ry="3.6" fill="#B95F79"/>
+      <path d="M93 121 Q100 126 107 121" stroke="#B95F79" stroke-width="2" fill="none" stroke-linecap="round"/>
+      ${beard}${glasses}${cap}${hat}
+    </g>
+    ${book}
+  </g></g>
+  <g class="zzz" fill="var(--muted)"><text x="146" y="58" font-size="16">z</text><text x="156" y="44" font-size="20">z</text><text x="168" y="28" font-size="24">Z</text></g>
+  </svg>`;
+}
+function pigFace(){return pigSVG(pigLevel(),'idle',true)}
+function companionCard(){
+  const p=pigProgress();
+  return`<div class="card"><div class="companion"><div class="pv">${pigSVG(p.i,'idle')}</div><div class="meta"><div class="eyebrow">Reading companion</div><h3>${p.cur.n}</h3><span class="small muted">${p.cur.d}. ${Math.floor(p.hours)} hours read in all.</span>
+    ${p.nx?`<div class="bar"><i style="width:${(p.frac*100).toFixed(1)}%"></i></div><span class="small muted tnum">${Math.max(1,Math.ceil(p.nx.h-p.hours))} more hour${Math.ceil(p.nx.h-p.hours)===1?'':'s'} to become a ${p.nx.n}</span>`:'<span class="small muted">The wisest pig of all.</span>'}
+  </div></div><button class="btn" data-act="opentimer">Start reading timer</button></div>`;
+}
+function celebrate(lv){
+  const c=document.createElement('div');c.className='confetti';const cols=['var(--accent)','var(--gold)','var(--soft)','var(--primary)'];
+  for(let i=0;i<60;i++){const e=document.createElement('i');e.style.left=Math.random()*100+'%';e.style.background=cols[i%4];e.style.animationDelay=(Math.random()*.8)+'s';e.style.transform=`rotate(${Math.random()*180}deg)`;c.appendChild(e)}
+  document.body.appendChild(c);setTimeout(()=>c.remove(),3800);
+  if(navigator.vibrate)navigator.vibrate([40,60,40]);
+  openSheet(`<div class="sheet-h"><h2>A new level!</h2><button class="x" data-act="close" aria-label="Close">✕</button></div>
+  <div class="stack" style="align-items:center;text-align:center"><div style="width:200px;height:210px">${pigSVG(lv,'party')}</div>
+  <h3>Your piglet became a ${PIG[lv].n}</h3><p class="muted" style="margin:0">${PIG[lv].d}.${PIG[lv+1]?` Next: ${PIG[lv+1].n} at ${PIG[lv+1].h} hours.`:''}</p>
+  <button class="btn wide" data-act="close">Wonderful</button></div>`,'levelup');
+}
+function checkLevelUp(){const lv=pigLevel();const seen=S.settings.pigSeen??lv;if(S.settings.pigSeen===undefined){S.settings.pigSeen=lv;save();return}if(lv>seen){S.settings.pigSeen=lv;save();setTimeout(()=>celebrate(lv),400)}else if(lv<seen){S.settings.pigSeen=lv;save()}}
+
+/* ---------- reading timer ---------- */
+let tView='run',tTick=null,wakeLock=null,audioCtx=null,goalChimed=false;
+const T=()=>S.timer||(S.timer={state:'idle',bookId:null,startedAt:0,accMs:0});
+const elapsedMs=()=>{const t=T();return t.accMs+(t.state==='running'?Date.now()-t.startedAt:0)};
+const fmtClock=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+pad(m):m)+':'+pad(x)};
+async function lockScreen(on){try{if(on&&'wakeLock' in navigator&&document.visibilityState==='visible'){wakeLock=await navigator.wakeLock.request('screen')}else if(!on&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}}
+function chime(){try{if(!audioCtx)return;const n=audioCtx.currentTime;[659.25,880].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,n+i*.22);g.gain.linearRampToValueAtTime(.18,n+i*.22+.02);g.gain.exponentialRampToValueAtTime(.001,n+i*.22+1.2);o.connect(g).connect(audioCtx.destination);o.start(n+i*.22);o.stop(n+i*.22+1.3)})}catch(e){}if(navigator.vibrate)navigator.vibrate([80,80,80])}
+function goalMin(){const G=S.settings.goal;return G.type==='minutes'?G.value:20}
+function todayMin(){const x=dayStats()[today()];return x?x.min:0}
+function openTimer(bookId){
+  const t=T();if(t.state==='idle'){if(bookId)t.bookId=bookId;else if(!t.bookId||!find(t.bookId)){const r=S.books.find(b=>b.status==='reading');t.bookId=r?r.id:null}}
+  tView='run';const el=$('#timer');el.hidden=false;renderTimer();requestAnimationFrame(()=>el.classList.add('on'));
+  startTick();updatePill();
+}
+function closeTimer(){const el=$('#timer');el.classList.remove('on');setTimeout(()=>{el.hidden=true;el.innerHTML=''},300);if(T().state!=='running')stopTick();updatePill();if(view)render()}
+function startTick(){stopTick();tTick=setInterval(()=>{updateTimerFace();updatePill()},500)}
+function stopTick(){if(tTick){clearInterval(tTick);tTick=null}}
+function updatePill(){
+  const p=$('#tpill'),t=T(),open=!$('#timer').hidden;
+  if(t.state==='idle'||open){p.hidden=true;return}
+  p.hidden=false;p.classList.toggle('paused',t.state==='paused');
+  p.innerHTML=`<span class="pf">${pigSVG(pigLevel(),'idle',true)}</span><span class="dot"></span><span>${fmtClock(elapsedMs())}</span><span class="muted small">${t.state==='paused'?'Paused':'Reading'}</span>`;
+  if(!tTick&&t.state==='running')startTick();
+}
+function ringFrac(){const g=goalMin()*60000;return Math.min(1,(todayMin()*60000+elapsedMs())/g)}
+function updateTimerFace(){
+  const d=$('#tDigits');if(!d)return;const ms=elapsedMs();d.textContent=fmtClock(ms);
+  const f=ringFrac(),C=2*Math.PI*46;const arc=$('#tArc');if(arc)arc.setAttribute('stroke-dasharray',(C*f).toFixed(2)+' '+C.toFixed(2));
+  const sub=$('#tSub');if(sub){const tot=Math.floor((todayMin()*60000+ms)/60000);sub.textContent=f>=1?`Daily goal reached · ${tot} min today`:`${tot} of ${goalMin()} min today`}
+  if(T().state==='running'&&f>=1&&!goalChimed){goalChimed=true;chime();toast('Daily reading goal reached!')}
+}
+function renderTimer(){
+  const t=T(),el=$('#timer'),p=pigProgress(),reading=S.books.filter(b=>b.status==='reading'),bk=t.bookId?find(t.bookId):null;
+  const mode=t.state==='running'?'reading':t.state==='paused'?'sleep':'idle';
+  const C=2*Math.PI*46;
+  let body;
+  if(tView==='finish'){
+    const min=Math.max(1,Math.round(elapsedMs()/60000));
+    body=`<div class="glass tcard"><div style="width:150px;height:158px">${pigSVG(p.i,'idle')}</div>
+      <h2>Lovely reading!</h2><p class="muted" style="margin:0">You read for <b class="tnum" style="color:var(--ink)">${min} minute${min===1?'':'s'}</b>${bk?` of <i>${esc(bk.title)}</i>`:''}.</p>
+      ${bk?`<div class="field" style="width:100%;text-align:left"><label for="tPage">Stopped at page</label><input type="number" inputmode="numeric" id="tPage" min="0" placeholder="${bk.page||0}${bk.pages?' of '+bk.pages:''}"></div>`:''}
+      <button class="btn wide big-btn" data-act="tsave">Save session</button>
+      <div class="row" style="justify-content:center"><button class="link" data-act="tback">Keep reading</button><button class="link" data-act="tdiscard" style="color:var(--muted)">Discard</button></div></div>`;
+  }else{
+    body=`<div class="glass tcard">
+      <div class="ringbox"><svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="var(--glassline)" stroke-width="3"/><circle id="tArc" cx="50" cy="50" r="46" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="0 ${C.toFixed(2)}"/></svg><div class="pigwrap">${pigSVG(p.i,mode)}</div></div>
+      <div class="digits" id="tDigits">${fmtClock(elapsedMs())}</div><div class="tsub" id="tSub"></div>
+      ${t.state==='idle'?`<div class="tbooks" role="group" aria-label="What are you reading?">${reading.map(b=>`<button class="chip" data-act="tbook" data-v="${b.id}" aria-pressed="${t.bookId===b.id}">${esc(b.title.length>24?b.title.slice(0,22)+'…':b.title)}</button>`).join('')}<button class="chip" data-act="tbook" data-v="" aria-pressed="${!t.bookId}">Something else</button></div>`:`<div class="tsub">${t.state==='paused'?'Paused':'Reading'}${bk?` <i>${esc(bk.title)}</i>`:''}</div>`}
+      <div class="tctl">${t.state==='idle'?`<button class="btn big-btn" data-act="tstart">Start reading</button>`:t.state==='running'?`<button class="btn big-btn gbtn" data-act="tpause">Pause</button><button class="btn big-btn" data-act="tfinish">Finish</button>`:`<button class="btn big-btn" data-act="tresume">Resume</button><button class="btn big-btn gbtn" data-act="tfinish">Finish</button>`}</div>
+    </div>
+    <div class="glass tcard" style="padding:16px"><div class="lvl"><span class="eyebrow">Your reading companion</span><b>${p.cur.n}</b><span class="small muted">${p.cur.d}</span>${p.nx?`<div class="bar"><i style="width:${(p.frac*100).toFixed(1)}%"></i></div><span class="small muted tnum">${Math.floor(p.hours)} h read · ${p.nx.n} at ${p.nx.h} h</span>`:`<span class="small muted tnum">${Math.floor(p.hours)} hours read</span>`}</div></div>`;
+  }
+  el.innerHTML=`<div class="blob b1"></div><div class="blob b2"></div><div class="wrap">
+    <div class="top"><button class="iconbtn gbtn" data-act="tclose" aria-label="Close timer" style="border-radius:50%">${I.prev.replace('m14.5 6-6 6 6 6','M6 9.5l6 6 6-6')}</button><span class="eyebrow">Reading timer</span><span style="width:40px"></span></div>
+    ${body}</div>`;
+  updateTimerFace();
+}
+async function timerAct(a,t){
+  const T0=T();
+  switch(a){
+    case'opentimer':if(sheetFor)closeSheet();openTimer(t.dataset.id||null);return true;
+    case'tclose':closeTimer();return true;
+    case'tbook':T0.bookId=t.dataset.v||null;await save();renderTimer();return true;
+    case'tstart':try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(e){}
+      goalChimed=ringFrac()>=1;T0.state='running';T0.startedAt=Date.now();T0.accMs=0;T0.date=today();await save();lockScreen(true);renderTimer();startTick();return true;
+    case'tpause':T0.accMs=elapsedMs();T0.state='paused';await save();lockScreen(false);renderTimer();return true;
+    case'tresume':T0.state='running';T0.startedAt=Date.now();await save();lockScreen(true);renderTimer();return true;
+    case'tfinish':if(T0.state==='running'){T0.accMs=elapsedMs();T0.state='paused';await save();lockScreen(false)}tView='finish';renderTimer();return true;
+    case'tback':tView='run';T0.state='running';T0.startedAt=Date.now();await save();lockScreen(true);renderTimer();return true;
+    case'tdiscard':if(!t.dataset.armed){t.dataset.armed=1;t.textContent='Tap again to discard';return true}
+      S.timer={state:'idle',bookId:T0.bookId,startedAt:0,accMs:0};await save();tView='run';renderTimer();toast('Session discarded');return true;
+    case'tsave':{
+      const min=Math.max(1,Math.round(elapsedMs()/60000)),d=T0.date||today(),bk=T0.bookId?find(T0.bookId):null;
+      if(bk){const pv=parseInt(($('#tPage')||{}).value,10);const pg=isNaN(pv)?(bk.page||0):pv;bk.sessions.push({id:uid(),date:d,page:pg,min});bk.page=pg;
+        if(bk.status==='want'){bk.status='reading';bk.start=bk.start||d}
+        if(bk.pages&&pg>=bk.pages&&bk.status!=='done'){bk.status='done';bk.finish=d}}
+      else{S.checkins[d]=(+S.checkins[d]||0)+min}
+      S.timer={state:'idle',bookId:T0.bookId,startedAt:0,accMs:0};await save();
+      tView='run';closeTimer();toast(`Saved ${min} minute${min===1?'':'s'} of reading`);checkLevelUp();return true}
+  }
+  return false;
+}
 
 /* ---------- updates ---------- */
 let swReg=null,updating=false;
@@ -1114,6 +1356,7 @@ function showWhatsNew(justUpdated){
   if(darkMQ&&darkMQ.addEventListener)darkMQ.addEventListener('change',()=>{applyTheme();if(!sheetFor)render()});
   setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()},60*1000);
   setupSW();
+  checkLevelUp();updatePill();if(T().state==='running')startTick();
   try{const seen=localStorage.getItem('pp-version');if(seen&&seen!==APP_VERSION)setTimeout(()=>showWhatsNew(true),600);localStorage.setItem('pp-version',APP_VERSION)}catch(e){}
   if(!framed&&navigator.onLine&&!readerReady()){setTimeout(()=>{prepareReader().then(w=>{w.terminate();ocrWorker=null;if(view==='settings')render()}).catch(()=>{})},5000)}
 })();
