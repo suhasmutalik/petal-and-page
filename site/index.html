@@ -480,6 +480,7 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .stage .smoke circle{animation:smoke 3.2s ease-out infinite}
 .stage .smoke circle:nth-child(2){animation-delay:-1s}.stage .smoke circle:nth-child(3){animation-delay:-2s}
 @keyframes smoke{0%{transform:translateY(4px);opacity:0}30%{opacity:1}100%{transform:translate(4px,-10px);opacity:0}}
+#petals{position:fixed;inset:0;z-index:28;pointer-events:none}
 .bgthumb{width:64px;height:64px;border-radius:var(--ri);object-fit:cover;border:1px solid var(--line)}
 .sgroup{display:flex;flex-direction:column;gap:6px;margin-top:22px}
 .sgroup>.lbl{padding-left:14px;text-transform:uppercase;letter-spacing:.08em;font-size:.7rem}
@@ -518,9 +519,10 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.13.0';
+const APP_VERSION='1.14.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.14.0',items:['New Sakura theme: white and pink cherry blossoms drift down across the whole app','Turn the falling blossoms on with any theme in Settings → Colour theme']},
   {v:'1.13.0',items:['New background: the Mangalore–Udupi coast, with coconut palms, St. Mary’s Island, fishing boats, a coastal temple with Mangalore-tile roofs, and Kaup lighthouse glowing at night','Ruhi and Dori play on the sand there']},
   {v:'1.12.0',items:['Your own shelves: make shelves like Favourites or Book club, put books on several, and see each shelf on your Library','Scanning or typing a book you already own now tells you it’s in your library','Recognise text works now, and reads crisper','Crop a quote photo to just the passage before saving','A gentle reminder to save a backup (Settings → Backup reminder)','Dori is now white with her black tail, and gives you a proper judgy look','New: the Matterhorn climb, with the two of you on the Hörnli ridge and the Hörnlihütte']},
   {v:'1.11.4',items:['Your piglet is now reading The Little Prince by Antoine de Saint-Exupéry']},
@@ -723,6 +725,9 @@ const PALETTES={
     light:{bg:'#F5F6F7',surface:'#FFFFFF',raised:'#EDEFF1',ink:'#1E2226',muted:'#6B7178',accent:'#5B6B7A','on-accent':'#FFFFFF',primary:'#1E2226','on-primary':'#F5F6F7',soft:'#E2E6EA',line:'#E1E4E8',gold:'#B3A17E'},
     dark:{bg:'#101214',surface:'#181B1E',raised:'#1F2326',ink:'#ECEEF0',muted:'#9AA1A8',accent:'#A9B8C6','on-accent':'#14191E',primary:'#C9D3DC','on-primary':'#14191E',soft:'#262B30',line:'#22272B',gold:'#C7B794'}}
 };
+PALETTES.sakura={name:'Sakura',th:345,
+  light:{bg:'#FDF6F8',surface:'#FFFFFF',raised:'#FAEEF2',ink:'#3A2A33',muted:'#86717C',accent:'#E58FAE','on-accent':'#3A1A28',primary:'#8E3E62','on-primary':'#FFFFFF',soft:'#FBE4EC',line:'#F2E2E8',gold:'#D2A86E'},
+  dark:{bg:'#1A1418',surface:'#241C21',raised:'#2C2329',ink:'#F8ECF1',muted:'#BBA6B0',accent:'#F4AFC8','on-accent':'#2C1622',primary:'#F6BCD1','on-primary':'#2C1622',soft:'#3E2A35',line:'#33262D',gold:'#E2C29C'}};
 const OTHER=['seaglass','ivory','forest','matcha','ocean','violet','honey','mocha','midnight','slate'];
 PALETTES.seaglass.th=180;PALETTES.ivory.th=40;
 function hslHex(h,s,l){s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return'#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('')}
@@ -766,7 +771,7 @@ const FONTS_B=[
   {n:'Lora',spec:'wght@400;500',fb:'Georgia,serif',d:'Serif text'},
   {n:'System',spec:null,fb:'-apple-system,"Segoe UI",Roboto,system-ui,sans-serif',d:'Your phone’s font'}
 ];
-const DEFAULT_LOOK={backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
+const DEFAULT_LOOK={petals:'auto',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
 function fontUrl(list){const fam=list.filter(f=>f.spec!==null).map(f=>'family='+f.n.replace(/ /g,'+')+(f.spec?':'+f.spec:''));return fam.length?'https://fonts.googleapis.com/css2?'+fam.join('&')+'&display=swap':''}
 function applyStyle(){
   const st=S.settings,r=document.documentElement.style;
@@ -855,6 +860,7 @@ function applyTheme(force){
   const t=tokens(pk,ph),r=document.documentElement;
   for(const [k,v] of Object.entries(t)){if(k==='scheme')r.style.colorScheme=v;else r.style.setProperty('--'+k,v)}
   r.style.setProperty('--th',paletteHue(pk));
+  petalsSync();
   renderScene();
   r.dataset.phase=ph;
   const tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t.bg;
@@ -1336,6 +1342,8 @@ function settingsPageBody(k){
     ${st.bg!=='none'?`<span class="lbl">Cards</span>${chipset('glass',st.glass,[['clear','Clear glass'],['frosted','Frosted'],['solid','Solid']])}`:''}
     <p class="hint">${st.bg==='mountains'?'The mountains change with the time of day. Ruhi plays in the meadow on your Library while Dori keeps watch.':st.bg==='photo'?'Any photo works: a favourite trip, Ruhi, or Dori.':'A calm plain background.'}</p>`;
     case'theme':return`
+    <span class="lbl">Falling cherry blossoms</span>
+    ${chipset('petals',st.petals||'auto',[['auto','With Sakura theme'],['on','Always'],['off','Off']])}
     <span class="lbl">Pinks</span>
     <div class="swatches">${Object.entries(PALETTES).filter(([k])=>!OTHER.includes(k)).map(([k,P])=>swatch(k,P,st.palette)).join('')}</div>
     <span class="lbl" style="margin-top:4px">More colours</span>
@@ -1591,6 +1599,7 @@ document.addEventListener('click',async e=>{
     case'layout':S.settings.layout=t.dataset.v;await save();render();break;
     case'bksnooze':{const d=new Date();d.setDate(d.getDate()+3);ls.set('pp-backup-snooze',ds(d));render();toast('I’ll remind you in 3 days');break}
     case'backupEvery':S.settings.backupEvery=+t.dataset.v;await save();render();break;
+    case'petals':S.settings.petals=t.dataset.v;await save();petalsSync();render();break;
     case'land':S.settings.land=t.dataset.v;await save();applyStyle();render();break;
     case'bg':case'glass':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
     case'corners':case'cards':case'size':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
@@ -2029,6 +2038,42 @@ const PET_DEFS=`<defs>
   <radialGradient id="dEyeG" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#E9E6A0"/><stop offset=".7" stop-color="#B9BC5E"/><stop offset="1" stop-color="#7E8A3B"/></radialGradient>
   <linearGradient id="dNoseG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7C2CC"/><stop offset="1" stop-color="#E496A4"/></linearGradient>
 </defs>`;
+
+/* ---------- falling cherry blossoms ---------- */
+const PETALS={cv:null,ctx:null,list:[],raf:0,last:0,on:false};
+function petalsWanted(){if(!S)return false;const p=S.settings.petals;return p==='on'||(p!=='off'&&S.settings.palette==='sakura')}
+function petalsSync(){
+  const want=petalsWanted()&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if(want&&!PETALS.cv){const c=document.createElement('canvas');c.id='petals';c.setAttribute('aria-hidden','true');document.body.appendChild(c);PETALS.cv=c;PETALS.ctx=c.getContext('2d');petalsSize();window.addEventListener('resize',petalsSize)}
+  if(PETALS.cv)PETALS.cv.hidden=!want;
+  PETALS.on=want;if(want)petalsStart();else petalsStop();
+}
+function petalsSize(){const c=PETALS.cv;if(!c)return;const d=Math.min(2,window.devicePixelRatio||1);c.width=innerWidth*d;c.height=innerHeight*d;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';PETALS.ctx.setTransform(d,0,0,d,0,0);
+  const n=Math.round(Math.min(34,Math.max(14,innerWidth*innerHeight/26000)));while(PETALS.list.length<n)PETALS.list.push(newPetal(true));PETALS.list.length=n}
+const PCOL=[['#FFFFFF','#FBE3EB'],['#FFD7E4','#F7A9C2'],['#FDEEF3','#F4C2D2'],['#F9C3D5','#EE93B2']];
+function newPetal(any){const big=Math.random()<.16;return{x:Math.random()*innerWidth,y:any?Math.random()*innerHeight:-20-Math.random()*60,s:big?7+Math.random()*3:4+Math.random()*4.5,flower:big,
+  vy:18+Math.random()*26,vx:-6+Math.random()*14,a:Math.random()*6.28,va:(-1+Math.random()*2)*1.4,flip:Math.random()*6.28,vf:1.2+Math.random()*2.2,sw:Math.random()*6.28,swA:10+Math.random()*22,c:PCOL[Math.floor(Math.random()*PCOL.length)],o:.7+Math.random()*.3}}
+function drawPetalShape(g,s){g.beginPath();g.moveTo(0,s);g.bezierCurveTo(s*.95,s*.45,s*.75,-s*.85,s*.16,-s);g.lineTo(0,-s*.72);g.lineTo(-s*.16,-s);g.bezierCurveTo(-s*.75,-s*.85,-s*.95,s*.45,0,s);g.closePath()}
+function drawPetal(p){
+  const g=PETALS.ctx;g.save();g.translate(p.x+Math.sin(p.sw)*p.swA,p.y);g.rotate(p.a);g.globalAlpha=p.o;
+  if(p.flower){const s=p.s;for(let i=0;i<5;i++){g.save();g.rotate(i*1.2566);g.translate(0,-s*.95);g.scale(.62,.62);const gr=g.createLinearGradient(0,-s,0,s);gr.addColorStop(0,p.c[0]);gr.addColorStop(1,p.c[1]);g.fillStyle=gr;drawPetalShape(g,s);g.fill();g.restore()}
+    g.fillStyle='#F2B8C6';g.beginPath();g.arc(0,0,s*.32,0,6.28);g.fill();g.fillStyle='#D9637F';for(let i=0;i<6;i++){g.beginPath();g.arc(Math.cos(i)*s*.26,Math.sin(i)*s*.26,s*.08,0,6.28);g.fill()}}
+  else{g.scale(1,Math.max(.18,Math.abs(Math.cos(p.flip))));const gr=g.createLinearGradient(0,-p.s,0,p.s);gr.addColorStop(0,p.c[0]);gr.addColorStop(1,p.c[1]);g.fillStyle=gr;drawPetalShape(g,p.s);g.fill();
+    g.strokeStyle='rgba(214,120,150,.35)';g.lineWidth=.6;g.beginPath();g.moveTo(0,p.s*.8);g.lineTo(0,-p.s*.5);g.stroke()}
+  g.restore();
+}
+function petalsFrame(t){
+  PETALS.raf=0;if(!PETALS.on||document.hidden)return;
+  if(t-PETALS.last<32){PETALS.raf=requestAnimationFrame(petalsFrame);return}
+  const dt=Math.min(.08,(t-PETALS.last)/1000||.03);PETALS.last=t;
+  const g=PETALS.ctx;g.clearRect(0,0,innerWidth,innerHeight);
+  for(const p of PETALS.list){p.y+=p.vy*dt;p.x+=p.vx*dt;p.a+=p.va*dt;p.flip+=p.vf*dt;p.sw+=dt*.9;
+    if(p.y>innerHeight+24||p.x<-50||p.x>innerWidth+50)Object.assign(p,newPetal(false));drawPetal(p)}
+  PETALS.raf=requestAnimationFrame(petalsFrame);
+}
+function petalsStart(){if(!PETALS.raf&&PETALS.on){PETALS.last=performance.now();PETALS.raf=requestAnimationFrame(petalsFrame)}}
+function petalsStop(){if(PETALS.raf){cancelAnimationFrame(PETALS.raf);PETALS.raf=0}if(PETALS.ctx)PETALS.ctx.clearRect(0,0,innerWidth,innerHeight)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)petalsStart()});
 
 /* ---------- pig companion ---------- */
 const PIG=[
