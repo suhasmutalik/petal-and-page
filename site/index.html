@@ -355,6 +355,7 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .celfx i.h::before{content:"";position:absolute;inset:0;background:var(--accent);clip-path:path('M7 13 C1 8.6 0 5.4 1.6 3 C3.2 .8 6 1.4 7 3.6 C8 1.4 10.8 .8 12.4 3 C14 5.4 13 8.6 7 13Z')}
 .celfx i.s{width:10px;height:10px;background:var(--gold);clip-path:polygon(50% 0,61% 38%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 38%)}
 @keyframes fxup{0%{opacity:0;transform:translate(0,0) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-140px) scale(1.2) rotate(var(--r))}}
+.recdraft{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;background:var(--soft)}
 .btn.rec-on{background:#D2475B;color:#fff;animation:recp 1s ease-in-out infinite}@keyframes recp{50%{opacity:.7}}
 .oinkb{position:absolute;right:-6%;top:6%;background:var(--surface);color:var(--primary);font-weight:700;font-size:.95rem;padding:7px 12px;border-radius:16px;box-shadow:0 8px 18px -10px rgba(0,0,0,.45);opacity:0;transform:scale(.4) rotate(-6deg);transform-origin:10% 100%;pointer-events:none;white-space:nowrap}
 .oinkb::after{content:"";position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:var(--surface);border-bottom:0}
@@ -600,9 +601,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.19.0';
+const APP_VERSION='1.19.1';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.19.1',items:['Your own oink now plays properly. After recording, tap Play, then “Use this oink” or Redo. Save to phone keeps a copy']},
   {v:'1.19.0',items:['Record your own baby-piglet “oink oink” in Settings → Piglet. The app makes it tiny and plays it at every celebration']},
   {v:'1.18.4',items:['The piglet’s “Oink oink!” now sounds like a toddler: slow, high and sing-song']},
   {v:'1.18.3',items:['Your piglet now says “Oink oink!” in a sweet little voice, with a speech bubble']},
@@ -1459,7 +1461,9 @@ function settingsPageBody(k){
       <button class="btn soft" data-act="oinktest" style="align-self:flex-start">Play it</button>
       <span class="lbl">Your own oink</span>
       <p class="hint" style="margin:0">Record a little “oink oink” in your best baby-piglet voice. The app makes it tiny and plays it whenever your piglet celebrates. Up to 3 seconds.</p>
-      <div class="row" style="gap:10px;align-items:center"><button class="btn${recBusy?' rec-on':''}" data-act="oinkrec" style="flex:none">${recBusy?'● Recording… tap to stop':S.oinkRec?'Record again':'Record my oink'}</button>${S.oinkRec?`<button class="link" data-act="oinkdel">Delete</button>`:''}</div>
+      ${recDraft?`<div class="recdraft"><span class="hint" style="margin:0">New recording</span><div class="row" style="gap:8px"><button class="btn soft" data-act="oinkplaydraft" style="flex:none">▶ Play</button><button class="btn" data-act="oinksave" style="flex:none">Use this oink</button><button class="link" data-act="oinkrec">Redo</button></div></div>`
+      :`<div class="row" style="gap:8px;align-items:center"><button class="btn${recBusy?' rec-on':''}" data-act="oinkrec" style="flex:none">${recBusy?'● Recording… tap to stop':S.oinkRec?'Record again':'Record my oink'}</button>${S.oinkRec&&!recBusy?`<button class="btn soft" data-act="oinkplay" style="flex:none">▶ Play mine</button>`:''}</div>
+      ${S.oinkRec&&!recBusy?`<div class="row" style="gap:14px;align-items:center"><button class="link" data-act="oinkdl">Save to phone</button><button class="link" data-act="oinkdel">Delete</button></div>`:''}`}
       ${S.oinkRec?`<span class="lbl">How tiny?</span>${chipset('oinkpitch',String(st.oinkPitch||1.45),[['1.2','Little'],['1.45','Tiny'],['1.7','Teeny-tiny']])}`:''}
       <p class="hint">Sounds play only while the timer is open and your phone isn't on silent. Everything, including your recording, stays on this phone and works offline.</p>`;
     case'shelves':return`<p class="hint">Make your own shelves, like Favourites, Book club or Gifts. A book can be on several shelves. Add books from a book's page.</p>
@@ -1770,9 +1774,13 @@ document.addEventListener('click',async e=>{
     case'namesave':{const v=($('#nameQuick').value||'').trim().slice(0,30);if(!v){toast('Type your name first');break}S.settings.name=v;await save();render();toast('Lovely to meet you, '+v+'!');break}
     case'nameskip':ls.set('pp-name-skip','1');render();break;
     case'oink':S.settings.oink=t.dataset.v;await save();render();break;
-    case'oinkrec':if(recBusy){stopOinkRec()}else startOinkRec();break;
-    case'oinkdel':S.oinkRec=null;recBuf=null;if(S.settings.oink==='mine')S.settings.oink='on';await save();render();toast('Recording deleted');break;
-    case'oinkpitch':S.settings.oinkPitch=+t.dataset.v;await save();render();playRec();break;
+    case'oinkrec':if(recBusy){stopOinkRec()}else{recDraft=null;startOinkRec()}break;
+    case'oinkplaydraft':playClip(recDraft);break;
+    case'oinkplay':playClip(S.oinkRec);break;
+    case'oinksave':S.oinkRec=recDraft;recDraft=null;S.settings.oink='mine';await save();render();toast('Saved! Your piglet will use it');break;
+    case'oinkdl':downloadOink();break;
+    case'oinkdel':S.oinkRec=null;recBuf=null;recDraft=null;if(S.settings.oink==='mine')S.settings.oink='on';await save();render();toast('Recording deleted');break;
+    case'oinkpitch':S.settings.oinkPitch=+t.dataset.v;await save();render();playClip(S.oinkRec);break;
     case'oinktest':unlockSpeech();if(S.settings.oink==='mine'&&S.oinkRec){playRec()}else if((S.settings.oink||'on')==='on'){sayOink();toast('Oink oink!')}else if(S.settings.oink==='squeak')oink(2);else if(S.settings.oink==='chime'){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}chime()}else toast('Sound is off');break;
     case'backupEvery':S.settings.backupEvery=+t.dataset.v;await save();render();break;
     case'petals':S.settings.petals=t.dataset.v;await save();petalsSync();render();break;
@@ -2401,7 +2409,7 @@ function sayOink(){try{if(!('speechSynthesis' in window)){oink(2);return}speechS
   [['Oink!',kid?1.5:2,.78],['oink!',2,.9]].forEach(([w,pt,rt])=>{const u=new SpeechSynthesisUtterance(w);if(v)u.voice=v;u.pitch=pt;u.rate=rt;u.volume=.9;speechSynthesis.speak(u)})
 }catch(e){oink(2)}}
 if('speechSynthesis' in window){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}}
-let recBusy=false,recMR=null,recTimer=null,recBuf=null,recBufSrc=null;
+let recBusy=false,recDraft=null,recAudio=null,recMR=null,recTimer=null,recBuf=null,recBufSrc=null;
 async function startOinkRec(){
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){toast('Recording isn’t supported in this browser');return}
   let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(e){toast('Microphone permission is needed to record');return}
@@ -2411,15 +2419,36 @@ async function startOinkRec(){
     const blob=new Blob(chunks,{type:recMR.mimeType||'audio/mp4'});
     if(blob.size<800){render();toast('Didn’t catch that. Try again');return}
     const url=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(blob)});
-    S.oinkRec=url;recBuf=null;S.settings.oink='mine';await save();render();toast('Saved! Have a listen');setTimeout(playRec,250)};
+    recDraft=url;render();toast('Tap ▶ Play to hear it')};
   recMR.start();recBusy=true;render();recTimer=setTimeout(stopOinkRec,3000);
 }
 function stopOinkRec(){try{if(recMR&&recMR.state!=='inactive')recMR.stop()}catch(e){}}
-async function playRec(){
+function recEl(){if(!recAudio){recAudio=new Audio();recAudio.preload='auto';recAudio.playsInline=true;recAudio.setAttribute('playsinline','')}return recAudio}
+/* call during a tap so the phone lets it play later (e.g. at the 10-minute celebration) */
+function unlockRec(){try{if(!S.oinkRec||(S.settings.oink!=='mine'))return;const a=recEl();if(a.src!==S.oinkRec)a.src=S.oinkRec;a.muted=true;const p=a.play();if(p&&p.then)p.then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})}catch(e){}}
+function playClip(url){
+  if(!url)return;
+  try{const a=recEl();if(a.src!==url)a.src=url;a.muted=false;a.volume=1;
+    const r=S.settings.oinkPitch||1.45;a.preservesPitch=false;a.mozPreservesPitch=false;a.webkitPreservesPitch=false;a.defaultPlaybackRate=r;a.playbackRate=r;
+    try{a.currentTime=0}catch(e){}
+    const p=a.play();if(p&&p.catch)p.catch(()=>playRecWA(url));
+  }catch(e){playRecWA(url)}
+}
+function playRec(){playClip(S.oinkRec)}
+async function downloadOink(){
   if(!S.oinkRec)return;
+  try{const mime=(S.oinkRec.match(/^data:([^;,]+)/)||[])[1]||'audio/mp4';const ext=/webm/.test(mime)?'webm':/ogg/.test(mime)?'ogg':/wav/.test(mime)?'wav':'m4a';
+    const blob=await (await fetch(S.oinkRec)).blob();const name='piglet-oink.'+ext;
+    const f=new File([blob],name,{type:mime});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Piglet oink'});return}catch(e){if(e&&e.name==='AbortError')return}}
+    const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('Saved as '+name);
+  }catch(e){toast('Couldn’t save the recording')}
+}
+async function playRecWA(url){
+  if(!url)return;
   try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume();
-    if(!recBuf||recBufSrc!==S.oinkRec){const b64=S.oinkRec.split(',')[1],bin=atob(b64),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
-      recBuf=await new Promise((res,rej)=>audioCtx.decodeAudioData(u8.buffer,res,rej));recBufSrc=S.oinkRec}
+    if(!recBuf||recBufSrc!==url){const b64=url.split(',')[1],bin=atob(b64),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+      recBuf=await new Promise((res,rej)=>audioCtx.decodeAudioData(u8.buffer,res,rej));recBufSrc=url}
     /* skip silence at the start and end so it plays right away */
     const d=recBuf.getChannelData(0);let a=0,z=d.length-1;while(a<d.length&&Math.abs(d[a])<.03)a++;while(z>a&&Math.abs(d[z])<.03)z--;
     const sr=recBuf.sampleRate,off=Math.max(0,a/sr-.03),dur=Math.max(.2,(z-a)/sr+.08);
@@ -2427,7 +2456,7 @@ async function playRec(){
     hp.type='highpass';hp.frequency.value=180;g.gain.value=1.1;
     src.buffer=recBuf;src.playbackRate.value=S.settings.oinkPitch||1.45;src.connect(hp);hp.connect(g);g.connect(audioCtx.destination);
     src.start(audioCtx.currentTime+.02,off,dur);
-  }catch(e){sayOink()}
+  }catch(e){toast('Couldn’t play the recording')}
 }
 function oinkBubble(){
   const wrap=document.querySelector('#timer .pigwrap');if(!wrap)return;
@@ -2522,7 +2551,7 @@ async function timerAct(a,t){
     case'opentimer':if(sheetFor)closeSheet();openTimer(t.dataset.id||null);return true;
     case'tclose':closeTimer();return true;
     case'tbook':T0.bookId=t.dataset.v||null;await save();renderTimer();return true;
-    case'tstart':unlockSpeech();try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(e){}
+    case'tstart':unlockSpeech();unlockRec();try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(e){}
       goalChimed=ringFrac()>=1;T0.state='running';T0.startedAt=Date.now();T0.accMs=0;T0.lastMs=0;T0.date=today();await save();lockScreen(true);renderTimer();startTick();return true;
     case'tpause':T0.accMs=elapsedMs();T0.state='paused';await save();lockScreen(false);renderTimer();return true;
     case'tresume':T0.state='running';T0.startedAt=Date.now();await save();lockScreen(true);renderTimer();return true;
