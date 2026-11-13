@@ -601,9 +601,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.19.1';
+const APP_VERSION='1.19.2';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.19.2',items:['Play mine is now the big button, so a saved oink can’t be recorded over by accident']},
   {v:'1.19.1',items:['Your own oink now plays properly. After recording, tap Play, then “Use this oink” or Redo. Save to phone keeps a copy']},
   {v:'1.19.0',items:['Record your own baby-piglet “oink oink” in Settings → Piglet. The app makes it tiny and plays it at every celebration']},
   {v:'1.18.4',items:['The piglet’s “Oink oink!” now sounds like a toddler: slow, high and sing-song']},
@@ -1462,8 +1463,9 @@ function settingsPageBody(k){
       <span class="lbl">Your own oink</span>
       <p class="hint" style="margin:0">Record a little “oink oink” in your best baby-piglet voice. The app makes it tiny and plays it whenever your piglet celebrates. Up to 3 seconds.</p>
       ${recDraft?`<div class="recdraft"><span class="hint" style="margin:0">New recording</span><div class="row" style="gap:8px"><button class="btn soft" data-act="oinkplaydraft" style="flex:none">▶ Play</button><button class="btn" data-act="oinksave" style="flex:none">Use this oink</button><button class="link" data-act="oinkrec">Redo</button></div></div>`
-      :`<div class="row" style="gap:8px;align-items:center"><button class="btn${recBusy?' rec-on':''}" data-act="oinkrec" style="flex:none">${recBusy?'● Recording… tap to stop':S.oinkRec?'Record again':'Record my oink'}</button>${S.oinkRec&&!recBusy?`<button class="btn soft" data-act="oinkplay" style="flex:none">▶ Play mine</button>`:''}</div>
-      ${S.oinkRec&&!recBusy?`<div class="row" style="gap:14px;align-items:center"><button class="link" data-act="oinkdl">Save to phone</button><button class="link" data-act="oinkdel">Delete</button></div>`:''}`}
+      :`${S.oinkRec&&!recBusy?`<button class="btn" data-act="oinkplay" style="align-self:flex-start">▶ Play mine</button>
+      <div class="row" style="gap:16px;align-items:center"><button class="link" data-act="oinkdl">Save to phone</button><button class="link" data-act="oinkrec">Record a new one</button><button class="link" data-act="oinkdel">Delete</button></div>`
+      :`<button class="btn${recBusy?' rec-on':''}" data-act="oinkrec" style="align-self:flex-start">${recBusy?'● Recording… tap to stop':'Record my oink'}</button>`}`}
       ${S.oinkRec?`<span class="lbl">How tiny?</span>${chipset('oinkpitch',String(st.oinkPitch||1.45),[['1.2','Little'],['1.45','Tiny'],['1.7','Teeny-tiny']])}`:''}
       <p class="hint">Sounds play only while the timer is open and your phone isn't on silent. Everything, including your recording, stays on this phone and works offline.</p>`;
     case'shelves':return`<p class="hint">Make your own shelves, like Favourites, Book club or Gifts. A book can be on several shelves. Add books from a book's page.</p>
