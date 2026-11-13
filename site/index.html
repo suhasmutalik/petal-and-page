@@ -599,9 +599,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.18.3';
+const APP_VERSION='1.18.4';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.18.4',items:['The piglet’s “Oink oink!” now sounds like a toddler: slow, high and sing-song']},
   {v:'1.18.3',items:['Your piglet now says “Oink oink!” in a sweet little voice, with a speech bubble']},
   {v:'1.18.2',items:['A softer, sweeter baby-piglet oink']},
   {v:'1.18.1',items:['Matterhorn: the Hörnlihütte now sits on its own lower peak next door; you set off from the hut, cross the saddle and climb the Matterhorn']},
@@ -2379,20 +2380,17 @@ function oink(times){
 // Say "oink oink" in a high, sweet voice using the phone's own speech (works offline).
 function sweetVoice(){
   try{const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));if(!vs.length)return null;
-    const pref=['Samantha','Karen','Moira','Tessa','Fiona','Victoria','Serena','Martha','Google UK English Female','Google US English','Female'];
+    const pref=['Junior','Princess','Samantha','Karen','Moira','Tessa','Fiona','Victoria','Serena','Martha','Google UK English Female','Google US English','Female'];
     for(const p of pref){const v=vs.find(x=>x.name.includes(p));if(v)return v}
     return vs.find(v=>v.localService)||vs[0]}catch(e){return null}
 }
 let speechReady=false;
 function unlockSpeech(){try{if(speechReady||!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);speechReady=true}catch(e){}}
-function sayOink(){
-  try{
-    if(!('speechSynthesis' in window)){oink(2);return}
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance('Oink oink!');const v=sweetVoice();if(v)u.voice=v;
-    u.pitch=2;u.rate=1.08;u.volume=.85;speechSynthesis.speak(u);
-  }catch(e){oink(2)}
-}
+function sayOink(){try{if(!('speechSynthesis' in window)){oink(2);return}speechSynthesis.cancel();const v=sweetVoice();
+  const kid=v&&/Junior|Princess/.test(v.name);
+  /* toddler style: two slow, sing-song little words, the second one higher and bouncier */
+  [['Oink!',kid?1.5:2,.78],['oink!',2,.9]].forEach(([w,pt,rt])=>{const u=new SpeechSynthesisUtterance(w);if(v)u.voice=v;u.pitch=pt;u.rate=rt;u.volume=.9;speechSynthesis.speak(u)})
+}catch(e){oink(2)}}
 if('speechSynthesis' in window){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}}
 function oinkBubble(){
   const wrap=document.querySelector('#timer .pigwrap');if(!wrap)return;
