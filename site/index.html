@@ -595,9 +595,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.18.1';
+const APP_VERSION='1.18.2';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.18.2',items:['A softer, sweeter baby-piglet oink']},
   {v:'1.18.1',items:['Matterhorn: the Hörnlihütte now sits on its own lower peak next door; you set off from the hut, cross the saddle and climb the Matterhorn']},
   {v:'1.18.0',items:['Add your name (Settings → Profile) and the app greets you by it','The Hörnlihütte is back on the Matterhorn, and your climb starts from it','Your piglet now lies on its tummy to read (no more napping), does little twirls, and has eyelashes and a curlier tail','Oink oink! Your piglet oinks when it celebrates every 10 minutes (Settings → Piglet)']},
   {v:'1.17.0',items:['Your piglet bobs its head and wags its tail while reading, strolls around, and takes little naps during the timer','Every 10 minutes of reading the piglet celebrates, with a different dance each time','Matterhorn: the two of you reach the summit, plant a flag and share a kiss under a glowing heart','Optional soft glow around book cards in your theme colour (Settings → Layout & style)']},
@@ -2346,25 +2347,38 @@ const T=()=>S.timer||(S.timer={state:'idle',bookId:null,startedAt:0,accMs:0});
 const elapsedMs=()=>{const t=T();return t.accMs+(t.state==='running'?Date.now()-t.startedAt:0)};
 const fmtClock=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+pad(m):m)+':'+pad(x)};
 async function lockScreen(on){try{if(on&&'wakeLock' in navigator&&document.visibilityState==='visible'){wakeLock=await navigator.wakeLock.request('screen')}else if(!on&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}}
+// A soft, sweet baby-piglet "oink-oink": high, short, rounded squeaks with a tiny nasal tone.
+function oinkInto(A,t,dest,times){
+  const out=A.createGain();out.gain.value=.9;
+  const lp=A.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;lp.Q.value=.4;
+  out.connect(lp);lp.connect(dest);
+  const n=times||2;
+  for(let k=0;k<n;k++){
+    const t0=t+k*.24,dur=k===n-1?.2:.16,up=k===n-1?1.08:1;
+    const o=A.createOscillator(),o2=A.createOscillator(),g=A.createGain(),g2=A.createGain(),nas=A.createBiquadFilter(),vib=A.createOscillator(),vg=A.createGain();
+    o.type='triangle';o2.type='sine';
+    const f0=560*up,f1=820*up,f2=520*up;
+    o.frequency.setValueAtTime(f0,t0);o.frequency.exponentialRampToValueAtTime(f1,t0+.045);o.frequency.exponentialRampToValueAtTime(f2,t0+dur);
+    o2.frequency.setValueAtTime(f0*2,t0);o2.frequency.exponentialRampToValueAtTime(f1*2,t0+.045);o2.frequency.exponentialRampToValueAtTime(f2*2,t0+dur);
+    vib.frequency.value=26;vg.gain.value=14;vib.connect(vg);vg.connect(o.frequency);vg.connect(o2.frequency);
+    nas.type='peaking';nas.frequency.value=1250;nas.Q.value=2.2;nas.gain.value=7;
+    g2.gain.value=.22;o2.connect(g2);
+    g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.16,t0+.018);g.gain.setValueAtTime(.15,t0+dur*.55);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);
+    o.connect(nas);g2.connect(nas);nas.connect(g);g.connect(out);
+    [o,o2,vib].forEach(x=>{x.start(t0);x.stop(t0+dur+.03)});
+  }
+}
 function oink(times){
-  try{
-    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume();
-    const A=audioCtx,start=A.currentTime+.05,n=times||2;
-    for(let k=0;k<n;k++){
-      const t0=start+k*.42,dur=.3;
-      const o=A.createOscillator(),o2=A.createOscillator(),f=A.createBiquadFilter(),f2=A.createBiquadFilter(),g=A.createGain(),lfo=A.createOscillator(),lg=A.createGain();
-      o.type='sawtooth';o2.type='square';
-      o.frequency.setValueAtTime(230,t0);o.frequency.exponentialRampToValueAtTime(330,t0+.07);o.frequency.exponentialRampToValueAtTime(150,t0+dur);
-      o2.frequency.setValueAtTime(115,t0);o2.frequency.exponentialRampToValueAtTime(165,t0+.07);o2.frequency.exponentialRampToValueAtTime(75,t0+dur);
-      lfo.frequency.value=38;lg.gain.value=22;lfo.connect(lg);lg.connect(o.frequency);
-      f.type='bandpass';f.frequency.setValueAtTime(900,t0);f.frequency.exponentialRampToValueAtTime(520,t0+dur);f.Q.value=3.2;
-      f2.type='peaking';f2.frequency.value=1600;f2.gain.value=8;
-      g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.32,t0+.03);g.gain.setValueAtTime(.28,t0+dur*.6);g.gain.exponentialRampToValueAtTime(.001,t0+dur);
-      const mix=A.createGain();mix.gain.value=.55;o2.connect(mix);
-      o.connect(f);mix.connect(f);f.connect(f2);f2.connect(g);g.connect(A.destination);
-      [o,o2,lfo].forEach(x=>{x.start(t0);x.stop(t0+dur+.05)});
-    }
-  }catch(e){}
+  try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume();oinkInto(audioCtx,audioCtx.currentTime+.04,audioCtx.destination,times)}catch(e){}
+}
+async function oinkWav(){
+  const sr=44100,A=new OfflineAudioContext(1,Math.round(sr*.9),sr);oinkInto(A,.08,A.destination,2);
+  const buf=await A.startRendering(),d=buf.getChannelData(0),n=d.length,dv=new DataView(new ArrayBuffer(44+n*2));
+  const w=(o,str)=>{for(let i=0;i<str.length;i++)dv.setUint8(o+i,str.charCodeAt(i))};
+  w(0,'RIFF');dv.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,n*2,true);
+  let pk=0;for(let i=0;i<n;i++)pk=Math.max(pk,Math.abs(d[i]));
+  for(let i=0;i<n;i++)dv.setInt16(44+i*2,Math.max(-1,Math.min(1,d[i]))*32767,true);
+  let bin='';const u=new Uint8Array(dv.buffer);for(let i=0;i<u.length;i++)bin+=String.fromCharCode(u[i]);return{peak:pk,b64:btoa(bin)};
 }
 function chime(){try{if(!audioCtx)return;const n=audioCtx.currentTime;[659.25,880].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,n+i*.22);g.gain.linearRampToValueAtTime(.18,n+i*.22+.02);g.gain.exponentialRampToValueAtTime(.001,n+i*.22+1.2);o.connect(g).connect(audioCtx.destination);o.start(n+i*.22);o.stop(n+i*.22+1.3)})}catch(e){}if(navigator.vibrate)navigator.vibrate([80,80,80])}
 function goalMin(){const G=S.settings.goal;return G.type==='minutes'?G.value:20}
@@ -2506,7 +2520,7 @@ function showWhatsNew(justUpdated){
    const bk=ss.get('pp-book');if(bk&&find(bk))setTimeout(()=>openDetail(bk),50)}
   if(darkMQ){const onMQ=()=>{curTheme='';applyTheme();if(!sheetFor)render()};if(darkMQ.addEventListener)darkMQ.addEventListener('change',onMQ);else if(darkMQ.addListener)darkMQ.addListener(onMQ)}
   setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()},60*1000);
-  window.__pp={recognize,readerReady,petals:()=>PETALS.list.length};
+  window.__pp={recognize,readerReady,petals:()=>PETALS.list.length,oinkWav};
   setupSW();
   checkLevelUp();updatePill();if(T().state==='running')startTick();
   try{const seen=localStorage.getItem('pp-version');if(seen&&seen!==APP_VERSION)setTimeout(()=>showWhatsNew(true),600);localStorage.setItem('pp-version',APP_VERSION)}catch(e){}
