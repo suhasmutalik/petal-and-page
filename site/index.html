@@ -503,6 +503,22 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .view-back{animation:slideback .28s cubic-bezier(.2,.8,.2,1)}
 @keyframes slidein{from{opacity:0;transform:translateX(28px)}}
 @keyframes slideback{from{opacity:0;transform:translateX(-28px)}}
+.gslide{flex:none;width:100%;max-width:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative;overflow:hidden;
+  display:grid;grid-template-columns:118px minmax(0,1fr);gap:16px 16px;padding:18px;border-radius:calc(var(--rc) + 6px);
+  --tint:hsl(calc(var(--th,340) + var(--h,340) - 340) 45% 60%);
+  background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--tint) 26%,transparent),transparent 62%),color-mix(in srgb,var(--surface) 72%,transparent);
+  border:1px solid var(--glassline);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
+  box-shadow:0 22px 44px -30px color-mix(in srgb,var(--ink) 55%,transparent),inset 0 1px 0 var(--glassline);color:var(--ink)}
+.gslide::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.22),transparent 40%)}
+.gpost .poster{box-shadow:0 16px 26px -14px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.25)}
+.gbody{display:flex;flex-direction:column;gap:6px;min-width:0;align-self:center}
+.gbody .kicker{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--primary)}
+.gbody h2{font-size:calc(1.6rem*var(--ds));line-height:1.05;overflow-wrap:anywhere}
+.gmeta{font-size:.85rem;color:var(--muted)}
+.gprog{display:flex;align-items:center;gap:10px;margin-top:4px}.gprog .bar{flex:1;height:6px}.gprog .bar i{background:var(--accent)}.gprog span{font-size:.8rem;font-weight:600;color:var(--primary)}
+.gacts{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gacts .btn svg{width:14px;height:14px}
+@media (max-width:360px){.gslide{grid-template-columns:96px minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -521,9 +537,10 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.15.0';
+const APP_VERSION='1.16.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.16.0',items:['New glass now-reading cards that match your theme and let the scenery show through, with a soft glow from each book’s cover','Prefer the old bold cards? Settings → Layout & style → Now-reading cards']},
   {v:'1.15.0',items:['Choose how many cherry blossoms fall: a few, gentle, plenty or a blossom storm','Note where each book came from: bought, gift, borrowed or library, with the store or person, location and date','Search finds books by store, place or who gave them']},
   {v:'1.14.0',items:['New Sakura theme: white and pink cherry blossoms drift down across the whole app','Turn the falling blossoms on with any theme in Settings → Colour theme']},
   {v:'1.13.0',items:['New background: the Mangalore–Udupi coast, with coconut palms, St. Mary’s Island, fishing boats, a coastal temple with Mangalore-tile roofs, and Kaup lighthouse glowing at night','Ruhi and Dori play on the sand there']},
@@ -774,7 +791,7 @@ const FONTS_B=[
   {n:'Lora',spec:'wght@400;500',fb:'Georgia,serif',d:'Serif text'},
   {n:'System',spec:null,fb:'-apple-system,"Segoe UI",Roboto,system-ui,sans-serif',d:'Your phone’s font'}
 ];
-const DEFAULT_LOOK={petals:'auto',petalDensity:'medium',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
+const DEFAULT_LOOK={heroStyle:'glass',petals:'auto',petalDensity:'medium',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
 function fontUrl(list){const fam=list.filter(f=>f.spec!==null).map(f=>'family='+f.n.replace(/ /g,'+')+(f.spec?':'+f.spec:''));return fam.length?'https://fonts.googleapis.com/css2?'+fam.join('&')+'&display=swap':''}
 function applyStyle(){
   const st=S.settings,r=document.documentElement.style;
@@ -1089,6 +1106,7 @@ function poster(b){return`<div class="poster" style="--h:${b.hue}">${b.cover?`<i
 function lastRead(b){return b.sessions.reduce((m,x)=>x.date>m?x.date:m,b.start||'')}
 const PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>';
 function heroSlide(b,kicker){
+  if((S.settings.heroStyle||'glass')==='glass')return heroGlass(b,kicker);
   const days=b.start?Math.max(1,Math.round((pd(today())-pd(b.start))/864e5)+1):0,rate=days?(b.page||0)/days:0;
   return`<article class="slide" style="--h:${b.hue}"><div class="bg">${b.cover?`<img src="${b.cover}" alt="">`:`<span class="word">${esc(b.title)}</span>`}</div>
     <div class="fg-poster">${poster(b)}</div>
@@ -1097,6 +1115,26 @@ function heroSlide(b,kicker){
       ${b.status==='reading'?`<div class="bar"><i style="width:${pct(b)}%"></i></div>`:''}
       <div class="acts"><button class="play" data-act="opentimer" data-id="${b.id}">${PLAY}${b.status==='reading'?'Resume reading':'Start reading'}</button><button class="glassbtn" data-act="open" data-id="${b.id}" data-focus="1">${b.status==='reading'?'Bookmark':'Details'}</button></div>
     </div></article>`;
+}
+// soft colour picked from the book's cover photo (cached on the book)
+function coverTint(b){
+  if(!b.cover)return null;if(b.tint&&b.tintSrc===b.cover.length)return b.tint;
+  const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=24;const g=c.getContext('2d');g.drawImage(im,0,0,24,24);const d=g.getImageData(0,0,24,24).data;let r=0,gg=0,bb=0,n=0;
+    for(let i=0;i<d.length;i+=4){const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);const w=(mx-mn)/255+.05;r+=d[i]*w;gg+=d[i+1]*w;bb+=d[i+2]*w;n+=w}
+    b.tint='#'+[r,gg,bb].map(v=>Math.round(v/n).toString(16).padStart(2,'0')).join('');b.tintSrc=b.cover.length;save();
+    document.querySelectorAll(`.gslide[data-id="${b.id}"]`).forEach(el=>el.style.setProperty('--tint',b.tint))}catch(e){}};im.src=b.cover;return null;
+}
+function heroGlass(b,kicker){
+  const days=b.start?Math.max(1,Math.round((pd(today())-pd(b.start))/864e5)+1):0,rate=days?(b.page||0)/days:0,reading=b.status==='reading';
+  const left=b.pages?Math.max(0,b.pages-(b.page||0)):0,eta=rate>=1&&left?Math.ceil(left/rate):0,tint=coverTint(b);
+  return`<article class="gslide" data-id="${b.id}" style="--h:${b.hue}${tint?`;--tint:${tint}`:''}">
+    <div class="gpost">${poster(b)}</div>
+    <div class="gbody"><span class="kicker">${kicker}</span><h2>${esc(b.title)}</h2><span class="gmeta">${esc(b.author||'')}</span>
+      ${reading?`<div class="gprog"><div class="bar"><i style="width:${pct(b)}%"></i></div><span class="tnum">${pct(b)}%</span></div>
+      <span class="gmeta tnum">Page ${b.page||0}${b.pages?` of ${b.pages}`:''}${eta?` · about ${eta} day${eta===1?'':'s'} left`:''}</span>`:`<span class="gmeta">${b.pages?b.pages+' pages':''}</span>`}
+    </div>
+    <div class="gacts"><button class="btn" data-act="opentimer" data-id="${b.id}">${PLAY}${reading?'Resume':'Start reading'}</button><button class="btn ghost" data-act="open" data-id="${b.id}" data-focus="1">${reading?'Bookmark':'Details'}</button></div>
+  </article>`;
 }
 function shelf(title,items,act){if(!items.length)return'';return`<section class="shelf"><div class="shelf-h"><h2>${title}</h2>${act||''}</div><div class="row-x">${items.join('')}</div></section>`}
 function pcard(b,sub){return`<button class="pcard" data-act="open" data-id="${b.id}">${poster(b)}<span class="pt">${esc(b.title)}</span>${sub}</button>`}
@@ -1369,6 +1407,7 @@ function settingsPageBody(k){
     <div class="opt-grid">${FONTS_B.map(f=>`<button class="fontopt" data-act="fontB" data-v="${f.n}" aria-pressed="${st.fontB===f.n}"><span class="nm" style="font-family:${f.spec===null?'':`'${f.n}',`}${f.fb};font-size:1.05rem">${f.n}</span><small>${f.d}</small></button>`).join('')}</div>
     <p class="hint">A new font downloads once, then works offline.</p>`;
     case'style':return`
+    <span class="lbl">Now-reading cards</span>${chipset('heroStyle',st.heroStyle||'glass',[['glass','Glass, matches theme'],['color','Bold book colours']])}
     <span class="lbl">Library layout</span>${chipset('layout',st.layout,[['tv','Cinema shelves'],['list','Classic list']])}
     <span class="lbl">Corners</span>${chipset('corners',st.corners,[['rounded','Rounded'],['soft','Soft'],['square','Square']])}
     <span class="lbl">Cards</span>${chipset('cards',st.cards,[['outlined','Outlined'],['shadow','Shadow'],['flat','Flat']])}
@@ -1629,6 +1668,7 @@ document.addEventListener('click',async e=>{
     case'geoclear':delete S.settings.geo;await save();curTheme='';applyTheme();render();break;
     case'fontD':S.settings.fontD=t.dataset.v;await save();applyStyle();render();break;
     case'fontB':S.settings.fontB=t.dataset.v;await save();applyStyle();render();break;
+    case'heroStyle':S.settings.heroStyle=t.dataset.v;await save();render();break;
     case'layout':S.settings.layout=t.dataset.v;await save();render();break;
     case'bksnooze':{const d=new Date();d.setDate(d.getDate()+3);ls.set('pp-backup-snooze',ds(d));render();toast('I’ll remind you in 3 days');break}
     case'backupEvery':S.settings.backupEvery=+t.dataset.v;await save();render();break;
