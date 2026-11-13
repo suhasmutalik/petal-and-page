@@ -601,9 +601,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.19.2';
+const APP_VERSION='1.19.3';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.19.3',items:['Recordings are cleaned automatically: background noise removed, silence trimmed and volume evened out']},
   {v:'1.19.2',items:['Play mine is now the big button, so a saved oink can’t be recorded over by accident']},
   {v:'1.19.1',items:['Your own oink now plays properly. After recording, tap Play, then “Use this oink” or Redo. Save to phone keeps a copy']},
   {v:'1.19.0',items:['Record your own baby-piglet “oink oink” in Settings → Piglet. The app makes it tiny and plays it at every celebration']},
@@ -2414,15 +2415,52 @@ if('speechSynthesis' in window){try{speechSynthesis.getVoices();speechSynthesis.
 let recBusy=false,recDraft=null,recAudio=null,recMR=null,recTimer=null,recBuf=null,recBufSrc=null;
 async function startOinkRec(){
   if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder)){toast('Recording isn’t supported in this browser');return}
-  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(e){toast('Microphone permission is needed to record');return}
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}})}catch(e){toast('Microphone permission is needed to record');return}
   const chunks=[];try{recMR=new MediaRecorder(stream)}catch(e){stream.getTracks().forEach(t=>t.stop());toast('Recording isn’t supported here');return}
   recMR.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
   recMR.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());clearTimeout(recTimer);recBusy=false;
     const blob=new Blob(chunks,{type:recMR.mimeType||'audio/mp4'});
     if(blob.size<800){render();toast('Didn’t catch that. Try again');return}
-    const url=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(blob)});
+    let url=null;try{url=await cleanOink(blob)}catch(e){url=null}
+    if(!url)url=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(blob)});
     recDraft=url;render();toast('Tap ▶ Play to hear it')};
   recMR.start();recBusy=true;render();recTimer=setTimeout(stopOinkRec,3000);
+}
+/* Clean a recording: filter rumble & hiss, gate background noise, trim silence, even out volume. Returns a WAV data URL. */
+async function cleanOink(blob){
+  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  const ab=await blob.arrayBuffer();
+  const raw=await new Promise((res,rej)=>audioCtx.decodeAudioData(ab,res,rej));
+  const SR=24000,len=Math.ceil(raw.duration*SR);if(len<SR*.15)return null;
+  const off=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,len,SR);
+  const src=off.createBufferSource();src.buffer=raw;
+  const h1=off.createBiquadFilter(),h2=off.createBiquadFilter(),lp=off.createBiquadFilter(),pr=off.createBiquadFilter();
+  h1.type=h2.type='highpass';h1.frequency.value=h2.frequency.value=160;h1.Q.value=h2.Q.value=.7;
+  lp.type='lowpass';lp.frequency.value=7000;lp.Q.value=.7;
+  pr.type='peaking';pr.frequency.value=2600;pr.Q.value=1;pr.gain.value=3; /* a little clarity */
+  src.connect(h1);h1.connect(h2);h2.connect(pr);pr.connect(lp);lp.connect(off.destination);src.start();
+  const out=await off.startRendering(),d=out.getChannelData(0);
+  /* noise gate */
+  const F=240,nf=Math.floor(d.length/F),rms=new Float32Array(nf);
+  for(let f=0;f<nf;f++){let a=0;for(let i=f*F;i<(f+1)*F;i++)a+=d[i]*d[i];rms[f]=Math.sqrt(a/F)}
+  const sorted=Array.from(rms).sort((a,b)=>a-b),noise=sorted[Math.floor(nf*.2)]||0,peakR=sorted[nf-1]||0;
+  const thr=Math.max(noise*3.2,peakR*.12,.004);
+  let first=-1,last=-1;const g=new Float32Array(nf);let env=0,hold=0;
+  for(let f=0;f<nf;f++){const on=rms[f]>thr;if(on){hold=8;if(first<0)first=f;last=f}else if(hold>0)hold--;
+    const tgt=(on||hold>0)?1:.02;env+=(tgt-env)*(tgt>env?.6:.18);g[f]=env}
+  if(first<0)return null;
+  const a=Math.max(0,(first-4)*F),z=Math.min(d.length,(last+8)*F),n=z-a;
+  const y=new Float32Array(n);let pk=0;
+  for(let i=0;i<n;i++){const k=a+i,f=Math.min(nf-1,Math.floor(k/F)),f2=Math.min(nf-1,f+1),t=(k%F)/F;y[i]=d[k]*(g[f]*(1-t)+g[f2]*t);pk=Math.max(pk,Math.abs(y[i]))}
+  const norm=pk>0?Math.min(.92/pk,8):1,fd=Math.floor(SR*.012);
+  for(let i=0;i<n;i++){let v=y[i]*norm;if(i<fd)v*=i/fd;if(i>n-fd)v*=(n-i)/fd;y[i]=v}
+  /* 16-bit mono WAV */
+  const dv=new DataView(new ArrayBuffer(44+n*2)),w=(o,t)=>{for(let i=0;i<t.length;i++)dv.setUint8(o+i,t.charCodeAt(i))};
+  w(0,'RIFF');dv.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
+  dv.setUint32(24,SR,true);dv.setUint32(28,SR*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++)dv.setInt16(44+i*2,Math.max(-1,Math.min(1,y[i]))*32767,true);
+  const wav=new Blob([dv.buffer],{type:'audio/wav'});
+  return await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(wav)});
 }
 function stopOinkRec(){try{if(recMR&&recMR.state!=='inactive')recMR.stop()}catch(e){}}
 function recEl(){if(!recAudio){recAudio=new Audio();recAudio.preload='auto';recAudio.playsInline=true;recAudio.setAttribute('playsinline','')}return recAudio}
