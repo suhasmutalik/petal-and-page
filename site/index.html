@@ -223,6 +223,8 @@ nav.tabs button[aria-current="page"] svg{color:var(--accent)}
 .crop-sel i[data-h=sw]{left:-5px;bottom:-5px;border-right:0;border-top:0}.crop-sel i[data-h=se]{right:-5px;bottom:-5px;border-left:0;border-top:0}
 .dup{gap:12px;flex-wrap:nowrap;background:color-mix(in srgb,var(--accent) 16%,var(--surface))!important;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent)}
 .dup .cover.s{width:34px;height:50px;font-size:1.1rem}
+.origin{display:flex;flex-direction:column;gap:10px;background:var(--raised);border:1px solid var(--line);border-radius:var(--rc);padding:14px}
+.oline{margin:0;font-family:var(--display);font-size:calc(1.15rem*var(--ds));line-height:1.3}
 .shelfbox{display:flex;flex-direction:column;gap:8px}
 .shelfchip{border-style:dashed}
 .shelfrow{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -519,9 +521,10 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.14.0';
+const APP_VERSION='1.15.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.15.0',items:['Choose how many cherry blossoms fall: a few, gentle, plenty or a blossom storm','Note where each book came from: bought, gift, borrowed or library, with the store or person, location and date','Search finds books by store, place or who gave them']},
   {v:'1.14.0',items:['New Sakura theme: white and pink cherry blossoms drift down across the whole app','Turn the falling blossoms on with any theme in Settings → Colour theme']},
   {v:'1.13.0',items:['New background: the Mangalore–Udupi coast, with coconut palms, St. Mary’s Island, fishing boats, a coastal temple with Mangalore-tile roofs, and Kaup lighthouse glowing at night','Ruhi and Dori play on the sand there']},
   {v:'1.12.0',items:['Your own shelves: make shelves like Favourites or Book club, put books on several, and see each shelf on your Library','Scanning or typing a book you already own now tells you it’s in your library','Recognise text works now, and reads crisper','Crop a quote photo to just the passage before saving','A gentle reminder to save a backup (Settings → Backup reminder)','Dori is now white with her black tail, and gives you a proper judgy look','New: the Matterhorn climb, with the two of you on the Hörnli ridge and the Hörnlihütte']},
@@ -600,7 +603,7 @@ function normalize(s){
   s.shelves=Array.isArray(s.shelves)?s.shelves:[];
   s.timer=s.timer&&s.timer.state?s.timer:{state:'idle',bookId:null,startedAt:0,accMs:0};
   s.checkins=s.checkins||{};s.exCheckins=s.exCheckins||{};
-  s.books.forEach(b=>{b.shelves=Array.isArray(b.shelves)?b.shelves:[];b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
+  s.books.forEach(b=>{b.origin=b.origin&&typeof b.origin==='object'?b.origin:{};b.shelves=Array.isArray(b.shelves)?b.shelves:[];b.sessions=b.sessions||[];b.notes=b.notes||[];b.quotes=b.quotes||[];b.hue=b.hue??340;b.page=b.page||0});
   return s;
 }
 async function save(){try{if(!DB.db)throw 0;await DB.set('state',S)}catch(e){if(persistOK){persistOK=false;toast('This browser isn’t keeping data. Make a backup.')}}}
@@ -771,7 +774,7 @@ const FONTS_B=[
   {n:'Lora',spec:'wght@400;500',fb:'Georgia,serif',d:'Serif text'},
   {n:'System',spec:null,fb:'-apple-system,"Segoe UI",Roboto,system-ui,sans-serif',d:'Your phone’s font'}
 ];
-const DEFAULT_LOOK={petals:'auto',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
+const DEFAULT_LOOK={petals:'auto',petalDensity:'medium',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
 function fontUrl(list){const fam=list.filter(f=>f.spec!==null).map(f=>'family='+f.n.replace(/ /g,'+')+(f.spec?':'+f.spec:''));return fam.length?'https://fonts.googleapis.com/css2?'+fam.join('&')+'&display=swap':''}
 function applyStyle(){
   const st=S.settings,r=document.documentElement.style;
@@ -1133,7 +1136,7 @@ function tvLibraryHTML(){
   ${shelf('Read Before',older.map(b=>pcard(b,`<span class="ps">${esc((b.author||'').split(',')[0])}</span>`)))}
   <section class="shelf"><div class="shelf-h"><h2>All Books</h2></div>
     <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}${S.shelves.map(sh=>`<button class="chip shelfchip" data-act="filter" data-v="sh:${sh.id}" aria-pressed="${filter==='sh:'+sh.id}">${esc(sh.name)}</button>`).join('')}</div>
-    <input type="search" id="search" placeholder="Search title, author or ISBN" value="${esc(query)}" aria-label="Search books">
+    <input type="search" id="search" placeholder="Search title, author, store or giver" value="${esc(query)}" aria-label="Search books">
     <div class="list" id="booklist"></div></section>`;
 }
 let heroTimer=null,heroTouched=0;
@@ -1167,7 +1170,7 @@ function libraryHTML(){
       <span class="small" style="color:var(--primary);font-weight:500">Update bookmark →</span></div></button>`).join('')}</div>`:''}
   <div class="section"><div class="section-h"><h2>The shelf</h2></div>
     <div class="chips" role="group" aria-label="Filter">${[['all','All'],['reading','Reading'],['want','To read'],['done','Finished']].map(([k,l])=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}${S.shelves.map(sh=>`<button class="chip shelfchip" data-act="filter" data-v="sh:${sh.id}" aria-pressed="${filter==='sh:'+sh.id}">${esc(sh.name)}</button>`).join('')}</div>
-    <input type="search" id="search" placeholder="Search title, author or ISBN" value="${esc(query)}" aria-label="Search books">
+    <input type="search" id="search" placeholder="Search title, author, store or giver" value="${esc(query)}" aria-label="Search books">
     <div class="list" id="booklist" style="margin-bottom:56px"></div>
   </div>
   <button class="btn fab" data-act="add">+ Add book</button>`;
@@ -1176,7 +1179,7 @@ function renderList(){
   const el=$('#booklist');if(!el)return;const ord={reading:0,want:1,done:2};
   if(filter.startsWith('sh:')&&!S.shelves.some(x=>'sh:'+x.id===filter))filter='all';
   let L=S.books.filter(b=>filter==='all'||b.status===filter||(filter.startsWith('sh:')&&b.shelves.includes(filter.slice(3))));
-  if(query){const t=query.toLowerCase();L=L.filter(b=>((b.title||'')+' '+(b.author||'')+' '+(b.isbn||'')).toLowerCase().includes(t))}
+  if(query){const t=query.toLowerCase();L=L.filter(b=>{const o=b.origin||{};return((b.title||'')+' '+(b.author||'')+' '+(b.isbn||'')+' '+(o.from||'')+' '+(o.place||'')+' '+(o.location||'')).toLowerCase().includes(t)})}
   L.sort((a,b)=>ord[a.status]-ord[b.status]||a.title.localeCompare(b.title));
   if(!L.length){el.innerHTML=S.books.length?`<div class="empty">No books match.</div>`:`<div class="empty"><h3>Your shelf is empty</h3>Tap <b>Add book</b> to scan a barcode or type a title.</div>`;return}
   el.innerHTML=L.map(b=>`<button class="item" data-act="open" data-id="${b.id}">${cover(b,'s')}<div class="meta"><div class="t">${esc(b.title)}</div><div class="a">${esc(b.author||'Unknown author')}${b.status==='done'&&b.finish?' · finished '+fmt(b.finish):''}</div>${b.status==='reading'?`<div class="bar" style="margin-top:6px;max-width:180px"><i style="width:${pct(b)}%"></i></div>`:''}</div><span class="pill ${b.status}">${STATUS[b.status]}</span></button>`).join('');
@@ -1344,6 +1347,7 @@ function settingsPageBody(k){
     case'theme':return`
     <span class="lbl">Falling cherry blossoms</span>
     ${chipset('petals',st.petals||'auto',[['auto','With Sakura theme'],['on','Always'],['off','Off']])}
+    ${st.petals!=='off'?`<span class="lbl">How many</span>${chipset('petalDensity',st.petalDensity||'medium',[['light','A few'],['medium','Gentle'],['full','Plenty'],['storm','Blossom storm']])}`:''}
     <span class="lbl">Pinks</span>
     <div class="swatches">${Object.entries(PALETTES).filter(([k])=>!OTHER.includes(k)).map(([k,P])=>swatch(k,P,st.palette)).join('')}</div>
     <span class="lbl" style="margin-top:4px">More colours</span>
@@ -1447,6 +1451,27 @@ function openAdd(id){
     <button class="btn wide" data-act="savebook" data-id="${b?b.id:''}">${b?'Save changes':'Add to shelf'}</button>
   </div>`,'add'+(id||''));
 }
+const ORIGIN={bought:'Bought',gift:'Gift',borrowed:'Borrowed',library:'Library',swap:'Book swap',other:'Other'};
+function originLine(o){
+  if(!o||!o.how)return'';
+  const at=[o.place,o.location].filter(Boolean).join(', ');
+  const head=o.how==='gift'?(o.from?`Gift from ${esc(o.from)}`:'A gift'):o.how==='borrowed'?(o.from?`Borrowed from ${esc(o.from)}`:'Borrowed'):o.how==='library'?'From the library':o.how==='swap'?'From a book swap':o.how==='bought'?'Bought':'Found';
+  return`${head}${at?` ${o.how==='gift'||o.how==='borrowed'?'·':'at'} ${esc(at)}`:''}${o.date?` · ${fmt(o.date)}`:''}`;
+}
+function originHTML(b){
+  const o=b.origin||{},editing=window._originEdit===b.id||!o.how;
+  if(!editing)return`<div class="origin"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div class="lbl">Where it came from</div><button class="link" data-act="origedit" data-id="${b.id}">Edit</button></div>
+    <p class="oline">${originLine(o)}</p>${o.note?`<p class="small muted" style="margin:0;white-space:pre-wrap">${esc(o.note)}</p>`:''}</div>`;
+  const how=o.how||'';
+  return`<div class="origin"><div class="lbl">Where it came from</div>
+    <div class="chips" role="group" aria-label="How you got it">${Object.entries(ORIGIN).map(([k,l])=>`<button class="chip" data-act="orighow" data-id="${b.id}" data-v="${k}" aria-pressed="${how===k}">${l}</button>`).join('')}</div>
+    ${how==='gift'||how==='borrowed'?`<div class="field"><label for="oFrom">${how==='gift'?'Gifted by':'Borrowed from'}</label><input type="text" id="oFrom" value="${esc(o.from||'')}" placeholder="${how==='gift'?'e.g. Suhas, Mum, a friend':'e.g. Anna'}"></div>`:''}
+    <div class="grid2"><div class="field"><label for="oPlace">${how==='gift'?'Occasion or place':how==='library'?'Which library':'Store or place'}</label><input type="text" id="oPlace" value="${esc(o.place||'')}" placeholder="${how==='gift'?'e.g. Birthday':how==='library'?'e.g. OBA Centrale':'e.g. Atlas bookshop'}"></div>
+      <div class="field"><label for="oLoc">Location</label><input type="text" id="oLoc" value="${esc(o.location||'')}" placeholder="e.g. Amsterdam"></div></div>
+    <div class="field"><label for="oDate">Date</label><input type="date" id="oDate" value="${o.date||''}"></div>
+    <div class="field"><label for="oNote">A little note (optional)</label><textarea id="oNote" style="min-height:64px" placeholder="e.g. Found it on our trip to Udupi">${esc(o.note||'')}</textarea></div>
+    <div class="row"><button class="btn" data-act="origsave" data-id="${b.id}">Save</button>${o.how?`<button class="link" data-act="origcancel" data-id="${b.id}">Cancel</button>`:''}</div></div>`;
+}
 function detailHTML(b){
   const S2=[...b.sessions].sort((a,c)=>c.date.localeCompare(a.date));
   return`<div class="sheet-h"><span class="pill ${b.example?'ex':b.status}">${b.example?'Example':STATUS[b.status]}</span><div class="row" style="gap:4px"><button class="link" data-act="edit" data-id="${b.id}">Edit</button><button class="x" data-act="close" aria-label="Close">✕</button></div></div>
@@ -1462,6 +1487,7 @@ function detailHTML(b){
       <div class="grid2"><button class="btn" data-act="savepage" data-id="${b.id}">Save bookmark</button><button class="btn ghost" data-act="opentimer" data-id="${b.id}">Start timer</button></div>
       ${S2.length?`<div><div class="lbl" style="margin:4px 0">Reading log</div>${S2.slice(0,8).map(s=>`<div class="lg tnum"><span>${fmt(s.date)}</span><span>page ${s.page}${s.min?` · ${s.min} min`:''}</span><button class="x" data-act="delsess" data-id="${b.id}" data-s="${s.id}" aria-label="Remove entry">✕</button></div>`).join('')}${S2.length>8?`<p class="hint">+ ${S2.length-8} earlier entries in the calendar</p>`:''}</div>`:''}
     </div>
+    ${originHTML(b)}
     <div class="shelfbox"><div class="lbl">Shelves</div>
       <div class="chips" id="bkShelves">${S.shelves.map(sh=>`<button class="chip" data-act="bshelf" data-id="${b.id}" data-v="${sh.id}" aria-pressed="${b.shelves.includes(sh.id)}">${b.shelves.includes(sh.id)?'✓ ':''}${esc(sh.name)}</button>`).join('')}<button class="chip" data-act="newshelf" data-id="${b.id}">+ New shelf</button></div>
       <div class="row" id="newShelfRow" hidden style="flex-wrap:nowrap"><input type="text" id="newShelfName" placeholder="e.g. Favourites, Book club, Signed copies" maxlength="40"><button class="btn soft" data-act="addshelf" data-id="${b.id}" style="flex:none">Add</button></div>
@@ -1581,6 +1607,13 @@ document.addEventListener('click',async e=>{
     case'checkin':{const d=t.dataset.d;if(d>today())break;S.checkins[d]=+t.dataset.v;await save();render();toast(d===today()?'Marked today as read':'Marked '+fmt(d)+' as read');break}
     case'uncheck':delete S.checkins[t.dataset.v];delete S.exCheckins[t.dataset.v];await save();render();break;
     case'cdot':liveTint(t.dataset.v,true);{const i=$('#customColor');if(i)i.value=t.dataset.v}break;
+    case'origedit':window._originEdit=id;openDetail(id);break;
+    case'origcancel':window._originEdit=null;openDetail(id);break;
+    case'orighow':{const keep={from:($('#oFrom')||{}).value,place:($('#oPlace')||{}).value,location:($('#oLoc')||{}).value,date:($('#oDate')||{}).value,note:($('#oNote')||{}).value};
+      b.origin=Object.assign({},b.origin,Object.fromEntries(Object.entries(keep).filter(([,v])=>v!==undefined)),{how:t.dataset.v});window._originEdit=id;openDetail(id);break}
+    case'origsave':{const o=b.origin||{};if(!o.how){toast('Choose how you got it first');break}
+      b.origin={how:o.how,from:(o.how==='gift'||o.how==='borrowed')?(($('#oFrom')||{}).value||'').trim():'',place:$('#oPlace').value.trim(),location:$('#oLoc').value.trim(),date:$('#oDate').value,note:$('#oNote').value.trim()};
+      window._originEdit=null;await save();openDetail(id);toast('Saved');break}
     case'bshelf':{const v=t.dataset.v,i=b.shelves.indexOf(v);if(i>=0)b.shelves.splice(i,1);else b.shelves.push(v);await save();openDetail(id);break}
     case'newshelf':{const r=$('#newShelfRow');r.hidden=false;$('#newShelfName').focus();break}
     case'addshelf':{const n=($('#newShelfName').value||'').trim();if(!n){toast('Name the shelf first');break}
@@ -1600,6 +1633,7 @@ document.addEventListener('click',async e=>{
     case'bksnooze':{const d=new Date();d.setDate(d.getDate()+3);ls.set('pp-backup-snooze',ds(d));render();toast('I’ll remind you in 3 days');break}
     case'backupEvery':S.settings.backupEvery=+t.dataset.v;await save();render();break;
     case'petals':S.settings.petals=t.dataset.v;await save();petalsSync();render();break;
+    case'petalDensity':S.settings.petalDensity=t.dataset.v;await save();petalsSize();petalsSync();render();break;
     case'land':S.settings.land=t.dataset.v;await save();applyStyle();render();break;
     case'bg':case'glass':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
     case'corners':case'cards':case'size':S.settings[a]=t.dataset.v;await save();applyStyle();render();break;
@@ -2049,7 +2083,8 @@ function petalsSync(){
   PETALS.on=want;if(want)petalsStart();else petalsStop();
 }
 function petalsSize(){const c=PETALS.cv;if(!c)return;const d=Math.min(2,window.devicePixelRatio||1);c.width=innerWidth*d;c.height=innerHeight*d;c.style.width=innerWidth+'px';c.style.height=innerHeight+'px';PETALS.ctx.setTransform(d,0,0,d,0,0);
-  const n=Math.round(Math.min(34,Math.max(14,innerWidth*innerHeight/26000)));while(PETALS.list.length<n)PETALS.list.push(newPetal(true));PETALS.list.length=n}
+  const mult={light:.45,medium:1,full:1.8,storm:3}[(S&&S.settings.petalDensity)||'medium']||1;
+  const n=Math.round(Math.min(34,Math.max(14,innerWidth*innerHeight/26000))*mult);while(PETALS.list.length<n)PETALS.list.push(newPetal(true));PETALS.list.length=n}
 const PCOL=[['#FFFFFF','#FBE3EB'],['#FFD7E4','#F7A9C2'],['#FDEEF3','#F4C2D2'],['#F9C3D5','#EE93B2']];
 function newPetal(any){const big=Math.random()<.16;return{x:Math.random()*innerWidth,y:any?Math.random()*innerHeight:-20-Math.random()*60,s:big?7+Math.random()*3:4+Math.random()*4.5,flower:big,
   vy:18+Math.random()*26,vx:-6+Math.random()*14,a:Math.random()*6.28,va:(-1+Math.random()*2)*1.4,flip:Math.random()*6.28,vf:1.2+Math.random()*2.2,sw:Math.random()*6.28,swA:10+Math.random()*22,c:PCOL[Math.floor(Math.random()*PCOL.length)],o:.7+Math.random()*.3}}
@@ -2276,7 +2311,7 @@ function showWhatsNew(justUpdated){
    const bk=ss.get('pp-book');if(bk&&find(bk))setTimeout(()=>openDetail(bk),50)}
   if(darkMQ){const onMQ=()=>{curTheme='';applyTheme();if(!sheetFor)render()};if(darkMQ.addEventListener)darkMQ.addEventListener('change',onMQ);else if(darkMQ.addListener)darkMQ.addListener(onMQ)}
   setInterval(()=>{const k=curTheme;applyTheme();if(k!==curTheme&&!sheetFor)render();else refreshIfStale()},60*1000);
-  window.__pp={recognize,readerReady};
+  window.__pp={recognize,readerReady,petals:()=>PETALS.list.length};
   setupSW();
   checkLevelUp();updatePill();if(T().state==='running')startTick();
   try{const seen=localStorage.getItem('pp-version');if(seen&&seen!==APP_VERSION)setTimeout(()=>showWhatsNew(true),600);localStorage.setItem('pp-version',APP_VERSION)}catch(e){}
