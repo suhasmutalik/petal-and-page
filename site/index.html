@@ -282,6 +282,7 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .ringbox{position:relative;width:min(270px,72vw);aspect-ratio:1;max-width:100%}
 .ringbox>svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .ringbox .pigwrap{position:absolute;inset:11%;display:grid;place-items:center}
+.ringbox .pigwrap svg{transform-origin:50% 90%}
 .ringbox .pigwrap svg{width:100%;height:100%}
 .digits{font-family:var(--display);font-weight:var(--dwi);font-size:calc(3.8rem*var(--ds));line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .tsub{font-size:.85rem;color:var(--muted)}
@@ -314,7 +315,37 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .pig .tail{transform-origin:136px 166px;animation:wag 1.8s ease-in-out infinite}
 @keyframes wag{50%{transform:rotate(14deg)}}
 .pig .closed,.pig .zzz{display:none}
-.pig.reading .head{transform-origin:100px 150px;animation:nod 3.4s ease-in-out infinite}
+.pig.reading .head{transform-origin:100px 150px;animation:bob 1.7s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:rotate(-3deg) translateY(0)}25%{transform:rotate(0) translateY(-2.5px)}50%{transform:rotate(3deg) translateY(0)}75%{transform:rotate(0) translateY(-2.5px)}}
+.pig.reading .tail,.pig.walk .tail{animation:wag .42s ease-in-out infinite}
+.pig.walk .head{transform-origin:100px 150px;animation:bob 1.1s ease-in-out infinite}
+.pig.walk .footL{transform-box:fill-box;transform-origin:center;animation:step .55s ease-in-out infinite}
+.pig.walk .footR{transform-box:fill-box;transform-origin:center;animation:step .55s ease-in-out infinite -.275s}
+@keyframes step{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px) scaleX(.9)}}
+.pigwrap.walking svg{animation:stroll 11s ease-in-out infinite}
+@keyframes stroll{0%{transform:translateX(0) scaleX(1)}22%{transform:translateX(15%) scaleX(1)}25%,28%{transform:translateX(15%) scaleX(-1)}72%{transform:translateX(-15%) scaleX(-1)}75%,78%{transform:translateX(-15%) scaleX(1)}100%{transform:translateX(0) scaleX(1)}}
+.pigwrap.walking svg .all{animation:breathe 4s ease-in-out infinite,waddle .55s ease-in-out infinite}
+@keyframes waddle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-2px)}}
+.pigwrap.cel-spin svg{animation:celspin 1.6s cubic-bezier(.5,0,.3,1) 2}
+@keyframes celspin{0%{transform:rotate(0)}50%{transform:rotate(180deg) scale(1.15)}100%{transform:rotate(360deg) scale(1)}}
+.pigwrap.cel-jump svg{animation:celjump .7s cubic-bezier(.3,0,.4,1) 4}
+@keyframes celjump{0%,100%{transform:translateY(0) scale(1.05,.95)}45%{transform:translateY(-22%) scale(.95,1.05)}}
+.pigwrap.cel-wiggle svg{animation:celwig .36s ease-in-out 9}
+@keyframes celwig{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) translateX(-4%)}75%{transform:rotate(12deg) translateX(4%)}}
+.pigwrap.cel-flip svg{animation:celflip 1.4s cubic-bezier(.4,0,.3,1) 2}
+@keyframes celflip{0%,100%{transform:translateY(0) rotate(0)}40%{transform:translateY(-26%) rotate(-180deg)}80%{transform:translateY(0) rotate(-360deg)}}
+.pigwrap.cel-sway svg{animation:celsway 1s ease-in-out 3}
+@keyframes celsway{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-8deg) scale(1.06)}50%{transform:rotate(0) scale(1)}75%{transform:rotate(8deg) scale(1.06)}}
+.pigwrap.cel-moon svg{animation:celmoon 1.8s ease-in-out 2}
+@keyframes celmoon{0%,100%{transform:translateX(0) scaleX(1)}25%{transform:translateX(-12%) scaleX(1)}26%,74%{transform:translateX(-12%) scaleX(-1)}50%{transform:translateX(12%) scaleX(-1)}75%{transform:translateX(12%) scaleX(1)}}
+.celfx{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.celfx i{position:absolute;left:50%;top:40%;width:14px;height:14px;opacity:0;animation:fxup 2.2s ease-out forwards}
+.celfx i.h{background:none}
+.celfx i.h::before{content:"";position:absolute;inset:0;background:var(--accent);clip-path:path('M7 13 C1 8.6 0 5.4 1.6 3 C3.2 .8 6 1.4 7 3.6 C8 1.4 10.8 .8 12.4 3 C14 5.4 13 8.6 7 13Z')}
+.celfx i.s{width:10px;height:10px;background:var(--gold);clip-path:polygon(50% 0,61% 38%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 38%)}
+@keyframes fxup{0%{opacity:0;transform:translate(0,0) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-140px) scale(1.2) rotate(var(--r))}}
+.celmsg{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);white-space:nowrap;background:var(--primary);color:var(--on-primary);padding:6px 14px;border-radius:var(--rp);font-size:.85rem;font-weight:600;box-shadow:0 10px 20px -12px rgba(0,0,0,.5);animation:msgin .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes msgin{from{opacity:0;transform:translate(-50%,10px) scale(.8)}}
 @keyframes nod{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(1px)}}
 .pig.reading .scan{animation:scan 3.4s ease-in-out infinite}
 @keyframes scan{0%,100%{transform:translate(-2.2px,1.6px)}50%{transform:translate(2.2px,1.6px)}}
@@ -418,6 +449,17 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 #scene .cloud.c2{animation-duration:130s;animation-delay:-40s}
 @keyframes cloud{from{transform:translateX(-160px)}to{transform:translateX(520px)}}
 #scene .star{animation:twinkle 3s ease-in-out infinite}
+#scene .climbers .summit{display:none}
+#scene .climbers.at-summit .summit{display:inline}#scene .climbers.at-summit .climb{display:none}
+#scene .at-summit .sflag{transform-box:fill-box;transform-origin:0% 100%;animation:plant 1.4s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes plant{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+#scene .at-summit .kissL{transform-box:fill-box;transform-origin:50% 100%;animation:kissL 3.2s ease-in-out 1.4s infinite both}
+#scene .at-summit .kissR{transform-box:fill-box;transform-origin:50% 100%;animation:kissR 3.2s ease-in-out 1.4s infinite both}
+@keyframes kissL{0%,100%{transform:translateX(-1.4px)}35%,75%{transform:translateX(.3px) rotate(4deg)}}
+@keyframes kissR{0%,100%{transform:translateX(1.4px)}35%,75%{transform:translateX(-.3px) rotate(-4deg)}}
+#scene .at-summit .sheart{transform-box:fill-box;transform-origin:center;animation:hpop .8s ease-out 2.4s both,hglow 1.6s ease-in-out 3.2s infinite}
+@keyframes hpop{from{opacity:0;transform:translate(0,-12.5px) scale(.2)}to{opacity:1;transform:translate(0,-15.5px) scale(1)}}
+@keyframes hglow{0%,100%{transform:translate(0,-15.5px) scale(1);filter:drop-shadow(0 0 1px #ff3b5c)}50%{transform:translate(0,-16.5px) scale(1.25);filter:drop-shadow(0 0 4px #ff3b5c)}}
 #scene .beam{transform-box:view-box;transform-origin:80px 133.6px;animation:beam 7s ease-in-out infinite}
 @keyframes beam{0%,100%{opacity:.25}50%{opacity:1}}
 #scene .aur{animation:aur 9s ease-in-out infinite alternate}
@@ -519,6 +561,11 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .gacts{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .gacts .btn svg{width:14px;height:14px}
 @media (max-width:360px){.gslide{grid-template-columns:96px minmax(0,1fr)}}
+html:is([data-glow="soft"],[data-glow="bright"]) .row-x{padding-top:14px;padding-bottom:22px}
+.poster .art b.long{font-size:calc(.92rem*var(--ds));overflow-wrap:normal;word-break:normal}
+.poster .art b.xlong{font-size:calc(.8rem*var(--ds))}
+html[data-glow="soft"] .pcard .poster,html[data-glow="soft"] .gslide,html[data-glow="soft"] .now,html[data-glow="soft"] .item .cover{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent),0 0 14px 1px color-mix(in srgb,var(--accent) 32%,transparent),0 10px 24px -14px rgba(0,0,0,.5)}
+html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[data-glow="bright"] .now,html[data-glow="bright"] .item .cover{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--accent) 75%,transparent),0 0 22px 3px color-mix(in srgb,var(--accent) 55%,transparent),0 10px 24px -14px rgba(0,0,0,.5)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -537,9 +584,10 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.16.0';
+const APP_VERSION='1.17.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.17.0',items:['Your piglet bobs its head and wags its tail while reading, strolls around, and takes little naps during the timer','Every 10 minutes of reading the piglet celebrates, with a different dance each time','Matterhorn: the two of you reach the summit, plant a flag and share a kiss under a glowing heart','Optional soft glow around book cards in your theme colour (Settings → Layout & style)']},
   {v:'1.16.0',items:['New glass now-reading cards that match your theme and let the scenery show through, with a soft glow from each book’s cover','Prefer the old bold cards? Settings → Layout & style → Now-reading cards']},
   {v:'1.15.0',items:['Choose how many cherry blossoms fall: a few, gentle, plenty or a blossom storm','Note where each book came from: bought, gift, borrowed or library, with the store or person, location and date','Search finds books by store, place or who gave them']},
   {v:'1.14.0',items:['New Sakura theme: white and pink cherry blossoms drift down across the whole app','Turn the falling blossoms on with any theme in Settings → Colour theme']},
@@ -791,7 +839,7 @@ const FONTS_B=[
   {n:'Lora',spec:'wght@400;500',fb:'Georgia,serif',d:'Serif text'},
   {n:'System',spec:null,fb:'-apple-system,"Segoe UI",Roboto,system-ui,sans-serif',d:'Your phone’s font'}
 ];
-const DEFAULT_LOOK={heroStyle:'glass',petals:'auto',petalDensity:'medium',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
+const DEFAULT_LOOK={glow:'off',heroStyle:'glass',petals:'auto',petalDensity:'medium',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
 function fontUrl(list){const fam=list.filter(f=>f.spec!==null).map(f=>'family='+f.n.replace(/ /g,'+')+(f.spec?':'+f.spec:''));return fam.length?'https://fonts.googleapis.com/css2?'+fam.join('&')+'&display=swap':''}
 function applyStyle(){
   const st=S.settings,r=document.documentElement.style;
@@ -805,6 +853,7 @@ function applyStyle(){
   r.setProperty('--cb',K[0]);r.setProperty('--cs',K[1]);r.setProperty('--cardbg',K[2]);
   const Gl={clear:['36%','12px',.35],frosted:['62%','20px',.5],solid:['100%','0px',.6]}[st.glass]||['36%','12px',.35];
   r.setProperty('--ga',Gl[0]);r.setProperty('--gb',Gl[1]);r.setProperty('--veil',st.bg==='photo'?Gl[2]+.1:Gl[2]);renderScene();
+  document.documentElement.dataset.glow=st.glow||'off';
   r.setProperty('--fs',{small:'15px',default:'16px',large:'17.5px',xl:'19px'}[st.size]||'16px');
 }
 const hx=h=>{h=h.replace('#','');return[0,2,4].map(i=>parseInt(h.slice(i,i+2),16))};
@@ -1102,7 +1151,7 @@ function render(){
   if(view==='quotes')renderQuoteList();
 }
 function header(title){const p=GREET[greetKey()];return`<header class="hdr"><div class="eyebrow">${p.icon}<span>${p.name} · ${new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span></div>${title}</header>`}
-function poster(b){return`<div class="poster" style="--h:${b.hue}">${b.cover?`<img src="${b.cover}" alt="">`:`<div class="art"><p class="rule"></p><b>${esc(b.title)}</b><span>${esc((b.author||'').split(',')[0])}</span></div>`}</div>`}
+function poster(b){const lw=Math.max(0,...(b.title||'').split(/\s+/).map(w=>w.length));return`<div class="poster" style="--h:${b.hue}">${b.cover?`<img src="${b.cover}" alt="">`:`<div class="art"><p class="rule"></p><b class="${lw>12?'long xlong':lw>9?'long':''}">${esc(b.title)}</b><span>${esc((b.author||'').split(',')[0])}</span></div>`}</div>`}
 function lastRead(b){return b.sessions.reduce((m,x)=>x.date>m?x.date:m,b.start||'')}
 const PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>';
 function heroSlide(b,kicker){
@@ -1407,6 +1456,7 @@ function settingsPageBody(k){
     <div class="opt-grid">${FONTS_B.map(f=>`<button class="fontopt" data-act="fontB" data-v="${f.n}" aria-pressed="${st.fontB===f.n}"><span class="nm" style="font-family:${f.spec===null?'':`'${f.n}',`}${f.fb};font-size:1.05rem">${f.n}</span><small>${f.d}</small></button>`).join('')}</div>
     <p class="hint">A new font downloads once, then works offline.</p>`;
     case'style':return`
+    <span class="lbl">Glow around book cards</span>${chipset('glow',st.glow||'off',[['off','None'],['soft','Soft'],['bright','Bright']])}
     <span class="lbl">Now-reading cards</span>${chipset('heroStyle',st.heroStyle||'glass',[['glass','Glass, matches theme'],['color','Bold book colours']])}
     <span class="lbl">Library layout</span>${chipset('layout',st.layout,[['tv','Cinema shelves'],['list','Classic list']])}
     <span class="lbl">Corners</span>${chipset('corners',st.corners,[['rounded','Rounded'],['soft','Soft'],['square','Square']])}
@@ -1668,6 +1718,7 @@ document.addEventListener('click',async e=>{
     case'geoclear':delete S.settings.geo;await save();curTheme='';applyTheme();render();break;
     case'fontD':S.settings.fontD=t.dataset.v;await save();applyStyle();render();break;
     case'fontB':S.settings.fontB=t.dataset.v;await save();applyStyle();render();break;
+    case'glow':S.settings.glow=t.dataset.v;await save();applyStyle();render();break;
     case'heroStyle':S.settings.heroStyle=t.dataset.v;await save();render();break;
     case'layout':S.settings.layout=t.dataset.v;await save();render();break;
     case'bksnooze':{const d=new Date();d.setDate(d.getDate()+3);ls.set('pp-backup-snooze',ds(d));render();toast('I’ll remind you in 3 days');break}
@@ -1796,6 +1847,11 @@ function landC(c0,land,ph){
 function pines(x0,x1,y,h,col,step){let p='';for(let x=x0;x<x1;x+=step){const hh=h*(.7+((x*7919)%13)/26);p+=`M${x} ${y} L${x+step*.5} ${y-hh} L${x+step} ${y}Z`}return`<path d="${p}" fill="${col}"/>`}
 function acacias(xs,y,col){return xs.map(([x,s])=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0 L2 -22 M2 -18 L-6 -26 M2 -16 L10 -27" stroke="${col}" stroke-width="2.2" fill="none"/><ellipse cx="2" cy="-28" rx="22" ry="5.5" fill="${col}"/></g>`).join('')}
 
+function standerSVG(jacket,helmet,cls,dx,tilt){return`<g transform="translate(${dx} 0)"><g class="${cls}"><g transform="rotate(${tilt} 0 0)">
+  <path d="M-.9 0 L-.8 -3.6 M.9 0 L.8 -3.6" stroke="#2E2A33" stroke-width="1.1" stroke-linecap="round"/>
+  <rect x="-1.7" y="-7.8" width="3.4" height="4.6" rx="1" fill="${jacket}"/>
+  <path d="M${tilt>0?1.4:-1.4} -7 L${tilt>0?2.6:-2.6} -5" stroke="${jacket}" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="0" cy="-9.4" r="1.3" fill="#E8B996"/><path d="M-1.45 -9.6 A1.5 1.5 0 0 1 1.45 -9.6Z" fill="${helmet}"/></g></g></g>`}
 function climberSVG(jacket,helmet,night,lamp){return`<g transform="rotate(18)">
   <path d="M-1 0 L-.7 -3.5 M1.1 0 L.7 -3.5" stroke="#2E2A33" stroke-width="1.1" stroke-linecap="round"/>
   <rect x=".9" y="-7.4" width="2.2" height="3.4" rx=".6" fill="#55505E"/>
@@ -1870,7 +1926,7 @@ function landSVG(land,c,night,x){
   case'coast':return coastSVG(c,night,x);
   case'matterhorn':{
     const ridge='M184 320 L192 302 L201 282 L210 262 L219 242 L227 222 L233 207 L237 198';
-    return`<path d="M0 440 L0 380 L40 360 L70 372 L100 350 L120 366 L150 430Z M300 430 L330 360 L360 346 L400 360 L400 440Z" fill="${c.far}"/>
+    return`<g transform="translate(-9 156) scale(.75)"><path d="M0 440 L0 380 L40 360 L70 372 L100 350 L120 366 L150 430Z M300 430 L330 360 L360 346 L400 360 L400 440Z" fill="${c.far}"/>
     <path d="M330 360 L346 352 L360 346 L372 356 L352 358Z" fill="${snow}" opacity=".85"/>
     <path d="M70 480 L140 380 L168 352 L190 306 L214 254 L232 210 L240 194 L248 190 L256 200 L266 228 L284 270 L304 318 L330 370 L382 480Z" fill="${c.peak}"/>
     <path d="M248 190 L256 200 L266 228 L284 270 L304 318 L330 370 L382 480 L262 480 L250 340 L246 230Z" fill="${c.shade}"/>
@@ -1886,10 +1942,18 @@ function landSVG(land,c,night,x){
       <rect x="19" y="-6" width=".7" height="8" fill="#8A8F98"/><rect x="19.7" y="-6" width="4" height="4" fill="#D6262E"/><path d="M21.3 -5.4 h.8 v2.8 h-.8z M20.3 -4.4 h2.8 v.8 h-2.8z" fill="#fff"/>
     </g>
     <g class="climbers" data-path="${ridge}" transform="translate(184 320)">
-      <g transform="scale(1.7)"><path d="M0 -4.6 Q-3 1 -4.6 4.6" stroke="#E2B13C" stroke-width=".55" fill="none"/>
+      <g class="climb" transform="scale(2.3)"><path d="M0 -4.6 Q-3 1 -4.6 4.6" stroke="#E2B13C" stroke-width=".55" fill="none"/>
       <g transform="translate(-4.8 9.4)">${climberSVG('#3A6FC4','#F08A24',night,true)}</g>
       ${climberSVG('#E26D96','#FFFFFF',night,true)}</g>
+      <g class="summit" transform="translate(0 -2) scale(2.4)">
+        <g class="sflag"><path d="M7.5 0 V-17" stroke="#8A8F98" stroke-width=".7"/><path d="M7.8 -17 h8 l-2.2 2.6 2.2 2.6 h-8z" fill="#D6262E"/><path d="M11.4 -14.9 c-.5 -.7 -1.6 -.4 -1.4 .4 c.2 .6 1.4 1.3 1.4 1.3 s1.2 -.7 1.4 -1.3 c.2 -.8 -.9 -1.1 -1.4 -.4z" fill="#fff"/></g>
+        ${standerSVG('#E26D96','#FFFFFF','kissL',-2.5,8)}
+        ${standerSVG('#3A6FC4','#F08A24','kissR',2.5,-8)}
+        <g class="sheart" transform="translate(0 -15.5)"><circle r="6" fill="#FF4D6D" opacity=".35" filter="url(#heartGlow${x})"/><path d="M0 2.6 C-3.6 0 -3.8 -2.4 -2.2 -3.4 C-1.2 -4 -.3 -3.5 0 -2.6 C.3 -3.5 1.2 -4 2.2 -3.4 C3.8 -2.4 3.6 0 0 2.6Z" fill="#FF3B5C"/><path d="M-1.8 -2.6 q.6 -.6 1.2 -.2" stroke="#fff" stroke-width=".4" fill="none" opacity=".8"/></g>
+      </g>
     </g>
+    <defs><filter id="heartGlow${x}" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>
+</g>
     ${midR}${mist}${lake}${shim}${sidePines}${meadow}${frontPines}`;}
   case'himalaya':{
     const flags=[],cols=['#2F6FD0','#FFFFFF','#D33A31','#2E9B57','#F2C230'];
@@ -2004,8 +2068,9 @@ function stageSVG(ph){
 const CLIMB_MS=180000;
 function climbTick(){
   const gs=document.querySelectorAll('.climbers');if(!gs.length)return;
-  const u=(Date.now()%CLIMB_MS)/CLIMB_MS,f=Math.min(1,u/.9);
+  const u=(Date.now()%CLIMB_MS)/CLIMB_MS,f=Math.min(1,u/.72),top=u>=.72;
   gs.forEach(g=>{
+    g.classList.toggle('at-summit',top);
     if(!g._pts)g._pts=g.dataset.path.match(/-?[\d.]+/g).map(Number).reduce((a,v,i)=>(i%2?a[a.length-1].push(v):a.push([v]),a),[]);
     const P=g._pts;let L=[0];for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));
     const d=f*L[L.length-1];let i=1;while(i<P.length-1&&L[i]<d)i++;const k=(d-L[i-1])/((L[i]-L[i-1])||1);
@@ -2188,7 +2253,7 @@ function pigSVG(lv,mode,crop){
   <g class="all"><g transform="translate(${(100-100*sc).toFixed(1)} ${(200-200*sc).toFixed(1)}) scale(${sc})">
     <path class="tail" d="M136 168 q15 -4 11 -14 q-4 -7 -10 -1 q-3 5 3 7" stroke="#E894A9" stroke-width="3.2" fill="none" stroke-linecap="round"/>
     <ellipse cx="100" cy="170" rx="40" ry="29" fill="#F6B9C8"/>
-    <ellipse cx="83" cy="197" rx="10" ry="6" fill="#EFA2B6"/><ellipse cx="117" cy="197" rx="10" ry="6" fill="#EFA2B6"/>
+    <ellipse class="footL" cx="83" cy="197" rx="10" ry="6" fill="#EFA2B6"/><ellipse class="footR" cx="117" cy="197" rx="10" ry="6" fill="#EFA2B6"/>
     <g class="head">
       <path class="earl" d="M56 74 Q46 42 78 50 Q70 66 56 74Z" fill="#F2A1B5"/><path d="M60 68 Q56 52 72 54 Q66 62 60 68Z" fill="#FBD3DD"/>
       <path class="earr" d="M144 74 Q154 42 122 50 Q130 66 144 74Z" fill="#F2A1B5"/><path d="M140 68 Q144 52 128 54 Q134 62 140 68Z" fill="#FBD3DD"/>
@@ -2252,11 +2317,33 @@ function updatePill(){
   if(!tTick&&t.state==='running')startTick();
 }
 function ringFrac(){const g=goalMin()*60000;return Math.min(1,(todayMin()*60000+elapsedMs())/g)}
+const CELEBS=[['cel-spin','A happy twirl!'],['cel-jump','Jumping for joy!'],['cel-wiggle','A wiggle dance!'],['cel-flip','A backflip!'],['cel-sway','Swaying to the music!'],['cel-moon','The moonwalk!']];
+let celUntil=0;
+function piglePose(ms){
+  // cycle every 2 minutes: sit and read, stroll while reading, read again, a little nap
+  const s=(ms/1000)%120;return s<45?'reading':s<70?'walk':s<108?'reading':'sleep';
+}
+function pigCelebrate(m){
+  const wrap=document.querySelector('#timer .pigwrap');if(!wrap)return;
+  const [cls,msg]=CELEBS[(m-1)%CELEBS.length];
+  CELEBS.forEach(c=>wrap.classList.remove(c[0]));wrap.classList.remove('walking');void wrap.offsetWidth;wrap.classList.add(cls);
+  const svg=wrap.querySelector('svg.pig');if(svg)svg.setAttribute('class','pig party');
+  let fx=wrap.querySelector('.celfx');if(!fx){fx=document.createElement('div');fx.className='celfx';wrap.appendChild(fx)}
+  fx.innerHTML=Array.from({length:16},(_,i)=>`<i class="${i%2?'h':'s'}" style="--dx:${Math.round((Math.random()-.5)*220)}px;--r:${Math.round((Math.random()-.5)*90)}deg;animation-delay:${(Math.random()*.9).toFixed(2)}s"></i>`).join('')+`<span class="celmsg">${m*10} minutes · ${msg}</span>`;
+  celUntil=Date.now()+5200;chime();
+  setTimeout(()=>{wrap.classList.remove(cls);if(fx)fx.innerHTML='';celUntil=0},5200);
+}
 function updateTimerFace(){
   const d=$('#tDigits');if(!d)return;const ms=elapsedMs();d.textContent=fmtClock(ms);
   const f=ringFrac(),C=2*Math.PI*46;const arc=$('#tArc');if(arc)arc.setAttribute('stroke-dasharray',(C*f).toFixed(2)+' '+C.toFixed(2));
   const sub=$('#tSub');if(sub){const tot=Math.floor((todayMin()*60000+ms)/60000);sub.textContent=f>=1?`Daily goal reached · ${tot} min today`:`${tot} of ${goalMin()} min today`}
   if(T().state==='running'&&f>=1&&!goalChimed){goalChimed=true;chime();toast('Daily reading goal reached!')}
+  const t=T(),wrap=document.querySelector('#timer .pigwrap'),svg=wrap&&wrap.querySelector('svg.pig');
+  if(t.state==='running'&&wrap&&svg){
+    const m=Math.floor(ms/600000);
+    if(m>(t.lastMs||0)){t.lastMs=m;save();pigCelebrate(m)}
+    else if(Date.now()>celUntil){const pose=piglePose(ms);svg.setAttribute('class','pig '+pose);wrap.classList.toggle('walking',pose==='walk')}
+  }else if(wrap){wrap.classList.remove('walking')}
 }
 function renderTimer(){
   const t=T(),el=$('#timer'),p=pigProgress(),reading=S.books.filter(b=>b.status==='reading'),bk=t.bookId?find(t.bookId):null;
@@ -2291,7 +2378,7 @@ async function timerAct(a,t){
     case'tclose':closeTimer();return true;
     case'tbook':T0.bookId=t.dataset.v||null;await save();renderTimer();return true;
     case'tstart':try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(e){}
-      goalChimed=ringFrac()>=1;T0.state='running';T0.startedAt=Date.now();T0.accMs=0;T0.date=today();await save();lockScreen(true);renderTimer();startTick();return true;
+      goalChimed=ringFrac()>=1;T0.state='running';T0.startedAt=Date.now();T0.accMs=0;T0.lastMs=0;T0.date=today();await save();lockScreen(true);renderTimer();startTick();return true;
     case'tpause':T0.accMs=elapsedMs();T0.state='paused';await save();lockScreen(false);renderTimer();return true;
     case'tresume':T0.state='running';T0.startedAt=Date.now();await save();lockScreen(true);renderTimer();return true;
     case'tfinish':if(T0.state==='running'){T0.accMs=elapsedMs();T0.state='paused';await save();lockScreen(false)}tView='finish';renderTimer();return true;
