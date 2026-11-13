@@ -595,9 +595,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.18.0';
+const APP_VERSION='1.18.1';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.18.1',items:['Matterhorn: the Hörnlihütte now sits on its own lower peak next door; you set off from the hut, cross the saddle and climb the Matterhorn']},
   {v:'1.18.0',items:['Add your name (Settings → Profile) and the app greets you by it','The Hörnlihütte is back on the Matterhorn, and your climb starts from it','Your piglet now lies on its tummy to read (no more napping), does little twirls, and has eyelashes and a curlier tail','Oink oink! Your piglet oinks when it celebrates every 10 minutes (Settings → Piglet)']},
   {v:'1.17.0',items:['Your piglet bobs its head and wags its tail while reading, strolls around, and takes little naps during the timer','Every 10 minutes of reading the piglet celebrates, with a different dance each time','Matterhorn: the two of you reach the summit, plant a flag and share a kiss under a glowing heart','Optional soft glow around book cards in your theme colour (Settings → Layout & style)']},
   {v:'1.16.0',items:['New glass now-reading cards that match your theme and let the scenery show through, with a soft glow from each book’s cover','Prefer the old bold cards? Settings → Layout & style → Now-reading cards']},
@@ -1960,7 +1961,7 @@ function landSVG(land,c,night,x){
   switch(land){
   case'coast':return coastSVG(c,night,x);
   case'matterhorn':{
-    const ridge='M206 252 L212 240 L218 228 L224 218 L229 210 L233 204 L237 198';
+    const ridge='M190 268 L198 278 L206 290 L211 296 L214 284 L217 270 L221 254 L226 236 L231 218 L235 204 L238 197';
     return`<g transform="translate(-9 156) scale(.75)"><path d="M0 440 L0 380 L40 360 L70 372 L100 350 L120 366 L150 430Z M300 430 L330 360 L360 346 L400 360 L400 440Z" fill="${c.far}"/>
     <path d="M330 360 L346 352 L360 346 L372 356 L352 358Z" fill="${snow}" opacity=".85"/>
     <path d="M70 480 L140 380 L168 352 L190 306 L214 254 L232 210 L240 194 L248 190 L256 200 L266 228 L284 270 L304 318 L330 370 L382 480Z" fill="${c.peak}"/>
@@ -1969,15 +1970,19 @@ function landSVG(land,c,night,x){
     <path d="M226 236 L236 260 M218 276 L232 300 M206 318 L222 344 M262 262 L256 300 M280 318 L270 360" stroke="${c.shade}" stroke-width="1.4" opacity=".55" fill="none" stroke-linecap="round"/>
     <path d="M256 196 Q290 186 318 196 Q296 202 272 204Z" fill="${c.cloud}" opacity="${night?.2:.75}"/>
     <path d="M110 430 L150 372 L168 352 L190 366 L200 430Z" fill="${c.mid}"/>
-    <path d="M118 420 L150 330 L168 290 L180 266 L196 258 L216 256 L226 262 L232 300 L244 420Z" fill="${c.mid}"/><path d="M176 268 L196 259 L216 257 L222 262 L200 265Z" fill="${snow}" opacity=".7"/>
-    <g transform="translate(176 230) scale(1.25)">
+    <path d="M200 420 L208 300 L214 296 L222 320 L236 420Z" fill="${c.shade}" opacity=".6"/>
+    <path d="M70 430 L112 350 L136 312 L152 290 L162 276 L170 270 L194 270 L202 282 L212 298 L222 330 L240 430Z" fill="${night?'#3A4462':'#8C9AB8'}"/>
+    <path d="M194 270 L202 282 L212 298 L222 330 L240 430 L196 430 L190 320 Z" fill="${night?'#2C3550':'#7586A6'}"/>
+    <path d="M152 290 L162 276 L170 270 L194 270 L202 282 L196 286 L188 278 L178 288 L168 280 L160 292Z" fill="${snow}" opacity=".85"/>
+    <path d="M128 330 L140 318 L144 334Z M206 300 L212 298 L214 312Z" fill="${snow}" opacity=".6"/>
+    <g transform="translate(166 249) scale(1.05)">
       <path d="M-2 14 L26 14 L28 18 L-4 18Z" fill="${c.mid}"/>
       <rect x="0" y="2" width="24" height="12" fill="${night?'#7B7680':'#B9B2A8'}"/><rect x="24" y="4" width="5" height="10" fill="${night?'#5E5966':'#958D82'}"/>
       <path d="M-1 2.4 L12 -2 L25 2.4Z" fill="${night?'#3E3A44':'#5E5A60'}"/><path d="M25 2.4 L12 -2 L16 -3 L29 4Z" fill="${night?'#2E2B33':'#4A4650'}"/>
       ${[2.5,6.5,10.5,14.5,18.5].map(xx=>`<rect x="${xx}" y="5" width="2.2" height="2.2" fill="${night?'#FFE7A3':'#5D6F86'}"/><rect x="${xx}" y="9.2" width="2.2" height="2.2" fill="${night?'#FFE7A3':'#5D6F86'}"/>`).join('')}
       <rect x="19" y="-6" width=".7" height="8" fill="#8A8F98"/><rect x="19.7" y="-6" width="4" height="4" fill="#D6262E"/><path d="M21.3 -5.4 h.8 v2.8 h-.8z M20.3 -4.4 h2.8 v.8 h-2.8z" fill="#fff"/>
     </g>
-    <g class="climbers" data-path="${ridge}" transform="translate(206 252)">
+    <g class="climbers" data-path="${ridge}" transform="translate(190 268)">
       <g class="climb" transform="scale(2.3)"><path d="M0 -4.6 Q-3 1 -4.6 4.6" stroke="#E2B13C" stroke-width=".55" fill="none"/>
       <g transform="translate(-4.8 9.4)">${climberSVG('#3A6FC4','#F08A24',night,true)}</g>
       ${climberSVG('#E26D96','#FFFFFF',night,true)}</g>
