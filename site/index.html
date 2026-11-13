@@ -326,6 +326,17 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 @keyframes stroll{0%{transform:translateX(0) scaleX(1)}22%{transform:translateX(15%) scaleX(1)}25%,28%{transform:translateX(15%) scaleX(-1)}72%{transform:translateX(-15%) scaleX(-1)}75%,78%{transform:translateX(-15%) scaleX(1)}100%{transform:translateX(0) scaleX(1)}}
 .pigwrap.walking svg .all{animation:breathe 4s ease-in-out infinite,waddle .55s ease-in-out infinite}
 @keyframes waddle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-2px)}}
+.pigwrap svg{transition:transform .9s cubic-bezier(.3,1.3,.5,1)}
+.pig .blie{display:none}.pig.lie .blie{display:inline}.pig.lie .bsit{display:none}
+.pig.lie .head{transform-origin:100px 150px;animation:liebob 2.6s ease-in-out infinite}
+@keyframes liebob{0%,100%{transform:translate(-30px,30px) scale(.9) rotate(-3deg)}50%{transform:translate(-30px,28px) scale(.9) rotate(2deg)}}
+.pig.lie .bookw{transform:translate(-34px,26px)}
+.pig.lie .kl{transform-box:fill-box;transform-origin:50% 100%;animation:kick 1.3s ease-in-out infinite}
+.pig.lie .kr{transform-box:fill-box;transform-origin:50% 100%;animation:kick 1.3s ease-in-out infinite -.65s}
+@keyframes kick{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(18deg)}}
+.pig.lie .tail{animation:wag .9s ease-in-out infinite}
+.pigwrap.twirling svg{animation:twirl 1.4s cubic-bezier(.45,0,.3,1) 1}
+@keyframes twirl{0%{transform:rotate(0) translateY(0)}30%{transform:rotate(-10deg) translateY(-8%)}100%{transform:rotate(360deg) translateY(0)}}
 .pigwrap.cel-spin svg{animation:celspin 1.6s cubic-bezier(.5,0,.3,1) 2}
 @keyframes celspin{0%{transform:rotate(0)}50%{transform:rotate(180deg) scale(1.15)}100%{transform:rotate(360deg) scale(1)}}
 .pigwrap.cel-jump svg{animation:celjump .7s cubic-bezier(.3,0,.4,1) 4}
@@ -420,7 +431,7 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .dots-h i{width:6px;height:6px;border-radius:3px;background:var(--line);transition:width .3s,background .3s}
 .dots-h i.on{width:18px;background:var(--ink)}
 .tvhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-.tvhead h1{font-family:var(--body);font-weight:700;font-size:2rem;letter-spacing:-.02em;line-height:1.05}
+.tvhead h1{overflow-wrap:anywhere;font-family:var(--body);font-weight:700;font-size:2rem;letter-spacing:-.02em;line-height:1.05}
 .tvhead .acts{display:flex;gap:8px}
 .circ{width:42px;height:42px;border-radius:50%;border:1px solid var(--glassline);background:color-mix(in srgb,var(--surface) 60%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;place-items:center;color:var(--ink);padding:0;overflow:hidden}
 .circ svg{width:20px;height:20px}
@@ -584,9 +595,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.17.0';
+const APP_VERSION='1.18.0';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.18.0',items:['Add your name (Settings → Profile) and the app greets you by it','The Hörnlihütte is back on the Matterhorn, and your climb starts from it','Your piglet now lies on its tummy to read (no more napping), does little twirls, and has eyelashes and a curlier tail','Oink oink! Your piglet oinks when it celebrates every 10 minutes (Settings → Piglet)']},
   {v:'1.17.0',items:['Your piglet bobs its head and wags its tail while reading, strolls around, and takes little naps during the timer','Every 10 minutes of reading the piglet celebrates, with a different dance each time','Matterhorn: the two of you reach the summit, plant a flag and share a kiss under a glowing heart','Optional soft glow around book cards in your theme colour (Settings → Layout & style)']},
   {v:'1.16.0',items:['New glass now-reading cards that match your theme and let the scenery show through, with a soft glow from each book’s cover','Prefer the old bold cards? Settings → Layout & style → Now-reading cards']},
   {v:'1.15.0',items:['Choose how many cherry blossoms fall: a few, gentle, plenty or a blossom storm','Note where each book came from: bought, gift, borrowed or library, with the store or person, location and date','Search finds books by store, place or who gave them']},
@@ -839,7 +851,7 @@ const FONTS_B=[
   {n:'Lora',spec:'wght@400;500',fb:'Georgia,serif',d:'Serif text'},
   {n:'System',spec:null,fb:'-apple-system,"Segoe UI",Roboto,system-ui,sans-serif',d:'Your phone’s font'}
 ];
-const DEFAULT_LOOK={glow:'off',heroStyle:'glass',petals:'auto',petalDensity:'medium',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
+const DEFAULT_LOOK={oink:'on',glow:'off',heroStyle:'glass',petals:'auto',petalDensity:'medium',backupEvery:14,land:'alps',bg:'mountains',glass:'clear',layout:'tv',mode:'clock',tint:true,palette:'rosegold',customColor:'#B66E7B',fontD:'Cormorant Garamond',fontB:'Jost',corners:'rounded',cards:'outlined',size:'default'};
 function fontUrl(list){const fam=list.filter(f=>f.spec!==null).map(f=>'family='+f.n.replace(/ /g,'+')+(f.spec?':'+f.spec:''));return fam.length?'https://fonts.googleapis.com/css2?'+fam.join('&')+'&display=swap':''}
 function applyStyle(){
   const st=S.settings,r=document.documentElement.style;
@@ -904,6 +916,8 @@ function modeStatus(){
 function phase(){return autoPhase()}
 // Greeting follows the real clock: morning 5–12, afternoon 12–5, evening 5–10, night 10–5.
 const GREET={morning:{name:'Morning',greet:'Good morning',icon:I.rise},afternoon:{name:'Afternoon',greet:'Good afternoon',icon:I.sun},evening:{name:'Evening',greet:'Good evening',icon:I.set},night:{name:'Night',greet:'Good night',icon:I.moon}};
+function userName(){return((S&&S.settings.name)||'').trim()}
+function greetText(){const n=userName();return GREET[greetKey()].greet+(n?', '+esc(n):'')}
 function greetKey(){const h=new Date().getHours();return h>=5&&h<12?'morning':h>=12&&h<17?'afternoon':h>=17&&h<22?'evening':'night'}
 let shownGreet='',shownDay='';
 function refreshIfStale(){const g=greetKey(),d=today();if((g!==shownGreet||d!==shownDay)&&!sheetFor)render()}
@@ -1195,6 +1209,7 @@ function backupDue(){
   if(!last){const first=real.map(b=>b.addedAt||b.start||today()).sort()[0]||today();const age=Math.round((pd(today())-pd(first))/864e5);return age>=Math.min(every,7)?-1:0}
   const age=Math.round((pd(today())-pd(last))/864e5);return age>=every?age:0;
 }
+function namePrompt(){if(userName()||ls.get('pp-name-skip'))return'';return`<div class="banner nameask" style="margin-top:14px"><span style="flex-basis:100%"><b>What should we call you?</b> Your name goes in your greetings.</span><div class="row" style="flex:1;flex-wrap:nowrap"><input type="text" id="nameQuick" placeholder="Your name" maxlength="30" autocomplete="given-name"><button class="btn" data-act="namesave" style="flex:none;min-height:44px">Save</button></div><button class="link" data-act="nameskip" style="color:var(--muted)">Not now</button></div>`}
 function backupBanner(){const d=backupDue();if(!d)return'';return`<div class="banner bkrem" style="margin-top:14px"><span><b>Time for a backup.</b> ${d<0?'You haven’t saved one yet.':`It’s been ${d} days since your last one.`} Your books live only on this phone.</span><span class="row" style="gap:14px"><button class="btn" data-act="export" style="min-height:38px;padding:8px 16px">Save backup</button><button class="link" data-act="bksnooze" style="color:var(--muted)">Later</button></span></div>`}
 function tvLibraryHTML(){
   const B=S.books,yr=new Date().getFullYear();
@@ -1208,9 +1223,10 @@ function tvLibraryHTML(){
   const fav=Object.entries(authors).sort((a,c)=>c[1].length-a[1].length)[0];
   const st=streaks(dayStats());
   return`<header class="hdr"><div class="eyebrow">${GREET[greetKey()].icon}<span>${GREET[greetKey()].name} · ${new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span></div>
-    <div class="tvhead"><h1>${GREET[greetKey()].greet}</h1><div class="acts"><button class="circ pig-c" data-act="opentimer" aria-label="Reading timer">${pigFace()}</button><button class="circ" data-act="add" aria-label="Add book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+    <div class="tvhead"><h1>${greetText()}</h1><div class="acts"><button class="circ pig-c" data-act="opentimer" aria-label="Reading timer">${pigFace()}</button><button class="circ" data-act="add" aria-label="Add book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
     <p class="muted small tnum" style="margin:0">${B.length} book${B.length===1?'':'s'} · ${fin.length} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p></header>
   ${stageHTML()}
+  ${namePrompt()}
   ${backupBanner()}
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:14px"><span>These are sample books so you can see how it works.</span><button class="link" data-act="clearex">Remove samples</button></div>`:''}
   ${slides.length?`<section class="hero"><div class="hero-x" id="heroX">${slides.join('')}</div>${slides.length>1?`<div class="dots-h" id="heroDots">${slides.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>`:''}</section>`:`<div class="empty" style="margin-top:20px"><h3>Your shelf is empty</h3>Tap <b>+</b> to scan a barcode or type a title.</div>`}
@@ -1243,10 +1259,11 @@ function libraryHTML(){
   const reading=B.filter(b=>b.status==='reading');
   const doneYr=B.filter(b=>b.status==='done'&&b.finish&&pd(b.finish).getFullYear()===yr).length;
   const st=streaks(dayStats());
-  return`${header(`<h1>${GREET[greetKey()].greet},<br><em>what are we reading?</em></h1>`)}
+  return`${header(`<h1>${greetText()},<br><em>what are we reading?</em></h1>`)}
   <p class="muted small tnum" style="margin:8px 0 0">${B.length} book${B.length===1?'':'s'} on the shelf · ${doneYr} finished in ${yr}${st.cur?` · ${st.cur}-day streak`:''}</p>
   <button class="tbtn" data-act="opentimer" style="margin-top:14px"><span class="pf">${pigFace()}</span>Start reading timer</button>
   ${stageHTML()}
+  ${namePrompt()}
   ${backupBanner()}
   ${B.some(b=>b.example)?`<div class="banner" style="margin-top:16px"><span>The books below are examples so you can see how it works.</span><button class="link" data-act="clearex">Remove examples</button></div>`:''}
   ${reading.length?`<div class="section"><div class="eyebrow">On the nightstand</div>${reading.map(b=>`
@@ -1380,11 +1397,13 @@ function ensurePreviewFonts(){
   l.href='https://fonts.googleapis.com/css2?'+parts.join('&')+'&text='+text+'&display=swap';l.disabled=false;l.dataset.ok=1;
 }
 const SET_ICONS={
+  profile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-4 4.2-6 7.5-6s6.3 2 7.5 6"/></svg>',
   background:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 19 9 9l4 6 3-4 5 8z"/><circle cx="17" cy="6" r="2"/></svg>',
   theme:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.4-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/></svg>',
   mode:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
   fonts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19 9.5 5h1L16 19M6.5 14h7M17 19v-6.5a2.5 2.5 0 0 1 5 0V19"/></svg>',
   style:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="3.5"/><rect x="3.5" y="13.5" width="7" height="7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>',
+  piglet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="7.5"/><ellipse cx="12" cy="15" rx="3" ry="2.2"/><path d="M6.5 7.5 5 4l3.5 1.6M17.5 7.5 19 4l-3.5 1.6"/></svg>',
   shelves:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 20h18M5 20V8h3v12M10 20V5h3v15M15.5 20l-1-11 3-.4 1.4 11.4"/></svg>',
   reminders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>',
   goal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
@@ -1394,8 +1413,9 @@ const SET_ICONS={
   about:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.1" fill="currentColor"/></svg>'
 };
 const SET_PAGES={
+  profile:{t:'Profile',c:'#C47A9A'},
   background:{t:'Background',c:'#5E8FD6'},theme:{t:'Colour theme',c:'#D9668E'},mode:{t:'Light & dark',c:'#6E6A9E'},fonts:{t:'Fonts',c:'#B9874A'},style:{t:'Layout & style',c:'#7B8C9A'},
-  goal:{t:'Daily reading goal',c:'#E07A5F'},shelves:{t:'My shelves',c:'#C08A3E'},reminders:{t:'Backup reminder',c:'#3E8E7E'},backup:{t:'Backup & restore',c:'#4F9D78'},offline:{t:'Offline',c:'#5C8F9E'},sample:{t:'Sample library',c:'#A47BC4'},about:{t:'About',c:'#8A8F98'}
+  goal:{t:'Daily reading goal',c:'#E07A5F'},piglet:{t:'Piglet',c:'#E994AE'},shelves:{t:'My shelves',c:'#C08A3E'},reminders:{t:'Backup reminder',c:'#3E8E7E'},backup:{t:'Backup & restore',c:'#4F9D78'},offline:{t:'Offline',c:'#5C8F9E'},sample:{t:'Sample library',c:'#A47BC4'},about:{t:'About',c:'#8A8F98'}
 };
 function setVal(k){
   const st=S.settings;
@@ -1405,6 +1425,8 @@ function setVal(k){
     case'mode':return{clock:'Follow the clock',system:'Match my phone',light:'Always light',dark:'Always dark'}[st.mode]||'';
     case'fonts':return st.fontD.split(' ')[0]+' · '+st.fontB.split(' ')[0];
     case'style':return(st.layout==='list'?'Classic list':'Cinema')+' · '+({rounded:'Rounded',soft:'Soft',square:'Square'}[st.corners]||'');
+    case'profile':return userName()||'Add your name';
+    case'piglet':return st.oink==='off'?'Silent':'Oinks every 10 min';
     case'shelves':return S.shelves.length?S.shelves.length+' shelf'+(S.shelves.length===1?'':'s'):'None yet';
     case'reminders':return st.backupEvery?'Every '+st.backupEvery+' days':'Off';
     case'goal':return st.goal.value+' '+(st.goal.type==='pages'?'pages':'min')+' a day';
@@ -1419,6 +1441,13 @@ function setGroup(title,keys){return`<div class="sgroup"><div class="lbl">${titl
 function settingsPageBody(k){
   const st=S.settings,G=st.goal;
   switch(k){
+    case'profile':return`<div class="field"><label for="profName">Your name</label><input type="text" id="profName" value="${esc(st.name||'')}" placeholder="Your first name" maxlength="30" autocomplete="given-name"></div>
+      <p class="hint">Used in your greetings, like “${GREET[greetKey()].greet}${userName()?', '+esc(userName()):', and your name'}”. It stays on this phone.</p>
+      <button class="btn" data-act="profsave" style="align-self:flex-start">Save</button>`;
+    case'piglet':return`<div class="row" style="flex-wrap:nowrap;gap:14px"><div style="width:84px;height:84px;flex:none;border-radius:50%;background:var(--soft);overflow:hidden">${pigSVG(pigLevel(),'idle',true)}</div><p class="hint" style="margin:0">During the reading timer your piglet reads, strolls, twirls and lies on its tummy. Every 10 minutes it celebrates.</p></div>
+      <span class="lbl">Sound when it celebrates</span>${chipset('oink',st.oink||'on',[['on','Oink oink'],['chime','Soft chime'],['off','Silent']])}
+      <button class="btn soft" data-act="oinktest" style="align-self:flex-start">Play it</button>
+      <p class="hint">Sounds play only while the timer is open and your phone isn't on silent.</p>`;
     case'shelves':return`<p class="hint">Make your own shelves, like Favourites, Book club or Gifts. A book can be on several shelves. Add books from a book's page.</p>
       <div>${S.shelves.map(sh=>`<div class="shelfrow"><input type="text" id="shn-${sh.id}" value="${esc(sh.name)}" maxlength="40" aria-label="Shelf name"><button class="btn soft" data-act="shelfren" data-v="${sh.id}">Rename</button><button class="link" data-act="shelfdel" data-v="${sh.id}" style="color:var(--muted)">Delete</button></div>`).join('')||'<p class="hint">No shelves yet.</p>'}</div>
       <div class="row" style="flex-wrap:nowrap"><input type="text" id="shelfNewName" placeholder="New shelf name" maxlength="40"><button class="btn" data-act="shelfadd" style="flex:none">Add shelf</button></div>`;
@@ -1496,8 +1525,9 @@ function settingsHTML(){
     <div class="section"><div class="card">${settingsPageBody(setPage)}</div></div>`;
   }
   return`${header(`<h1>Settings</h1>`)}
+  ${setGroup('You',['profile'])}
   ${setGroup('Appearance',['background','theme','mode','fonts','style'])}
-  ${setGroup('Reading',['goal','shelves'])}
+  ${setGroup('Reading',['goal','piglet','shelves'])}
   ${setGroup('Your data',['backup','reminders','offline','sample'])}
   ${setGroup('About',['about'])}
   <p class="ver">Petal &amp; Page ${APP_VERSION}<br>Made with love, for Ruhi and Dori’s favourite reader</p>`;
@@ -1722,6 +1752,11 @@ document.addEventListener('click',async e=>{
     case'heroStyle':S.settings.heroStyle=t.dataset.v;await save();render();break;
     case'layout':S.settings.layout=t.dataset.v;await save();render();break;
     case'bksnooze':{const d=new Date();d.setDate(d.getDate()+3);ls.set('pp-backup-snooze',ds(d));render();toast('I’ll remind you in 3 days');break}
+    case'profsave':S.settings.name=($('#profName').value||'').trim().slice(0,30);await save();render();toast(userName()?'Hello, '+userName()+'!':'Name removed');break;
+    case'namesave':{const v=($('#nameQuick').value||'').trim().slice(0,30);if(!v){toast('Type your name first');break}S.settings.name=v;await save();render();toast('Lovely to meet you, '+v+'!');break}
+    case'nameskip':ls.set('pp-name-skip','1');render();break;
+    case'oink':S.settings.oink=t.dataset.v;await save();render();break;
+    case'oinktest':if((S.settings.oink||'on')==='on')oink(2);else if(S.settings.oink==='chime'){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}chime()}else toast('Sound is off');break;
     case'backupEvery':S.settings.backupEvery=+t.dataset.v;await save();render();break;
     case'petals':S.settings.petals=t.dataset.v;await save();petalsSync();render();break;
     case'petalDensity':S.settings.petalDensity=t.dataset.v;await save();petalsSize();petalsSync();render();break;
@@ -1925,7 +1960,7 @@ function landSVG(land,c,night,x){
   switch(land){
   case'coast':return coastSVG(c,night,x);
   case'matterhorn':{
-    const ridge='M184 320 L192 302 L201 282 L210 262 L219 242 L227 222 L233 207 L237 198';
+    const ridge='M206 252 L212 240 L218 228 L224 218 L229 210 L233 204 L237 198';
     return`<g transform="translate(-9 156) scale(.75)"><path d="M0 440 L0 380 L40 360 L70 372 L100 350 L120 366 L150 430Z M300 430 L330 360 L360 346 L400 360 L400 440Z" fill="${c.far}"/>
     <path d="M330 360 L346 352 L360 346 L372 356 L352 358Z" fill="${snow}" opacity=".85"/>
     <path d="M70 480 L140 380 L168 352 L190 306 L214 254 L232 210 L240 194 L248 190 L256 200 L266 228 L284 270 L304 318 L330 370 L382 480Z" fill="${c.peak}"/>
@@ -1934,14 +1969,15 @@ function landSVG(land,c,night,x){
     <path d="M226 236 L236 260 M218 276 L232 300 M206 318 L222 344 M262 262 L256 300 M280 318 L270 360" stroke="${c.shade}" stroke-width="1.4" opacity=".55" fill="none" stroke-linecap="round"/>
     <path d="M256 196 Q290 186 318 196 Q296 202 272 204Z" fill="${c.cloud}" opacity="${night?.2:.75}"/>
     <path d="M110 430 L150 372 L168 352 L190 366 L200 430Z" fill="${c.mid}"/>
-    <g transform="translate(140 336) scale(1.35)">
+    <path d="M118 420 L150 330 L168 290 L180 266 L196 258 L216 256 L226 262 L232 300 L244 420Z" fill="${c.mid}"/><path d="M176 268 L196 259 L216 257 L222 262 L200 265Z" fill="${snow}" opacity=".7"/>
+    <g transform="translate(176 230) scale(1.25)">
       <path d="M-2 14 L26 14 L28 18 L-4 18Z" fill="${c.mid}"/>
       <rect x="0" y="2" width="24" height="12" fill="${night?'#7B7680':'#B9B2A8'}"/><rect x="24" y="4" width="5" height="10" fill="${night?'#5E5966':'#958D82'}"/>
       <path d="M-1 2.4 L12 -2 L25 2.4Z" fill="${night?'#3E3A44':'#5E5A60'}"/><path d="M25 2.4 L12 -2 L16 -3 L29 4Z" fill="${night?'#2E2B33':'#4A4650'}"/>
       ${[2.5,6.5,10.5,14.5,18.5].map(xx=>`<rect x="${xx}" y="5" width="2.2" height="2.2" fill="${night?'#FFE7A3':'#5D6F86'}"/><rect x="${xx}" y="9.2" width="2.2" height="2.2" fill="${night?'#FFE7A3':'#5D6F86'}"/>`).join('')}
       <rect x="19" y="-6" width=".7" height="8" fill="#8A8F98"/><rect x="19.7" y="-6" width="4" height="4" fill="#D6262E"/><path d="M21.3 -5.4 h.8 v2.8 h-.8z M20.3 -4.4 h2.8 v.8 h-2.8z" fill="#fff"/>
     </g>
-    <g class="climbers" data-path="${ridge}" transform="translate(184 320)">
+    <g class="climbers" data-path="${ridge}" transform="translate(206 252)">
       <g class="climb" transform="scale(2.3)"><path d="M0 -4.6 Q-3 1 -4.6 4.6" stroke="#E2B13C" stroke-width=".55" fill="none"/>
       <g transform="translate(-4.8 9.4)">${climberSVG('#3A6FC4','#F08A24',night,true)}</g>
       ${climberSVG('#E26D96','#FFFFFF',night,true)}</g>
@@ -2231,7 +2267,7 @@ function pigSVG(lv,mode,crop){
   // Baby proportions at every level: big head, low big eyes, tiny body. Wisdom shows only in accessories.
   const sc=lv===0?.9:lv===1?.95:1;
   const bookCol='#2F5AA8';
-  const book=`<g transform="translate(100 166) scale(.78) translate(-100 -148)"><g class="book">
+  const book=`<g class="bookw"><g transform="translate(100 166) scale(.78) translate(-100 -148)"><g class="book">
     <path d="M100 136 L62 128 L62 162 L100 170 L138 162 L138 128 Z" fill="${bookCol}"/>
     <path d="M100 134 L66 127 L66 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
     <path d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFFDF8" stroke="#E7CFC6" stroke-width="1.2"/>
@@ -2239,7 +2275,7 @@ function pigSVG(lv,mode,crop){
     <g transform="rotate(-11.6 117 146.5)"><circle cx="117" cy="150" r="7.5" fill="#F2C46A"/><path d="M110.6 147.6 Q117 150.6 123.4 147.6" stroke="#D9A04A" stroke-width=".8" fill="none"/><circle cx="114.6" cy="152.4" r="1.1" fill="#D9A04A"/><circle cx="119.6" cy="153.6" r=".8" fill="#D9A04A"/><path d="M117 142.5 v-4 M117 138.5 q2.6 -.6 3 -3" stroke="#3E8A3E" stroke-width=".9" fill="none" stroke-linecap="round"/><circle cx="120.2" cy="135.2" r="1.4" fill="#E2483A"/><path d="M125 135.6 l.9 1.9 2 .3 -1.5 1.4 .4 2 -1.8 -1 -1.8 1 .4 -2 -1.5 -1.4 2 -.3z" fill="#F2C230"/><circle cx="109" cy="138" r=".7" fill="#F2C230"/></g>
     <path class="flip" d="M100 134 L134 127 L134 159 L100 166Z" fill="#FFF8F2" stroke="#E7CFC6" stroke-width="1.2"/>
     <ellipse cx="63" cy="152" rx="10" ry="9" fill="#F7BCCA"/><ellipse cx="137" cy="152" rx="10" ry="9" fill="#F7BCCA"/>
-  </g></g>`;
+  </g></g></g>`;
   const glasses=lv>=2?`<g fill="rgba(255,255,255,.25)" stroke="#4A2E3B" stroke-width="2.6"><circle cx="80" cy="99" r="13.5"/><circle cx="120" cy="99" r="13.5"/></g><path d="M93.5 97 Q100 92.5 106.5 97" stroke="#4A2E3B" stroke-width="2.4" fill="none"/>`:'';
   const bow=lv===1?`<g transform="translate(130 56) rotate(18)"><path d="M0 0 L-13 -9 L-13 9Z M0 0 L13 -9 L13 9Z" fill="#E36C8E"/><circle r="4.5" fill="#C94F74"/></g>`:'';
   const cap=lv>=3&&lv<5?`<g><path d="M74 46 L74 57 Q100 66 126 57 L126 46 Z" fill="#2E1F29"/><path d="M100 26 L152 40 L100 54 L48 40 Z" fill="#3A2733"/><circle cx="100" cy="40" r="3.2" fill="#C9A15E"/><g class="tassel"><path d="M100 40 L142 42 L142 62" stroke="#C9A15E" stroke-width="2.2" fill="none"/><path d="M138 60 L146 60 L144 71 L140 71Z" fill="#C9A15E"/></g></g>`:'';
@@ -2251,9 +2287,16 @@ function pigSVG(lv,mode,crop){
   return`<svg class="pig ${mode||'idle'}" viewBox="${vb}" role="img" aria-label="${PIG[lv].n}">
   ${sparks}${stack}
   <g class="all"><g transform="translate(${(100-100*sc).toFixed(1)} ${(200-200*sc).toFixed(1)}) scale(${sc})">
-    <path class="tail" d="M136 168 q15 -4 11 -14 q-4 -7 -10 -1 q-3 5 3 7" stroke="#E894A9" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <g class="bsit"><path class="tail" d="M136 168 q16 -3 13 -14 q-3 -8 -10 -3 q-5 4 0 8 q6 3 9 -4 q2 -6 -3 -8" stroke="#E894A9" stroke-width="3" fill="none" stroke-linecap="round"/>
     <ellipse cx="100" cy="170" rx="40" ry="29" fill="#F6B9C8"/>
-    <ellipse class="footL" cx="83" cy="197" rx="10" ry="6" fill="#EFA2B6"/><ellipse class="footR" cx="117" cy="197" rx="10" ry="6" fill="#EFA2B6"/>
+    <ellipse class="footL" cx="83" cy="197" rx="10" ry="6" fill="#EFA2B6"/><ellipse class="footR" cx="117" cy="197" rx="10" ry="6" fill="#EFA2B6"/></g>
+    <g class="blie">
+      <g class="kl"><rect x="150" y="128" width="13" height="34" rx="6.5" fill="#F2AEC0"/><ellipse cx="156.5" cy="129" rx="8.5" ry="5.5" fill="#EFA2B6"/></g>
+      <g class="kr"><rect x="166" y="132" width="13" height="32" rx="6.5" fill="#F6B9C8"/><ellipse cx="172.5" cy="133" rx="8.5" ry="5.5" fill="#EFA2B6"/></g>
+      <path class="tail" d="M184 172 q14 -4 12 -14 q-3 -7 -9 -3 q-4 4 0 7 q5 3 8 -3" stroke="#E894A9" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="130" cy="180" rx="56" ry="22" fill="#F6B9C8"/>
+      <path d="M92 168 Q130 158 172 168" stroke="#FBD3DD" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+    </g>
     <g class="head">
       <path class="earl" d="M56 74 Q46 42 78 50 Q70 66 56 74Z" fill="#F2A1B5"/><path d="M60 68 Q56 52 72 54 Q66 62 60 68Z" fill="#FBD3DD"/>
       <path class="earr" d="M144 74 Q154 42 122 50 Q130 66 144 74Z" fill="#F2A1B5"/><path d="M140 68 Q144 52 128 54 Q134 62 140 68Z" fill="#FBD3DD"/>
@@ -2261,8 +2304,8 @@ function pigSVG(lv,mode,crop){
       <circle cx="100" cy="98" r="52" fill="#F9C7D3"/>
       ${tuft}
       <ellipse cx="65" cy="116" rx="11" ry="7.5" fill="#F395AE" opacity=".55"/><ellipse cx="135" cy="116" rx="11" ry="7.5" fill="#F395AE" opacity=".55"/>
-      <g class="open"><g class="scan"><g class="blinker"><ellipse cx="80" cy="100" rx="7.6" ry="9.2" fill="#3B2430"/><ellipse cx="120" cy="100" rx="7.6" ry="9.2" fill="#3B2430"/></g><circle cx="83" cy="96" r="3" fill="#fff"/><circle cx="123" cy="96" r="3" fill="#fff"/><circle cx="78" cy="104" r="1.4" fill="#fff"/><circle cx="118" cy="104" r="1.4" fill="#fff"/></g></g>
-      <g class="closed" stroke="#3B2430" stroke-width="2.8" fill="none" stroke-linecap="round"><path d="M72 101 Q80 107 88 101"/><path d="M112 101 Q120 107 128 101"/></g>
+      <g class="open"><g class="scan"><g class="blinker"><ellipse cx="80" cy="100" rx="7.6" ry="9.2" fill="#3B2430"/><ellipse cx="120" cy="100" rx="7.6" ry="9.2" fill="#3B2430"/><path d="M73.4 94.6 Q70 92.4 68.2 89 M75.6 92.2 Q73.6 88.8 73.2 85.4 M78.6 91.2 Q78 87.6 78.8 84.4 M126.6 94.6 Q130 92.4 131.8 89 M124.4 92.2 Q126.4 88.8 126.8 85.4 M121.4 91.2 Q122 87.6 121.2 84.4" stroke="#3B2430" stroke-width="1.9" fill="none" stroke-linecap="round"/></g><circle cx="83" cy="96" r="3" fill="#fff"/><circle cx="123" cy="96" r="3" fill="#fff"/><circle cx="78" cy="104" r="1.4" fill="#fff"/><circle cx="118" cy="104" r="1.4" fill="#fff"/></g></g>
+      <g class="closed" stroke="#3B2430" stroke-width="2.8" fill="none" stroke-linecap="round"><path d="M72 101 Q80 107 88 101"/><path d="M112 101 Q120 107 128 101"/><path d="M73 103 l-3.4 2.6 M76.6 105 l-2 3.4 M127 103 l3.4 2.6 M123.4 105 l2 3.4" stroke-width="1.6"/></g>
       <ellipse cx="100" cy="119" rx="13.5" ry="9.5" fill="#F4A6B9" stroke="#EA90A7" stroke-width="1.3"/>
       <ellipse cx="95.5" cy="119" rx="2.2" ry="3" fill="#B95F79"/><ellipse cx="104.5" cy="119" rx="2.2" ry="3" fill="#B95F79"/>
       <path d="M95 132 Q100 136 105 132" stroke="#B95F79" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -2298,6 +2341,26 @@ const T=()=>S.timer||(S.timer={state:'idle',bookId:null,startedAt:0,accMs:0});
 const elapsedMs=()=>{const t=T();return t.accMs+(t.state==='running'?Date.now()-t.startedAt:0)};
 const fmtClock=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+pad(m):m)+':'+pad(x)};
 async function lockScreen(on){try{if(on&&'wakeLock' in navigator&&document.visibilityState==='visible'){wakeLock=await navigator.wakeLock.request('screen')}else if(!on&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){}}
+function oink(times){
+  try{
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume();
+    const A=audioCtx,start=A.currentTime+.05,n=times||2;
+    for(let k=0;k<n;k++){
+      const t0=start+k*.42,dur=.3;
+      const o=A.createOscillator(),o2=A.createOscillator(),f=A.createBiquadFilter(),f2=A.createBiquadFilter(),g=A.createGain(),lfo=A.createOscillator(),lg=A.createGain();
+      o.type='sawtooth';o2.type='square';
+      o.frequency.setValueAtTime(230,t0);o.frequency.exponentialRampToValueAtTime(330,t0+.07);o.frequency.exponentialRampToValueAtTime(150,t0+dur);
+      o2.frequency.setValueAtTime(115,t0);o2.frequency.exponentialRampToValueAtTime(165,t0+.07);o2.frequency.exponentialRampToValueAtTime(75,t0+dur);
+      lfo.frequency.value=38;lg.gain.value=22;lfo.connect(lg);lg.connect(o.frequency);
+      f.type='bandpass';f.frequency.setValueAtTime(900,t0);f.frequency.exponentialRampToValueAtTime(520,t0+dur);f.Q.value=3.2;
+      f2.type='peaking';f2.frequency.value=1600;f2.gain.value=8;
+      g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(.32,t0+.03);g.gain.setValueAtTime(.28,t0+dur*.6);g.gain.exponentialRampToValueAtTime(.001,t0+dur);
+      const mix=A.createGain();mix.gain.value=.55;o2.connect(mix);
+      o.connect(f);mix.connect(f);f.connect(f2);f2.connect(g);g.connect(A.destination);
+      [o,o2,lfo].forEach(x=>{x.start(t0);x.stop(t0+dur+.05)});
+    }
+  }catch(e){}
+}
 function chime(){try{if(!audioCtx)return;const n=audioCtx.currentTime;[659.25,880].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,n+i*.22);g.gain.linearRampToValueAtTime(.18,n+i*.22+.02);g.gain.exponentialRampToValueAtTime(.001,n+i*.22+1.2);o.connect(g).connect(audioCtx.destination);o.start(n+i*.22);o.stop(n+i*.22+1.3)})}catch(e){}if(navigator.vibrate)navigator.vibrate([80,80,80])}
 function goalMin(){const G=S.settings.goal;return G.type==='minutes'?G.value:20}
 function todayMin(){const x=dayStats()[today()];return x?x.min:0}
@@ -2320,8 +2383,8 @@ function ringFrac(){const g=goalMin()*60000;return Math.min(1,(todayMin()*60000+
 const CELEBS=[['cel-spin','A happy twirl!'],['cel-jump','Jumping for joy!'],['cel-wiggle','A wiggle dance!'],['cel-flip','A backflip!'],['cel-sway','Swaying to the music!'],['cel-moon','The moonwalk!']];
 let celUntil=0;
 function piglePose(ms){
-  // cycle every 2 minutes: sit and read, stroll while reading, read again, a little nap
-  const s=(ms/1000)%120;return s<45?'reading':s<70?'walk':s<108?'reading':'sleep';
+  // every 2 minutes: sit and read, stroll while reading, a little twirl, read again, lie on its tummy and read
+  const s=(ms/1000)%120;return s<40?'reading':s<62?'walk':s<65?'twirl':s<90?'reading':'lie';
 }
 function pigCelebrate(m){
   const wrap=document.querySelector('#timer .pigwrap');if(!wrap)return;
@@ -2330,7 +2393,7 @@ function pigCelebrate(m){
   const svg=wrap.querySelector('svg.pig');if(svg)svg.setAttribute('class','pig party');
   let fx=wrap.querySelector('.celfx');if(!fx){fx=document.createElement('div');fx.className='celfx';wrap.appendChild(fx)}
   fx.innerHTML=Array.from({length:16},(_,i)=>`<i class="${i%2?'h':'s'}" style="--dx:${Math.round((Math.random()-.5)*220)}px;--r:${Math.round((Math.random()-.5)*90)}deg;animation-delay:${(Math.random()*.9).toFixed(2)}s"></i>`).join('')+`<span class="celmsg">${m*10} minutes · ${msg}</span>`;
-  celUntil=Date.now()+5200;chime();
+  celUntil=Date.now()+5200;{const o=S.settings.oink||'on';if(o==='on')oink(2);else if(o==='chime')chime()}
   setTimeout(()=>{wrap.classList.remove(cls);if(fx)fx.innerHTML='';celUntil=0},5200);
 }
 function updateTimerFace(){
@@ -2342,8 +2405,8 @@ function updateTimerFace(){
   if(t.state==='running'&&wrap&&svg){
     const m=Math.floor(ms/600000);
     if(m>(t.lastMs||0)){t.lastMs=m;save();pigCelebrate(m)}
-    else if(Date.now()>celUntil){const pose=piglePose(ms);svg.setAttribute('class','pig '+pose);wrap.classList.toggle('walking',pose==='walk')}
-  }else if(wrap){wrap.classList.remove('walking')}
+    else if(Date.now()>celUntil){const pose=piglePose(ms);svg.setAttribute('class','pig '+(pose==='lie'?'reading lie':pose==='twirl'?'reading':pose));wrap.classList.toggle('walking',pose==='walk');wrap.classList.toggle('twirling',pose==='twirl');wrap.classList.toggle('lying',pose==='lie')}
+  }else if(wrap){wrap.classList.remove('walking','twirling','lying')}
 }
 function renderTimer(){
   const t=T(),el=$('#timer'),p=pigProgress(),reading=S.books.filter(b=>b.status==='reading'),bk=t.bookId?find(t.bookId):null;
@@ -2353,7 +2416,7 @@ function renderTimer(){
   if(tView==='finish'){
     const min=Math.max(1,Math.round(elapsedMs()/60000));
     body=`<div class="glass tcard"><div style="width:150px;height:158px">${pigSVG(p.i,'idle')}</div>
-      <h2>Lovely reading!</h2><p class="muted" style="margin:0">You read for <b class="tnum" style="color:var(--ink)">${min} minute${min===1?'':'s'}</b>${bk?` of <i>${esc(bk.title)}</i>`:''}.</p>
+      <h2>Lovely reading${userName()?', '+esc(userName()):''}!</h2><p class="muted" style="margin:0">You read for <b class="tnum" style="color:var(--ink)">${min} minute${min===1?'':'s'}</b>${bk?` of <i>${esc(bk.title)}</i>`:''}.</p>
       ${bk?`<div class="field" style="width:100%;text-align:left"><label for="tPage">Stopped at page</label><input type="number" inputmode="numeric" id="tPage" min="0" placeholder="${bk.page||0}${bk.pages?' of '+bk.pages:''}"></div>`:''}
       <button class="btn wide big-btn" data-act="tsave">Save session</button>
       <div class="row" style="justify-content:center"><button class="link" data-act="tback">Keep reading</button><button class="link" data-act="tdiscard" style="color:var(--muted)">Discard</button></div></div>`;
