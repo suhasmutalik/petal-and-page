@@ -355,6 +355,10 @@ html.tinting *{backdrop-filter:none!important;-webkit-backdrop-filter:none!impor
 .celfx i.h::before{content:"";position:absolute;inset:0;background:var(--accent);clip-path:path('M7 13 C1 8.6 0 5.4 1.6 3 C3.2 .8 6 1.4 7 3.6 C8 1.4 10.8 .8 12.4 3 C14 5.4 13 8.6 7 13Z')}
 .celfx i.s{width:10px;height:10px;background:var(--gold);clip-path:polygon(50% 0,61% 38%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 38%)}
 @keyframes fxup{0%{opacity:0;transform:translate(0,0) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-140px) scale(1.2) rotate(var(--r))}}
+.oinkb{position:absolute;right:-6%;top:6%;background:var(--surface);color:var(--primary);font-weight:700;font-size:.95rem;padding:7px 12px;border-radius:16px;box-shadow:0 8px 18px -10px rgba(0,0,0,.45);opacity:0;transform:scale(.4) rotate(-6deg);transform-origin:10% 100%;pointer-events:none;white-space:nowrap}
+.oinkb::after{content:"";position:absolute;left:12px;bottom:-7px;border:7px solid transparent;border-top-color:var(--surface);border-bottom:0}
+.oinkb.on{animation:oinkb 2.6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes oinkb{0%{opacity:0;transform:scale(.4) rotate(-6deg)}12%{opacity:1;transform:scale(1.08) rotate(-4deg)}20%,80%{opacity:1;transform:scale(1) rotate(-4deg)}100%{opacity:0;transform:scale(.9) rotate(-4deg)}}
 .celmsg{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);white-space:nowrap;background:var(--primary);color:var(--on-primary);padding:6px 14px;border-radius:var(--rp);font-size:.85rem;font-weight:600;box-shadow:0 10px 20px -12px rgba(0,0,0,.5);animation:msgin .4s cubic-bezier(.3,1.6,.5,1)}
 @keyframes msgin{from{opacity:0;transform:translate(-50%,10px) scale(.8)}}
 @keyframes nod{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(1px)}}
@@ -595,9 +599,10 @@ html[data-glow="bright"] .pcard .poster,html[data-glow="bright"] .gslide,html[da
 <script>
 (function(){
 /* ---------- version ---------- */
-const APP_VERSION='1.18.2';
+const APP_VERSION='1.18.3';
 const APP_BUILD='__BUILD__';
 const CHANGELOG=[
+  {v:'1.18.3',items:['Your piglet now says “Oink oink!” in a sweet little voice, with a speech bubble']},
   {v:'1.18.2',items:['A softer, sweeter baby-piglet oink']},
   {v:'1.18.1',items:['Matterhorn: the Hörnlihütte now sits on its own lower peak next door; you set off from the hut, cross the saddle and climb the Matterhorn']},
   {v:'1.18.0',items:['Add your name (Settings → Profile) and the app greets you by it','The Hörnlihütte is back on the Matterhorn, and your climb starts from it','Your piglet now lies on its tummy to read (no more napping), does little twirls, and has eyelashes and a curlier tail','Oink oink! Your piglet oinks when it celebrates every 10 minutes (Settings → Piglet)']},
@@ -1428,7 +1433,7 @@ function setVal(k){
     case'fonts':return st.fontD.split(' ')[0]+' · '+st.fontB.split(' ')[0];
     case'style':return(st.layout==='list'?'Classic list':'Cinema')+' · '+({rounded:'Rounded',soft:'Soft',square:'Square'}[st.corners]||'');
     case'profile':return userName()||'Add your name';
-    case'piglet':return st.oink==='off'?'Silent':'Oinks every 10 min';
+    case'piglet':return{on:'Says oink oink',squeak:'Squeaks',chime:'Soft chime',off:'Silent'}[st.oink||'on'];
     case'shelves':return S.shelves.length?S.shelves.length+' shelf'+(S.shelves.length===1?'':'s'):'None yet';
     case'reminders':return st.backupEvery?'Every '+st.backupEvery+' days':'Off';
     case'goal':return st.goal.value+' '+(st.goal.type==='pages'?'pages':'min')+' a day';
@@ -1447,9 +1452,9 @@ function settingsPageBody(k){
       <p class="hint">Used in your greetings, like “${GREET[greetKey()].greet}${userName()?', '+esc(userName()):', and your name'}”. It stays on this phone.</p>
       <button class="btn" data-act="profsave" style="align-self:flex-start">Save</button>`;
     case'piglet':return`<div class="row" style="flex-wrap:nowrap;gap:14px"><div style="width:84px;height:84px;flex:none;border-radius:50%;background:var(--soft);overflow:hidden">${pigSVG(pigLevel(),'idle',true)}</div><p class="hint" style="margin:0">During the reading timer your piglet reads, strolls, twirls and lies on its tummy. Every 10 minutes it celebrates.</p></div>
-      <span class="lbl">Sound when it celebrates</span>${chipset('oink',st.oink||'on',[['on','Oink oink'],['chime','Soft chime'],['off','Silent']])}
+      <span class="lbl">When it celebrates, your piglet…</span>${chipset('oink',st.oink||'on',[['on','Says “oink oink”'],['squeak','Squeaks'],['chime','Soft chime'],['off','Silent']])}
       <button class="btn soft" data-act="oinktest" style="align-self:flex-start">Play it</button>
-      <p class="hint">Sounds play only while the timer is open and your phone isn't on silent.</p>`;
+      <p class="hint">Sounds play only while the timer is open and your phone isn't on silent. The voice is your phone's own, so it works offline.</p>`;
     case'shelves':return`<p class="hint">Make your own shelves, like Favourites, Book club or Gifts. A book can be on several shelves. Add books from a book's page.</p>
       <div>${S.shelves.map(sh=>`<div class="shelfrow"><input type="text" id="shn-${sh.id}" value="${esc(sh.name)}" maxlength="40" aria-label="Shelf name"><button class="btn soft" data-act="shelfren" data-v="${sh.id}">Rename</button><button class="link" data-act="shelfdel" data-v="${sh.id}" style="color:var(--muted)">Delete</button></div>`).join('')||'<p class="hint">No shelves yet.</p>'}</div>
       <div class="row" style="flex-wrap:nowrap"><input type="text" id="shelfNewName" placeholder="New shelf name" maxlength="40"><button class="btn" data-act="shelfadd" style="flex:none">Add shelf</button></div>`;
@@ -1758,7 +1763,7 @@ document.addEventListener('click',async e=>{
     case'namesave':{const v=($('#nameQuick').value||'').trim().slice(0,30);if(!v){toast('Type your name first');break}S.settings.name=v;await save();render();toast('Lovely to meet you, '+v+'!');break}
     case'nameskip':ls.set('pp-name-skip','1');render();break;
     case'oink':S.settings.oink=t.dataset.v;await save();render();break;
-    case'oinktest':if((S.settings.oink||'on')==='on')oink(2);else if(S.settings.oink==='chime'){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}chime()}else toast('Sound is off');break;
+    case'oinktest':unlockSpeech();if((S.settings.oink||'on')==='on'){sayOink();toast('Oink oink!')}else if(S.settings.oink==='squeak')oink(2);else if(S.settings.oink==='chime'){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)()}catch(e){}chime()}else toast('Sound is off');break;
     case'backupEvery':S.settings.backupEvery=+t.dataset.v;await save();render();break;
     case'petals':S.settings.petals=t.dataset.v;await save();petalsSync();render();break;
     case'petalDensity':S.settings.petalDensity=t.dataset.v;await save();petalsSize();petalsSync();render();break;
@@ -2371,6 +2376,29 @@ function oinkInto(A,t,dest,times){
 function oink(times){
   try{if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume();oinkInto(audioCtx,audioCtx.currentTime+.04,audioCtx.destination,times)}catch(e){}
 }
+// Say "oink oink" in a high, sweet voice using the phone's own speech (works offline).
+function sweetVoice(){
+  try{const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));if(!vs.length)return null;
+    const pref=['Samantha','Karen','Moira','Tessa','Fiona','Victoria','Serena','Martha','Google UK English Female','Google US English','Female'];
+    for(const p of pref){const v=vs.find(x=>x.name.includes(p));if(v)return v}
+    return vs.find(v=>v.localService)||vs[0]}catch(e){return null}
+}
+let speechReady=false;
+function unlockSpeech(){try{if(speechReady||!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);speechReady=true}catch(e){}}
+function sayOink(){
+  try{
+    if(!('speechSynthesis' in window)){oink(2);return}
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance('Oink oink!');const v=sweetVoice();if(v)u.voice=v;
+    u.pitch=2;u.rate=1.08;u.volume=.85;speechSynthesis.speak(u);
+  }catch(e){oink(2)}
+}
+if('speechSynthesis' in window){try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}}
+function oinkBubble(){
+  const wrap=document.querySelector('#timer .pigwrap');if(!wrap)return;
+  let bb=wrap.querySelector('.oinkb');if(!bb){bb=document.createElement('span');bb.className='oinkb';wrap.appendChild(bb)}
+  bb.textContent='Oink oink!';bb.classList.remove('on');void bb.offsetWidth;bb.classList.add('on');setTimeout(()=>bb.classList.remove('on'),2600);
+}
 async function oinkWav(){
   const sr=44100,A=new OfflineAudioContext(1,Math.round(sr*.9),sr);oinkInto(A,.08,A.destination,2);
   const buf=await A.startRendering(),d=buf.getChannelData(0),n=d.length,dv=new DataView(new ArrayBuffer(44+n*2));
@@ -2412,7 +2440,7 @@ function pigCelebrate(m){
   const svg=wrap.querySelector('svg.pig');if(svg)svg.setAttribute('class','pig party');
   let fx=wrap.querySelector('.celfx');if(!fx){fx=document.createElement('div');fx.className='celfx';wrap.appendChild(fx)}
   fx.innerHTML=Array.from({length:16},(_,i)=>`<i class="${i%2?'h':'s'}" style="--dx:${Math.round((Math.random()-.5)*220)}px;--r:${Math.round((Math.random()-.5)*90)}deg;animation-delay:${(Math.random()*.9).toFixed(2)}s"></i>`).join('')+`<span class="celmsg">${m*10} minutes · ${msg}</span>`;
-  celUntil=Date.now()+5200;{const o=S.settings.oink||'on';if(o==='on')oink(2);else if(o==='chime')chime()}
+  celUntil=Date.now()+5200;{const o=S.settings.oink||'on';if(o==='on'){sayOink();oinkBubble()}else if(o==='squeak')oink(2);else if(o==='chime')chime()}
   setTimeout(()=>{wrap.classList.remove(cls);if(fx)fx.innerHTML='';celUntil=0},5200);
 }
 function updateTimerFace(){
@@ -2459,7 +2487,7 @@ async function timerAct(a,t){
     case'opentimer':if(sheetFor)closeSheet();openTimer(t.dataset.id||null);return true;
     case'tclose':closeTimer();return true;
     case'tbook':T0.bookId=t.dataset.v||null;await save();renderTimer();return true;
-    case'tstart':try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(e){}
+    case'tstart':unlockSpeech();try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(e){}
       goalChimed=ringFrac()>=1;T0.state='running';T0.startedAt=Date.now();T0.accMs=0;T0.lastMs=0;T0.date=today();await save();lockScreen(true);renderTimer();startTick();return true;
     case'tpause':T0.accMs=elapsedMs();T0.state='paused';await save();lockScreen(false);renderTimer();return true;
     case'tresume':T0.state='running';T0.startedAt=Date.now();await save();lockScreen(true);renderTimer();return true;
