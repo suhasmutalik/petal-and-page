@@ -2389,7 +2389,7 @@ function piglePose(ms){
 function pigCelebrate(m){
   const wrap=document.querySelector('#timer .pigwrap');if(!wrap)return;
   const [cls,msg]=CELEBS[(m-1)%CELEBS.length];
-  CELEBS.forEach(c=>wrap.classList.remove(c[0]));wrap.classList.remove('walking');void wrap.offsetWidth;wrap.classList.add(cls);
+  CELEBS.forEach(c=>wrap.classList.remove(c[0]));wrap.classList.remove('walking','twirling','lying');void wrap.offsetWidth;wrap.classList.add(cls);
   const svg=wrap.querySelector('svg.pig');if(svg)svg.setAttribute('class','pig party');
   let fx=wrap.querySelector('.celfx');if(!fx){fx=document.createElement('div');fx.className='celfx';wrap.appendChild(fx)}
   fx.innerHTML=Array.from({length:16},(_,i)=>`<i class="${i%2?'h':'s'}" style="--dx:${Math.round((Math.random()-.5)*220)}px;--r:${Math.round((Math.random()-.5)*90)}deg;animation-delay:${(Math.random()*.9).toFixed(2)}s"></i>`).join('')+`<span class="celmsg">${m*10} minutes · ${msg}</span>`;
